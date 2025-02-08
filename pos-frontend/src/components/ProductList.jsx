@@ -100,23 +100,31 @@ function ProductList() {
       width: '100vw',
       overflow: 'hidden'
     }}>
-      {/* Add this button at the top */}
-      <button 
-        onClick={() => navigate('/pos/sales')}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          padding: '10px 20px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        View Sales History
-      </button>
+      {/* Navigation buttons at the top */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        display: 'flex',
+        gap: '10px'
+      }}>
+        <button 
+          onClick={() => {
+            console.log('Navigating to sales, token:', localStorage.getItem('jwtToken'));
+            navigate('/pos/sales');
+          }}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Ver Historial de Ventas
+        </button>
+      </div>
 
       {/* Products Section - Left 50% */}
       <div style={{ 

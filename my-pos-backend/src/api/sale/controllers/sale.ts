@@ -24,6 +24,20 @@ interface SaleResult {
 }
 
 export default factories.createCoreController('api::sale.sale', ({ strapi }) => ({
+  async find(ctx) {
+    // Add populate to the query
+    ctx.query = {
+      ...ctx.query,
+      populate: {
+        product: true,
+        store: true
+      }
+    };
+    
+    const { data, meta } = await super.find(ctx);
+    return { data, meta };
+  },
+
   async createWithRelation(ctx) {
     try {
       const { data } = ctx.request.body;
@@ -51,7 +65,7 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
           Price: data.Price,
           Time: data.Time,
           store: data.store,
-          product: product.id,  // Use the verified product ID
+          product: product.id,
           publishedAt: new Date()
         },
         populate: {
