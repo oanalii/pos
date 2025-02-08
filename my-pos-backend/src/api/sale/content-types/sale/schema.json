@@ -12,11 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "product": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::product.product"
-    },
     "Price": {
       "type": "decimal"
     },
@@ -27,6 +22,12 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::store.store"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "sales"
     }
   }
 }
