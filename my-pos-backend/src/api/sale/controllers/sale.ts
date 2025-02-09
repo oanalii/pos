@@ -4,7 +4,19 @@
 
 import { factories } from '@strapi/strapi'
 
-interface SaleResult {
+interface Invoice {
+  id: number;
+  InvoiceNumber: string;
+  Date: string;
+  Total: number;
+  sale?: any;
+  store?: any;
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Sale {
   id: number;
   Price: number;
   Time: string;
@@ -21,6 +33,7 @@ interface SaleResult {
     Product: string;
     [key: string]: any;
   };
+  invoice?: Invoice;
 }
 
 export default factories.createCoreController('api::sale.sale', ({ strapi }) => ({
@@ -42,7 +55,7 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
     const entries = await strapi.entityService.findMany('api::sale.sale', {
       populate: ['product', 'store'],
       sort: { createdAt: 'desc' }
-    }) as SaleResult[];
+    }) as Sale[];
     
     console.log('All sales:', entries);
     
@@ -66,7 +79,7 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
       console.log('Creating sale with data:', data);
 
       // Create sale first
-      const result = await strapi.entityService.create('api::sale.sale', {
+      const sale = await strapi.entityService.create('api::sale.sale', {
         data: {
           Price: data.Price,
           Time: data.Time,
@@ -75,36 +88,29 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
           publishedAt: new Date()
         },
         populate: ['store', 'product']
-      });
+      }) as Sale;
 
-      console.log('Created sale with ID:', result.id);
+      console.log('Created sale with ID:', sale.id);
 
-      // Create invoice
+      // Create invoice with sale.id - 1
       const invoice = await strapi.entityService.create('api::invoice.invoice', {
         data: {
           InvoiceNumber: `INV-${Date.now()}`,
           Date: new Date(),
           Total: data.Price,
           store: data.store,
-          sale: result.id,  // Just use the original ID
+          sale: sale.id - 1,  // Subtract 1 from sale ID
           publishedAt: new Date()
         },
         populate: ['store', 'sale']
+      }) as Invoice;
+
+      console.log('Created invoice with adjusted sale ID:', {
+        invoiceId: invoice.id,
+        linkedToSaleId: sale.id - 1
       });
 
-      console.log('Created invoice with ID:', invoice.id);
-
-      // Update sale with invoice
-      const updatedSale = await strapi.entityService.update('api::sale.sale', result.id, {
-        data: {
-          invoice: invoice.id
-        },
-        populate: ['store', 'product', 'invoice']
-      });
-
-      console.log('Updated sale with invoice:', updatedSale);
-
-      return { data: updatedSale };
+      return { data: sale };
     } catch (error) {
       console.error('Error in createWithRelation:', error);
       ctx.throw(500, error);
