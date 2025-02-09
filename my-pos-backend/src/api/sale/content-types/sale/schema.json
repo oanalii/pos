@@ -20,14 +20,21 @@
     },
     "store": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::store.store"
+      "relation": "manyToOne",
+      "target": "api::store.store",
+      "inversedBy": "sales"
     },
     "product": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::product.product",
       "inversedBy": "sales"
+    },
+    "invoice": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::invoice.invoice",
+      "mappedBy": "sale"
     }
   }
 }

@@ -56,40 +56,35 @@ function ProductList() {
 
   const handleCheckout = async () => {
     try {
-      console.log('Starting checkout with cart items:', cartItems);
+      console.log('=== STARTING CHECKOUT ===');
+      console.log('Cart items:', cartItems);
 
-      const salePromises = cartItems.map(async item => {
-        const correctId = ID_MAP[item.product.Product];
-        
+      for (const item of cartItems) {
         const saleData = {
-          data: {
-            Price: parseFloat(item.price),
-            Time: new Date().toISOString(),
-            store: parseInt(localStorage.getItem('storeId')),
-            product: correctId // Use the correct ID from our mapping
-          }
+          Price: parseFloat(item.price),
+          Time: new Date().toISOString(),
+          store: parseInt(localStorage.getItem('storeId')),
+          product: item.product.id  // Make sure we're sending the product ID
         };
 
-        console.log('Creating sale with product:', {
-          productName: item.product.Product,
-          correctId,
-          price: item.price
+        console.log('=== CREATING SALE ===');
+        console.log('Sale data:', saleData);
+
+        const response = await API.post('/api/sales/create-with-relation', {
+          data: saleData
         });
 
-        const response = await API.post('/api/sales/create-with-relation', saleData);
-        return response;
-      });
+        console.log('=== SALE RESPONSE ===');
+        console.log('Status:', response.status);
+        console.log('Response data:', response.data);
+      }
 
-      const responses = await Promise.all(salePromises);
-      console.log('All sales completed:', responses.map(r => r.data));
-
-      // Show success modal instead of alert
-      setShowSuccessModal(true);
-      
-      // Don't clear cart until modal is closed
+      setCartItems([]);
+      navigate('/sales');
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Error processing checkout');
+      console.error('=== CHECKOUT ERROR ===');
+      console.error('Error:', error);
+      console.error('Response:', error.response?.data);
     }
   };
 

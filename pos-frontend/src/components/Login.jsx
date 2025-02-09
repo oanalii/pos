@@ -11,8 +11,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // First, authenticate
-      const authResponse = await axios.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/auth/local`,
         {
           identifier,
@@ -20,31 +19,26 @@ function Login() {
         }
       );
       
-      // Store JWT token
-      localStorage.setItem('jwtToken', authResponse.data.jwt);
+      localStorage.setItem('jwtToken', response.data.jwt);
       
-      // Then fetch user data with store information
       const userResponse = await axios.get(
         `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/users/me?populate=store`,
         {
           headers: {
-            Authorization: `Bearer ${authResponse.data.jwt}`
+            Authorization: `Bearer ${response.data.jwt}`
           }
         }
       );
       
       console.log('User data with store:', userResponse.data);
       
-      if (userResponse.data.store) {
-        localStorage.setItem('storeId', userResponse.data.store.id);
-      } else {
-        console.error('No store found for user:', userResponse.data);
-      }
+      const storeId = userResponse.data.store.id;
+      localStorage.setItem('storeId', storeId);
       
       navigate('/pos');
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid credentials. Please try again.');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Login failed');
     }
   };
 

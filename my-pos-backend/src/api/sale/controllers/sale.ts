@@ -11,81 +11,102 @@ interface SaleResult {
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
-  product?: {
-    id: number;
-    Product: string;
-    [key: string]: any;
-  };
   store?: {
     id: number;
     Name: string;
+    [key: string]: any;
+  };
+  product?: {
+    id: number;
+    Product: string;
     [key: string]: any;
   };
 }
 
 export default factories.createCoreController('api::sale.sale', ({ strapi }) => ({
   async find(ctx) {
-    // Add populate to the query
-    ctx.query = {
-      ...ctx.query,
-      populate: {
-        product: true,
-        store: true
+    console.log('Query params:', ctx.query);
+    
+    // Define the filter type
+    type QueryFilters = {
+      filters?: {
+        store?: {
+          id?: {
+            $eq?: string
+          }
+        }
       }
     };
+
+    // Get all sales without any filtering first
+    const entries = await strapi.entityService.findMany('api::sale.sale', {
+      populate: ['product', 'store'],
+      sort: { createdAt: 'desc' }
+    }) as SaleResult[];
     
-    const { data, meta } = await super.find(ctx);
-    return { data, meta };
+    console.log('All sales:', entries);
+    
+    // Type cast query to our filter type
+    const query = ctx.query as QueryFilters;
+    const storeId = parseInt(query.filters?.store?.id?.$eq || '0');
+    console.log('Filtering by store ID:', storeId);
+    
+    const filtered = entries
+      .filter(sale => sale.store?.id === storeId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    console.log('Filtered and sorted sales:', filtered);
+    
+    return { data: filtered };
   },
 
   async createWithRelation(ctx) {
     try {
       const { data } = ctx.request.body;
-      
-      // First, find the actual product by ID
-      const product = await strapi.db.query('api::product.product').findOne({
-        where: { id: data.product }
-      });
+      console.log('Creating sale with data:', data);
 
-      strapi.log.info('Found product:', {
-        requestedId: data.product,
-        foundProduct: product ? {
-          id: product.id,
-          name: product.Product
-        } : null
-      });
-
-      if (!product) {
-        return ctx.badRequest('Product not found');
-      }
-
-      // Create sale with the verified product ID
+      // Create sale first
       const result = await strapi.entityService.create('api::sale.sale', {
         data: {
           Price: data.Price,
           Time: data.Time,
           store: data.store,
-          product: product.id,
+          product: data.product,
           publishedAt: new Date()
         },
-        populate: {
-          product: true,
-          store: true
-        }
-      }) as SaleResult;
-
-      strapi.log.info('Created sale result:', {
-        saleId: result.id,
-        price: result.Price,
-        productId: result.product?.id,
-        productName: result.product?.Product,
-        storeId: result.store?.id
+        populate: ['store', 'product']
       });
 
-      return { data: result };
+      console.log('Created sale with ID:', result.id);
 
+      // Create invoice
+      const invoice = await strapi.entityService.create('api::invoice.invoice', {
+        data: {
+          InvoiceNumber: `INV-${Date.now()}`,
+          Date: new Date(),
+          Total: data.Price,
+          store: data.store,
+          sale: result.id,  // Just use the original ID
+          publishedAt: new Date()
+        },
+        populate: ['store', 'sale']
+      });
+
+      console.log('Created invoice with ID:', invoice.id);
+
+      // Update sale with invoice
+      const updatedSale = await strapi.entityService.update('api::sale.sale', result.id, {
+        data: {
+          invoice: invoice.id
+        },
+        populate: ['store', 'product', 'invoice']
+      });
+
+      console.log('Updated sale with invoice:', updatedSale);
+
+      return { data: updatedSale };
     } catch (error) {
-      strapi.log.error('Failed to create sale:', error);
+      console.error('Error in createWithRelation:', error);
       ctx.throw(500, error);
     }
   }

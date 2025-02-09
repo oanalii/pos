@@ -4,12 +4,20 @@ import ProductList from './components/ProductList';
 import SalesDashboard from './components/SalesDashboard';
 
 function App() {
+  const isAuthenticated = !!localStorage.getItem('jwtToken');
+
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/pos" element={<ProductList />} />
-        <Route path="/pos/sales" element={<SalesDashboard />} />
+        <Route 
+          path="/pos" 
+          element={isAuthenticated ? <ProductList /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/pos/sales" 
+          element={isAuthenticated ? <SalesDashboard /> : <Navigate to="/login" />} 
+        />
         <Route path="*" element={<Navigate to="/pos" />} />
       </Routes>
     </Router>

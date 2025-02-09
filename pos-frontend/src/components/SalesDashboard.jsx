@@ -10,11 +10,28 @@ function SalesDashboard() {
   const storeId = localStorage.getItem('storeId');
 
   useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     const fetchSales = async () => {
       try {
-        const response = await API.get(`/api/sales?filters[store][id][$eq]=${storeId}&sort[0]=Time:desc`);
-        console.log('Sales data:', response.data);
-        setSales(response.data.data);
+        console.log('Fetching sales for store:', storeId);
+        const response = await API.get('/api/sales', {
+          params: {
+            'filters[store][id][$eq]': storeId,
+            'populate': '*'
+          }
+        });
+        
+        // Sort sales by creation date (newest first)
+        const sortedSales = response.data.data.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        console.log('Sorted sales:', sortedSales);
+        setSales(sortedSales);
       } catch (error) {
         console.error('Error fetching sales:', error);
       } finally {
@@ -23,14 +40,14 @@ function SalesDashboard() {
     };
 
     fetchSales();
-  }, [storeId]);
+  }, [storeId, navigate]);
 
   const handleDownloadInvoice = (sale) => {
     const items = [{
-      product: sale.attributes.product.data.attributes,
-      price: sale.attributes.Price
+      product: { Product: sale.product.Product },
+      price: sale.Price
     }];
-    generateInvoice(items, sale.attributes.Price);
+    generateInvoice(items, sale.Price);
   };
 
   if (loading) return <div>Cargando ventas...</div>;
@@ -65,37 +82,51 @@ function SalesDashboard() {
           </tr>
         </thead>
         <tbody>
-          {sales.map((sale) => (
-            <tr key={sale.id} style={{ borderBottom: '1px solid #ddd' }}>
-              <td style={{ padding: '10px' }}>
-                {new Date(sale.attributes.Time).toLocaleDateString('es-ES')}
-              </td>
-              <td style={{ padding: '10px' }}>
-                {new Date(sale.attributes.Time).toLocaleTimeString('es-ES')}
-              </td>
-              <td style={{ padding: '10px' }}>
-                {sale.attributes.product.data.attributes.Product}
-              </td>
-              <td style={{ padding: '10px' }}>
-                €{sale.attributes.Price.toFixed(2)}
-              </td>
-              <td style={{ padding: '10px' }}>
-                <button
-                  onClick={() => handleDownloadInvoice(sale)}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Descargar Factura
-                </button>
+          {sales && sales.length > 0 ? (
+            sales.map((sale) => (
+              <tr key={sale.id} style={{ borderBottom: '1px solid #ddd' }}>
+                <td style={{ padding: '10px' }}>
+                  {sale.Time ? 
+                    new Date(sale.Time).toLocaleDateString('es-ES') 
+                    : 'N/A'
+                  }
+                </td>
+                <td style={{ padding: '10px' }}>
+                  {sale.Time ? 
+                    new Date(sale.Time).toLocaleTimeString('es-ES')
+                    : 'N/A'
+                  }
+                </td>
+                <td style={{ padding: '10px' }}>
+                  {sale.product?.Product || 'N/A'}
+                </td>
+                <td style={{ padding: '10px' }}>
+                  €{sale.Price?.toFixed(2) || '0.00'}
+                </td>
+                <td style={{ padding: '10px' }}>
+                  <button
+                    onClick={() => handleDownloadInvoice(sale)}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Descargar Factura
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                No hay ventas registradas
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

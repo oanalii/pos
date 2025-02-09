@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "invoices",
+  "info": {
+    "singularName": "invoice",
+    "pluralName": "invoices",
+    "displayName": "Invoice"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "InvoiceNumber": {
+      "type": "uid"
+    },
+    "sale": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::sale.sale",
+      "inversedBy": "invoice"
+    },
+    "store": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::store.store",
+      "inversedBy": "invoices"
+    },
+    "Date": {
+      "type": "datetime"
+    },
+    "Total": {
+      "type": "decimal"
+    }
+  }
+}
