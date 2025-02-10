@@ -26,7 +26,7 @@ function Login() {
 
     try {
       // First API call - login
-      const response = await axios.post(
+      const loginResponse = await axios.post(
         `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/auth/local`,
         {
           identifier,
@@ -34,14 +34,14 @@ function Login() {
         }
       );
       
-      const jwt = response.data.jwt;
+      const jwt = loginResponse.data.jwt;
       if (!jwt) {
         throw new Error('No JWT received');
       }
       
       localStorage.setItem('jwtToken', jwt);
       
-      // Second API call - get user data
+      // Second API call - get user data with store info
       const userResponse = await axios.get(
         `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/users/me?populate=store`,
         {
@@ -51,18 +51,17 @@ function Login() {
         }
       );
       
-      console.log('User data with store:', userResponse.data);
+      console.log('User data:', userResponse.data);
       
       if (!userResponse.data.store?.id) {
-        throw new Error('No store ID in user data');
+        throw new Error('User has no assigned store');
       }
 
+      // Save store ID
       localStorage.setItem('storeId', userResponse.data.store.id);
-      
-      // Force a small delay to ensure localStorage is set
-      setTimeout(() => {
-        navigate('/pos');
-      }, 100);
+      console.log('Stored storeId:', userResponse.data.store.id);
+
+      navigate('/pos');
 
     } catch (error) {
       console.error('Login error:', error);

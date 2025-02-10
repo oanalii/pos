@@ -25,7 +25,6 @@ function SalesDashboard() {
           }
         });
         
-        // Sort sales by creation date (newest first)
         const sortedSales = response.data.data.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );

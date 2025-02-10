@@ -4,6 +4,8 @@ import { Box, CssBaseline } from '@mui/material';
 import Login from './components/Login';
 import ProductList from './components/ProductList';
 import SalesDashboard from './components/SalesDashboard';
+import AdminLogin from './components/admin/AdminLogin';
+import AdminSales from './components/admin/AdminSales';
 
 // Create a custom theme
 const theme = createTheme({
@@ -49,12 +51,30 @@ function App() {
               path="/pos/sales" 
               element={isAuthenticated ? <SalesDashboard /> : <Navigate to="/login" />} 
             />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route 
+              path="/admin/sales" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminSales />
+                </AdminProtectedRoute>
+              } 
+            />
             <Route path="*" element={<Navigate to="/pos" />} />
           </Routes>
         </Router>
       </Box>
     </ThemeProvider>
   );
+}
+
+// Protect admin routes
+function AdminProtectedRoute({ children }) {
+  const adminToken = localStorage.getItem('adminToken');
+  if (!adminToken) {
+    return <Navigate to="/admin" />;
+  }
+  return children;
 }
 
 export default App; 
