@@ -71,17 +71,31 @@ function ProductList() {
     try {
       console.log('=== STARTING CHECKOUT ===');
       
-      // Generate a single orderGroupId for all items in this transaction
+      const rawStoreId = localStorage.getItem('storeId');
+      console.log('Raw storeId from localStorage:', rawStoreId);
+      
+      const storeId = Number(rawStoreId);
+      console.log('Converted storeId:', storeId);
+      
+      if (!storeId || isNaN(storeId)) {
+        console.error('Invalid store ID:', storeId);
+        alert('Error: No store ID found. Please log in again.');
+        navigate('/login');
+        return;
+      }
+
       const orderGroupId = crypto.randomUUID();
 
       for (const item of cartItems) {
         const saleData = {
           Price: parseFloat(item.price),
           Time: new Date().toISOString(),
-          store: parseInt(localStorage.getItem('storeId')),
+          store: storeId,
           product: item.product.id,
-          orderGroupId // Add this to group related sales
+          orderGroupId
         };
+
+        console.log('Sending sale data:', saleData);
 
         const response = await API.post('/api/sales/create-with-relation', {
           data: saleData

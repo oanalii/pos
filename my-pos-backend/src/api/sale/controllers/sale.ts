@@ -67,24 +67,30 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
       const { data } = ctx.request.body;
       console.log('Creating sale with data:', data);
 
+      if (!data.store) {
+        ctx.throw(400, 'Store ID is required');
+      }
+
+      // Create sale with proper store relation
       const sale = await strapi.entityService.create('api::sale.sale', {
         data: {
           Price: data.Price,
           Time: data.Time,
-          store: data.store,
+          store: data.store, // This should be just the ID
           product: data.product,
           publishedAt: new Date()
         },
         populate: ['store', 'product']
       });
 
+      // Create invoice with proper sale relation
       const invoice = await strapi.entityService.create('api::invoice.invoice', {
         data: {
           InvoiceNumber: `INV-${Date.now()}`,
           Date: new Date(),
           Total: data.Price,
-          store: data.store,
-          sale: sale.id,
+          store: data.store, // Same store ID
+          sale: sale.id, // Use the actual sale.id, not sale.id - 1
           publishedAt: new Date()
         },
         populate: ['store', 'sale']

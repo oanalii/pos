@@ -42,11 +42,21 @@ function SalesDashboard() {
   }, [storeId, navigate]);
 
   const handleDownloadInvoice = (sale) => {
-    const items = [{
-      product: { Product: sale.product.Product },
-      price: sale.Price
-    }];
-    generateInvoice(items, sale.Price);
+    // Find sales made within 1 second of this sale
+    const saleTime = new Date(sale.Time).getTime();
+    const relatedSales = sales.filter(s => {
+      const timeDiff = Math.abs(new Date(s.Time).getTime() - saleTime);
+      return timeDiff < 1000; // Within 1 second (store filter not needed here since we only see our store)
+    });
+    
+    const items = relatedSales.map(s => ({
+      product: { Product: s.product.Product },
+      price: s.Price
+    }));
+    
+    const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
+    
+    generateInvoice(items, total);
   };
 
   if (loading) return <div>Cargando ventas...</div>;
