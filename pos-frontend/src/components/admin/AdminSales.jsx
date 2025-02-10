@@ -1,31 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
+import Sidebar from './Sidebar';
+import {
+  Box,
+  Typography,
+  Select,
+  MenuItem,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container
+} from '@mui/material';
+
+const STORE_IDS = {
+  gaudi: 7,
+  paralel: 1,
+  mallorca: 5,
+  consell: 10,
+  hospital: 9
+};
 
 function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('all');
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const fetchAllSales = async () => {
-      try {
-        const response = await API.get('/api/sales?populate=*');
-        // Sort sales by creation date (newest first)
-        const sortedSales = response.data.data.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setSales(sortedSales);
-      } catch (error) {
-        console.error('Error fetching all sales:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { store } = useParams();
 
-    fetchAllSales();
-  }, []);
+  const fetchSales = async () => {
+    try {
+      let url = '/api/sales?populate=*';
+      
+      // Add store filter if we're not on the general page
+      if (store && STORE_IDS[store]) {
+        url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
+      }
+
+      const response = await API.get(url);
+      let filteredSales = response.data.data;
+
+      // Apply time filter
+      const currentDate = new Date(); // Create a base date
+      filteredSales = filteredSales.filter(sale => {
+        const saleDate = new Date(sale.Time);
+        
+        switch (timeFilter) {
+          case 'day':
+            const today = new Date(currentDate);
+            today.setHours(0, 0, 0, 0);
+            return saleDate >= today;
+            
+          case 'week':
+            const weekAgo = new Date(currentDate);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return saleDate >= weekAgo;
+            
+          case 'month':
+            const monthAgo = new Date(currentDate);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return saleDate >= monthAgo;
+            
+          case '3months':
+            const threeMonthsAgo = new Date(currentDate);
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            return saleDate >= threeMonthsAgo;
+            
+          case '12months':
+            const yearAgo = new Date(currentDate);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            return saleDate >= yearAgo;
+            
+          default:
+            return true;
+        }
+      });
+
+      // Sort by date (newest first)
+      const sortedSales = filteredSales.sort((a, b) => 
+        new Date(b.Time).getTime() - new Date(a.Time).getTime()
+      );
+      
+      setSales(sortedSales);
+    } catch (error) {
+      console.error('Error fetching sales:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSales();
+  }, [store, timeFilter]);
 
   const handleDownloadInvoice = (sale) => {
     const items = [{
@@ -35,90 +107,105 @@ function AdminSales() {
     generateInvoice(items, sale.Price);
   };
 
-  if (loading) return <div>Loading sales data...</div>;
+  if (loading) return (
+    <Box sx={{ ml: '240px', p: 3 }}>
+      <Typography>Loading sales data...</Typography>
+    </Box>
+  );
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h1>All Stores Sales History</h1>
-        <button
-          onClick={() => navigate('/admin')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
-      </div>
+    <Box sx={{ display: 'flex', bgcolor: '#f5f5f5', minHeight: '100vh' }}>
+      <Sidebar />
+      <Box sx={{ 
+        flexGrow: 1, 
+        ml: '280px',  // Match sidebar width
+        p: 2,         // Reduced padding from 4 to 2
+        backgroundColor: '#fff',
+        mt: 0,        // Ensure no top margin
+        position: 'relative'  // Add this to ensure proper layout
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 2,      // Reduced margin from 4 to 2
+          mt: 0       // Ensure no top margin
+        }}>
+          <Box>
+            <Typography variant="h4" sx={{ 
+              mb: 1,
+              fontWeight: 600,
+              color: '#333'  // Dark text for better contrast
+            }}>
+              {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
+            </Typography>
+            <Select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              size="small"
+              sx={{ minWidth: 200 }}
+            >
+              <MenuItem value="all">All Time</MenuItem>
+              <MenuItem value="day">Today</MenuItem>
+              <MenuItem value="week">Last 7 Days</MenuItem>
+              <MenuItem value="month">Last 30 Days</MenuItem>
+              <MenuItem value="3months">Last 3 Months</MenuItem>
+              <MenuItem value="12months">Last 12 Months</MenuItem>
+            </Select>
+          </Box>
+          <Button 
+            variant="contained" 
+            color="error"
+            onClick={() => navigate('/admin')}
+          >
+            Logout
+          </Button>
+        </Box>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-        <thead>
-          <tr>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Store</th>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Date</th>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Time</th>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Product</th>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Price</th>
-            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sales && sales.length > 0 ? (
-            sales.map((sale) => (
-              <tr key={sale.id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '10px' }}>
-                  {sale.store?.Name || 'Unknown Store'}
-                </td>
-                <td style={{ padding: '10px' }}>
-                  {sale.Time ? 
-                    new Date(sale.Time).toLocaleDateString('es-ES') 
-                    : 'N/A'
-                  }
-                </td>
-                <td style={{ padding: '10px' }}>
-                  {sale.Time ? 
-                    new Date(sale.Time).toLocaleTimeString('es-ES')
-                    : 'N/A'
-                  }
-                </td>
-                <td style={{ padding: '10px' }}>
-                  {sale.product?.Product || 'N/A'}
-                </td>
-                <td style={{ padding: '10px' }}>
-                  €{sale.Price?.toFixed(2) || '0.00'}
-                </td>
-                <td style={{ padding: '10px' }}>
-                  <button
-                    onClick={() => handleDownloadInvoice(sale)}
-                    style={{
-                      padding: '8px 12px',
-                      backgroundColor: '#007bff',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Download Invoice
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                No sales records found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+        <TableContainer component={Paper} sx={{ mt: 2 }}>  {/* Added consistent margin top */}
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Store</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Product</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sales && sales.length > 0 ? (
+                sales.map((sale) => (
+                  <TableRow key={sale.id}>
+                    <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
+                    <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
+                    <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
+                    <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                    <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        onClick={() => handleDownloadInvoice(sale)}
+                        size="small"
+                      >
+                        Download Invoice
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    No sales records found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 

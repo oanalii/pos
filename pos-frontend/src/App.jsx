@@ -60,6 +60,7 @@ function App() {
                 </AdminProtectedRoute>
               } 
             />
+            <Route path="/admin/sales/:store" element={<AdminSales />} />
             <Route path="*" element={<Navigate to="/pos" />} />
           </Routes>
         </Router>
