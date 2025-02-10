@@ -3,6 +3,7 @@ import PriceModal from './PriceModal';
 
 function ProductBlock({ product, onAddToCart }) {
   const [showModal, setShowModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
     setShowModal(true);
@@ -16,28 +17,42 @@ function ProductBlock({ product, onAddToCart }) {
     <>
       <div 
         onClick={handleClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         style={{ 
-          height: '180px',
+          height: '140px',
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          borderRadius: '16px',
+          boxShadow: isHovered 
+            ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
           overflow: 'hidden',
-          transition: 'transform 0.2s, box-shadow 0.2s',
+          transition: 'all 0.3s ease',
           cursor: 'pointer',
           padding: '20px',
           justifyContent: 'center',
           alignItems: 'center',
-          ':hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-          }
+          transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+          position: 'relative'
         }}
       >
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
+          opacity: isHovered ? 1 : 0,
+          transition: 'opacity 0.3s ease'
+        }} />
+        
         <span style={{ 
-          fontSize: '20px',
-          fontWeight: '500'
+          fontSize: '18px',
+          fontWeight: '600',
+          color: '#1F2937'
         }}>
           {product.Product}
         </span>

@@ -13,6 +13,19 @@ const ID_MAP = {
   'Figura': 9
 };
 
+// Modern color palette
+const colors = {
+  background: '#FAFAFA',
+  surface: '#FFFFFF',
+  primary: '#2563EB',
+  text: {
+    primary: '#1F2937',
+    secondary: '#6B7280',
+  },
+  border: '#E5E7EB',
+  hover: '#F3F4F6'
+};
+
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
@@ -57,26 +70,22 @@ function ProductList() {
   const handleCheckout = async () => {
     try {
       console.log('=== STARTING CHECKOUT ===');
-      console.log('Cart items:', cartItems);
+      
+      // Generate a single orderGroupId for all items in this transaction
+      const orderGroupId = crypto.randomUUID();
 
       for (const item of cartItems) {
         const saleData = {
           Price: parseFloat(item.price),
           Time: new Date().toISOString(),
           store: parseInt(localStorage.getItem('storeId')),
-          product: item.product.id  // Make sure we're sending the product ID
+          product: item.product.id,
+          orderGroupId // Add this to group related sales
         };
-
-        console.log('=== CREATING SALE ===');
-        console.log('Sale data:', saleData);
 
         const response = await API.post('/api/sales/create-with-relation', {
           data: saleData
         });
-
-        console.log('=== SALE RESPONSE ===');
-        console.log('Status:', response.status);
-        console.log('Response data:', response.data);
       }
 
       setCartItems([]);
@@ -84,7 +93,6 @@ function ProductList() {
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
       console.error('Error:', error);
-      console.error('Response:', error.response?.data);
     }
   };
 
@@ -93,67 +101,103 @@ function ProductList() {
       display: 'flex', 
       height: '100vh',
       width: '100vw',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      backgroundColor: colors.surface,
+      position: 'relative'
     }}>
-      {/* Navigation buttons at the top */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        display: 'flex',
-        gap: '10px'
-      }}>
-        <button 
-          onClick={() => {
-            console.log('Navigating to sales, token:', localStorage.getItem('jwtToken'));
-            navigate('/pos/sales');
-          }}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Ver Historial de Ventas
-        </button>
-      </div>
-
-      {/* Products Section - Left 50% */}
+      {/* Left side with header and products */}
       <div style={{ 
-        width: '50%',
-        padding: '30px',
-        overflowY: 'auto',
-        borderRight: '2px solid #eee',
-        backgroundColor: '#f8f9fa'
+        width: '60%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <h2 style={{
-          fontSize: '24px',
-          marginBottom: '25px',
-          color: '#333'
-        }}>Products</h2>
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '20px',
-          padding: '10px'
+        {/* Header - Replace the floating header with this */}
+        <div style={{
+          padding: '24px 40px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: `1px solid ${colors.border}`
         }}>
-          {products.map((product) => (
-            <ProductBlock 
-              key={product.id} 
-              product={product}
-              onAddToCart={addToCart}
-            />
-          ))}
+          <h1 style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            color: colors.text.primary,
+            margin: 0
+          }}>
+            POS System
+          </h1>
+          <button 
+            onClick={() => navigate('/pos/sales')}
+            style={{
+              padding: '10px 16px',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              color: '#2563eb',
+              border: '2px solid #2563eb',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              ':hover': {
+                backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                transform: 'translateY(-1px)'
+              }
+            }}
+          >
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M3 3v18h18"/>
+              <path d="m19 9-5 5-4-4-3 3"/>
+            </svg>
+            View Sales History
+          </button>
+        </div>
+
+        {/* Products Grid */}
+        <div style={{ 
+          flex: 1,
+          overflowY: 'auto',
+          padding: '24px 40px'
+        }}>
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '24px'
+          }}>
+            {products.map((product) => (
+              <ProductBlock 
+                key={product.id} 
+                product={product}
+                onAddToCart={addToCart}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Cart Section - Right 50% */}
+      {/* Cart Section - Right side */}
       <div style={{ 
-        width: '50%',
-        height: '100%'
+        width: '40%',
+        height: '100%',
+        backgroundColor: colors.surface,
+        borderLeft: `1px solid ${colors.border}`,
+        boxShadow: '-4px 0 15px rgba(0, 0, 0, 0.05)',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
         <Cart 
           items={cartItems} 
@@ -162,14 +206,14 @@ function ProductList() {
         />
       </div>
 
-      {/* Add Success Modal */}
+      {/* Success Modal */}
       {showSuccessModal && (
         <SuccessModal
           items={cartItems}
           total={cartItems.reduce((sum, item) => sum + parseFloat(item.price), 0)}
           onClose={() => {
             setShowSuccessModal(false);
-            setCartItems([]); // Clear cart after modal is closed
+            setCartItems([]);
           }}
         />
       )}

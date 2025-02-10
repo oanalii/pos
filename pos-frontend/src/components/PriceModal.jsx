@@ -6,7 +6,6 @@ function PriceModal({ product, onSubmit, onClose }) {
   const handleNumberClick = (num) => {
     setAmount(prev => {
       if (prev === '' && num === '0') return prev;
-      
       return prev + num;
     });
   };
@@ -40,17 +39,17 @@ function PriceModal({ product, onSubmit, onClose }) {
     }}>
       <div style={{
         backgroundColor: 'white',
-        borderRadius: '16px',
-        padding: '24px',
+        borderRadius: '24px',
+        padding: '20px',
         width: '90%',
-        maxWidth: '400px',
+        maxWidth: '360px',
         boxShadow: '0 4px 24px rgba(0,0,0,0.2)'
       }}>
         {/* Product Name */}
         <h2 style={{ 
           textAlign: 'center', 
-          margin: '0 0 20px 0',
-          fontSize: '24px',
+          margin: '0 0 16px 0',
+          fontSize: '20px',
           color: '#333'
         }}>
           {product.Product}
@@ -59,12 +58,12 @@ function PriceModal({ product, onSubmit, onClose }) {
         {/* Amount Display */}
         <div style={{
           backgroundColor: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '12px',
-          marginBottom: '20px',
+          padding: '16px',
+          borderRadius: '16px',
+          marginBottom: '16px',
           textAlign: 'center'
         }}>
-          <span style={{ fontSize: '36px', fontWeight: '500' }}>
+          <span style={{ fontSize: '28px', fontWeight: '500' }}>
             ${displayAmount}
           </span>
         </div>
@@ -73,23 +72,20 @@ function PriceModal({ product, onSubmit, onClose }) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '12px',
-          marginBottom: '20px'
+          gap: '8px',
+          marginBottom: '16px'
         }}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <button
               key={num}
               onClick={() => handleNumberClick(num.toString())}
               style={{
-                padding: '20px',
-                fontSize: '24px',
+                padding: '14px',
+                fontSize: '18px',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 backgroundColor: '#f0f0f0',
-                cursor: 'pointer',
-                ':hover': {
-                  backgroundColor: '#e0e0e0'
-                }
+                cursor: 'pointer'
               }}
             >
               {num}
@@ -98,13 +94,14 @@ function PriceModal({ product, onSubmit, onClose }) {
           <button
             onClick={handleClear}
             style={{
-              padding: '20px',
-              fontSize: '20px',
-              border: 'none',
-              borderRadius: '12px',
-              backgroundColor: '#ffebee',
-              color: '#d32f2f',
-              cursor: 'pointer'
+              padding: '14px',
+              fontSize: '16px',
+              border: '2px solid #dc2626',
+              borderRadius: '16px',
+              backgroundColor: 'rgba(254, 226, 226, 0.5)',
+              color: '#dc2626',
+              cursor: 'pointer',
+              fontWeight: '500'
             }}
           >
             Clear
@@ -112,10 +109,10 @@ function PriceModal({ product, onSubmit, onClose }) {
           <button
             onClick={() => handleNumberClick('0')}
             style={{
-              padding: '20px',
-              fontSize: '24px',
+              padding: '14px',
+              fontSize: '18px',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '16px',
               backgroundColor: '#f0f0f0',
               cursor: 'pointer'
             }}
@@ -125,10 +122,10 @@ function PriceModal({ product, onSubmit, onClose }) {
           <button
             onClick={() => handleNumberClick('00')}
             style={{
-              padding: '20px',
-              fontSize: '24px',
+              padding: '14px',
+              fontSize: '18px',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '16px',
               backgroundColor: '#f0f0f0',
               cursor: 'pointer'
             }}
@@ -141,18 +138,19 @@ function PriceModal({ product, onSubmit, onClose }) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '12px'
+          gap: '8px'
         }}>
           <button
             onClick={onClose}
             style={{
-              padding: '16px',
-              fontSize: '18px',
-              border: 'none',
-              borderRadius: '12px',
-              backgroundColor: '#fee2e2',
+              padding: '12px',
+              fontSize: '16px',
+              border: '2px solid #dc2626',
+              borderRadius: '16px',
+              backgroundColor: 'rgba(254, 226, 226, 0.5)',
               color: '#dc2626',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontWeight: '500'
             }}
           >
             Cancel
@@ -160,13 +158,14 @@ function PriceModal({ product, onSubmit, onClose }) {
           <button
             onClick={handleSubmit}
             style={{
-              padding: '16px',
-              fontSize: '18px',
-              border: 'none',
-              borderRadius: '12px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              cursor: 'pointer'
+              padding: '12px',
+              fontSize: '16px',
+              border: '2px solid #059669',
+              borderRadius: '16px',
+              backgroundColor: 'rgba(167, 243, 208, 0.5)',
+              color: '#059669',
+              cursor: 'pointer',
+              fontWeight: '500'
             }}
           >
             Add to Cart
