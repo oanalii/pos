@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
@@ -15,15 +15,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Container
 } from '@mui/material';
 
 const STORE_IDS = {
-  gaudi: 7,
+  gaudi: 5,
   paralel: 1,
-  mallorca: 5,
-  consell: 10,
-  hospital: 9
+  mallorca: 3,
+  hospital: 7,
 };
 
 function AdminSales() {
@@ -33,7 +33,7 @@ function AdminSales() {
   const navigate = useNavigate();
   const { store } = useParams();
 
-  const fetchSales = useCallback(async () => {
+  const fetchSales = async () => {
     try {
       let url = '/api/sales?populate=*';
       
@@ -92,11 +92,11 @@ function AdminSales() {
     } finally {
       setLoading(false);
     }
-  }, [store, timeFilter]);
+  };
 
   useEffect(() => {
     fetchSales();
-  }, [store, timeFilter, fetchSales]);
+  }, [store, timeFilter]);
 
   const handleDownloadInvoice = (sale) => {
     const items = [{
