@@ -35,6 +35,9 @@
       "relation": "oneToOne",
       "target": "api::invoice.invoice",
       "mappedBy": "sale"
+    },
+    "customName": {
+      "type": "string"
     }
   }
 }

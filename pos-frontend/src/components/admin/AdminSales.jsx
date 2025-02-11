@@ -257,7 +257,9 @@ function AdminSales() {
                       <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                      <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                      <TableCell>
+                        {sale.attributes.customName || sale.attributes.product.data.attributes.Product}
+                      </TableCell>
                       <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>
                         <Button

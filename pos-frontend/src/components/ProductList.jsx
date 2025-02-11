@@ -4,13 +4,15 @@ import ProductBlock from './ProductBlock';
 import Cart from './Cart';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import CustomProductBlock from './CustomProductBlock';
 
 const ID_MAP = {
   'Phone': 1,
   'Laptop': 3,
   'Funda': 5,
   'Charger': 7,
-  'Figura': 9
+  'Figura': 9,
+  'Custom': 11  // Add this new ID for custom products
 };
 
 // Modern color palette
@@ -72,10 +74,7 @@ function ProductList() {
       console.log('=== STARTING CHECKOUT ===');
       
       const rawStoreId = localStorage.getItem('storeId');
-      console.log('Raw storeId from localStorage:', rawStoreId);
-      
       const storeId = Number(rawStoreId);
-      console.log('Converted storeId:', storeId);
       
       if (!storeId || isNaN(storeId)) {
         console.error('Invalid store ID:', storeId);
@@ -88,23 +87,21 @@ function ProductList() {
 
       for (const item of cartItems) {
         const saleData = {
-          Price: parseFloat(item.price),
-          Time: new Date().toISOString(),
-          store: storeId,
-          product: item.product.id,
-          orderGroupId
+          data: {  // Make sure we wrap in data object
+            Price: parseFloat(item.price),
+            Time: new Date().toISOString(),
+            store: storeId,
+            product: item.product.id,  // Use original product ID
+            orderGroupId,
+            customName: item.customName  // Add this field
+          }
         };
 
         console.log('Sending sale data:', saleData);
-
-        await API.post('/api/sales/create-with-relation', {
-          data: saleData
-        });
+        await API.post('/api/sales/create-with-relation', saleData);
       }
 
       setCartItems([]);
-      
-      // Show success message instead
       setShowSuccessModal(true);
 
     } catch (error) {
@@ -200,6 +197,8 @@ function ProductList() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '24px'
           }}>
+            <CustomProductBlock onAddToCart={addToCart} />
+            
             {products.map((product) => (
               <ProductBlock 
                 key={product.id} 
