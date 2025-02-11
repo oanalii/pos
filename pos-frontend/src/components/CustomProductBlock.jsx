@@ -16,14 +16,14 @@ function CustomProductBlock({ onAddToCart }) {
     if (!name || !price) return;
 
     const customProduct = {
-      id: 11,  // The Custom product ID
-      Product: name  // Use the entered name as Product name
+      id: 11,  // Custom product ID
+      Product: name,
+      price: parseFloat(price)
     };
 
     onAddToCart({
       product: customProduct,
-      price: parseFloat(price),
-      customName: name  // Make sure we pass the custom name
+      price: parseFloat(price)
     });
 
     // Clear fields after adding

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Typography } from '@mui/material';
 
 function Cart({ items, removeFromCart, checkout }) {
   const total = items.reduce((sum, item) => sum + parseFloat(item.price), 0);
@@ -35,13 +34,17 @@ function Cart({ items, removeFromCart, checkout }) {
             borderRadius: '12px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
           }}>
-            <Typography variant="body1">
-              {item.customName || item.product.Product}
-            </Typography>
+            <span style={{ fontSize: '18px', fontWeight: '500' }}>
+              {item.product.Product}
+            </span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="body1" sx={{ mr: 2 }}>
-                €{item.price}
-              </Typography>
+              <span style={{ 
+                fontSize: '18px', 
+                marginRight: '20px',
+                fontWeight: '500'
+              }}>
+                ${item.price}
+              </span>
               <button 
                 onClick={() => removeFromCart(index)} 
                 style={{ 

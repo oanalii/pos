@@ -15,7 +15,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Card,
+  CardContent,
+  Grid
 } from '@mui/material';
 
 // Add this constant at the top level
@@ -41,6 +44,7 @@ function AdminSales() {
   const [timeFilter, setTimeFilter] = useState('all');
   const navigate = useNavigate();
   const { store } = useParams();
+  const [salesData, setSalesData] = useState([]);
   const [productSummary, setProductSummary] = useState([]);
 
   const fetchSales = useCallback(async () => {
@@ -111,12 +115,14 @@ function AdminSales() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch all sales for this store
         const response = await API.get(`/api/sales?filters[store]=${store}&populate=*`);
-        const salesData = response.data.data;  // Renamed to avoid state conflict
+        const sales = response.data.data;
+        setSalesData(sales);
 
         // Calculate product summary
         const summary = {};
-        salesData.forEach(sale => {
+        sales.forEach(sale => {
           const productId = sale.attributes.product.data.id;
           if (!summary[productId]) {
             summary[productId] = {
@@ -257,9 +263,7 @@ function AdminSales() {
                       <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                      <TableCell>
-                        {sale.attributes.customName || sale.attributes.product.data.attributes.Product}
-                      </TableCell>
+                      <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
                       <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>
                         <Button
