@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const API_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:1337'
+  : 'https://api.hgtpos.es';
+
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:1337',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   }

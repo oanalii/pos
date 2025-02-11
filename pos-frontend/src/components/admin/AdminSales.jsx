@@ -114,96 +114,100 @@ function AdminSales() {
   );
 
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#f5f5f5', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex' }}>
       <Sidebar />
       <Box sx={{ 
         flexGrow: 1, 
         ml: '280px',  // Match sidebar width
-        p: 2,         // Reduced padding from 4 to 2
-        backgroundColor: '#fff',
-        mt: 0,        // Ensure no top margin
-        position: 'relative'  // Add this to ensure proper layout
+        backgroundColor: '#f5f5f5',  // Moved bgcolor here
+        minHeight: '100vh',
+        p: 2,
       }}>
         <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 2,      // Reduced margin from 4 to 2
-          mt: 0       // Ensure no top margin
+          backgroundColor: '#fff',
+          borderRadius: 1,
+          p: 3,
         }}>
-          <Box>
-            <Typography variant="h4" sx={{ 
-              mb: 1,
-              fontWeight: 600,
-              color: '#333'  // Dark text for better contrast
-            }}>
-              {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
-            </Typography>
-            <Select
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
-              size="small"
-              sx={{ minWidth: 200 }}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            mb: 3,
+          }}>
+            <Box>
+              <Typography variant="h4" sx={{ 
+                mb: 1,
+                fontWeight: 600,
+                color: '#333'  // Dark text for better contrast
+              }}>
+                {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
+              </Typography>
+              <Select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                size="small"
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="all">All Time</MenuItem>
+                <MenuItem value="day">Today</MenuItem>
+                <MenuItem value="week">Last 7 Days</MenuItem>
+                <MenuItem value="month">Last 30 Days</MenuItem>
+                <MenuItem value="3months">Last 3 Months</MenuItem>
+                <MenuItem value="12months">Last 12 Months</MenuItem>
+              </Select>
+            </Box>
+            <Button 
+              variant="contained" 
+              color="error"
+              onClick={() => navigate('/admin')}
             >
-              <MenuItem value="all">All Time</MenuItem>
-              <MenuItem value="day">Today</MenuItem>
-              <MenuItem value="week">Last 7 Days</MenuItem>
-              <MenuItem value="month">Last 30 Days</MenuItem>
-              <MenuItem value="3months">Last 3 Months</MenuItem>
-              <MenuItem value="12months">Last 12 Months</MenuItem>
-            </Select>
+              Logout
+            </Button>
           </Box>
-          <Button 
-            variant="contained" 
-            color="error"
-            onClick={() => navigate('/admin')}
-          >
-            Logout
-          </Button>
-        </Box>
 
-        <TableContainer component={Paper} sx={{ mt: 2 }}>  {/* Added consistent margin top */}
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Store</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Time</TableCell>
-                <TableCell>Product</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sales && sales.length > 0 ? (
-                sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
-                    <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
-                    <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                    <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                    <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        onClick={() => handleDownloadInvoice(sale)}
-                        size="small"
-                      >
-                        Download Invoice
-                      </Button>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Store</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Time</TableCell>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sales && sales.length > 0 ? (
+                  sales.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
+                      <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
+                      <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
+                      <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                      <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          onClick={() => handleDownloadInvoice(sale)}
+                          size="small"
+                        >
+                          Download Invoice
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      No sales records found
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No sales records found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       </Box>
     </Box>
   );
