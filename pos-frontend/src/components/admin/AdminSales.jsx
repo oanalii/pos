@@ -15,11 +15,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Card,
-  CardContent,
-  Grid
+  Paper
 } from '@mui/material';
+
+// Add this constant at the top level
+const PRODUCT_NAMES = {
+  1: 'Phone',
+  3: 'Laptop',
+  5: 'Funda',
+  7: 'Charger',
+  9: 'Figura'
+};
 
 const STORE_IDS = {
   gaudi: 7,
@@ -35,7 +41,6 @@ function AdminSales() {
   const [timeFilter, setTimeFilter] = useState('all');
   const navigate = useNavigate();
   const { store } = useParams();
-  const [salesData, setSalesData] = useState([]);
   const [productSummary, setProductSummary] = useState([]);
 
   const fetchSales = useCallback(async () => {
@@ -106,14 +111,12 @@ function AdminSales() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all sales for this store
         const response = await API.get(`/api/sales?filters[store]=${store}&populate=*`);
-        const sales = response.data.data;
-        setSalesData(sales);
+        const salesData = response.data.data;  // Renamed to avoid state conflict
 
         // Calculate product summary
         const summary = {};
-        sales.forEach(sale => {
+        salesData.forEach(sale => {
           const productId = sale.attributes.product.data.id;
           if (!summary[productId]) {
             summary[productId] = {

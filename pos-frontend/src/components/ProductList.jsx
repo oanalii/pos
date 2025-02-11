@@ -3,7 +3,6 @@ import API from '../services/api';
 import ProductBlock from './ProductBlock';
 import Cart from './Cart';
 import { useNavigate } from 'react-router-dom';
-import SuccessModal from './SuccessModal';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 
 const ID_MAP = {
@@ -111,23 +110,6 @@ function ProductList() {
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
       console.error('Error:', error);
-    }
-  };
-
-  const handleSale = async (saleData) => {
-    try {
-      const response = await API.post('/api/sales/create-with-relation', saleData);
-      console.log('Sale created:', response.data);
-      
-      // Clear the cart
-      setCartItems([]);
-      
-      // Show success message
-      setShowSuccessModal(true);
-      
-    } catch (error) {
-      console.error('Error creating sale:', error);
-      setShowSuccessModal(false);
     }
   };
 
