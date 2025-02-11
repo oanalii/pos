@@ -67,7 +67,7 @@ function App() {
               } 
             />
             <Route path="/admin/sales/:store" element={<AdminSales />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/pos" replace />} />
           </Routes>
         </BrowserRouter>
       </Box>

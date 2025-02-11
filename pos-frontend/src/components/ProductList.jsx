@@ -103,10 +103,30 @@ function ProductList() {
       }
 
       setCartItems([]);
-      navigate('/sales');
+      
+      // Show success message instead
+      setShowSuccessModal(true);
+
     } catch (error) {
       console.error('=== CHECKOUT ERROR ===');
       console.error('Error:', error);
+    }
+  };
+
+  const handleSale = async (saleData) => {
+    try {
+      const response = await API.post('/api/sales/create-with-relation', saleData);
+      console.log('Sale created:', response.data);
+      
+      // Clear the cart
+      setCartItems([]);
+      
+      // Show success message
+      setShowSuccessModal(true);
+      
+    } catch (error) {
+      console.error('Error creating sale:', error);
+      setShowSuccessModal(false);
     }
   };
 

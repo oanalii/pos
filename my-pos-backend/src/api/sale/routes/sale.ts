@@ -4,4 +4,29 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreRouter('api::sale.sale');
+export default {
+  routes: [
+    {
+      method: 'POST',
+      path: '/sales/create-with-relation',
+      handler: 'sale.create',
+      config: {
+        policies: [],
+        auth: {
+          scope: ['create']
+        }
+      }
+    },
+    {
+      method: 'GET',
+      path: '/sales',
+      handler: 'sale.find',
+      config: {
+        policies: [],
+        auth: {
+          scope: ['find']
+        }
+      }
+    }
+  ]
+};
