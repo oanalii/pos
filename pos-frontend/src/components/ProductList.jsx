@@ -4,6 +4,7 @@ import ProductBlock from './ProductBlock';
 import Cart from './Cart';
 import { useNavigate } from 'react-router-dom';
 import SuccessModal from './SuccessModal';
+import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 
 const ID_MAP = {
   'Phone': 1,
@@ -130,6 +131,11 @@ function ProductList() {
     }
   };
 
+  const handlePrintInvoice = () => {
+    setShowSuccessModal(false);
+    navigate('/pos/sales');
+  };
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -241,16 +247,21 @@ function ProductList() {
       </div>
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <SuccessModal
-          items={cartItems}
-          total={cartItems.reduce((sum, item) => sum + parseFloat(item.price), 0)}
-          onClose={() => {
-            setShowSuccessModal(false);
-            setCartItems([]);
-          }}
-        />
-      )}
+      <Dialog open={showSuccessModal} onClose={() => setShowSuccessModal(false)}>
+        <DialogContent>
+          <DialogContentText>
+            Sale completed successfully!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowSuccessModal(false)}>
+            Continue Selling
+          </Button>
+          <Button onClick={handlePrintInvoice} variant="contained" color="primary">
+            Print Invoice
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
