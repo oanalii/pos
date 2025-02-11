@@ -15,20 +15,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Card,
-  CardContent,
-  Grid
+  Paper
 } from '@mui/material';
-
-// Add this constant at the top level
-const PRODUCT_NAMES = {
-  1: 'Phone',
-  3: 'Laptop',
-  5: 'Funda',
-  7: 'Charger',
-  9: 'Figura'
-};
 
 const STORE_IDS = {
   gaudi: 7,
@@ -44,8 +32,6 @@ function AdminSales() {
   const [timeFilter, setTimeFilter] = useState('all');
   const navigate = useNavigate();
   const { store } = useParams();
-  const [salesData, setSalesData] = useState([]);
-  const [productSummary, setProductSummary] = useState([]);
 
   const fetchSales = useCallback(async () => {
     try {
@@ -112,40 +98,6 @@ function AdminSales() {
     fetchSales();
   }, [store, timeFilter, fetchSales]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch all sales for this store
-        const response = await API.get(`/api/sales?filters[store]=${store}&populate=*`);
-        const sales = response.data.data;
-        setSalesData(sales);
-
-        // Calculate product summary
-        const summary = {};
-        sales.forEach(sale => {
-          const productId = sale.attributes.product.data.id;
-          if (!summary[productId]) {
-            summary[productId] = {
-              name: PRODUCT_NAMES[productId],
-              count: 0,
-              totalRevenue: 0
-            };
-          }
-          summary[productId].count += 1;
-          summary[productId].totalRevenue += parseFloat(sale.attributes.Price);
-        });
-
-        setProductSummary(Object.entries(summary));
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching sales data:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [store]);
-
   const handleDownloadInvoice = (sale) => {
     const items = [{
       product: { Product: sale.product.Product },
@@ -210,38 +162,6 @@ function AdminSales() {
             >
               Logout
             </Button>
-          </Box>
-
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Store Sales Summary
-            </Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell align="right">Units Sold</TableCell>
-                    <TableCell align="right">Total Revenue</TableCell>
-                    <TableCell align="right">Average Price</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {productSummary.map(([productId, data]) => (
-                    <TableRow key={productId}>
-                      <TableCell>{data.name}</TableCell>
-                      <TableCell align="right">{data.count}</TableCell>
-                      <TableCell align="right">
-                        €{data.totalRevenue.toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        €{(data.totalRevenue / data.count).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
           </Box>
 
           <TableContainer component={Paper}>
