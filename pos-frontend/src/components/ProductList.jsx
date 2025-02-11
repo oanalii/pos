@@ -97,7 +97,7 @@ function ProductList() {
 
         console.log('Sending sale data:', saleData);
 
-        const response = await API.post('/api/sales/create-with-relation', {
+        await API.post('/api/sales/create-with-relation', {
           data: saleData
         });
       }

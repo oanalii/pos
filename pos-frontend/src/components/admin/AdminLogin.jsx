@@ -11,6 +11,7 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
+import { API_URL } from '../../config';
 
 function AdminLogin() {
   const [identifier, setIdentifier] = useState('');
@@ -25,7 +26,7 @@ function AdminLogin() {
     setError('');
 
     try {
-      const loginResponse = await axios.post('http://localhost:1337/api/auth/local', {
+      const loginResponse = await axios.post(`${API_URL}/api/auth/local`, {
         identifier,
         password,
       });

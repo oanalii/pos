@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
@@ -15,8 +15,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Container
+  Paper
 } from '@mui/material';
 
 const STORE_IDS = {
@@ -34,7 +33,7 @@ function AdminSales() {
   const navigate = useNavigate();
   const { store } = useParams();
 
-  const fetchSales = async () => {
+  const fetchSales = useCallback(async () => {
     try {
       let url = '/api/sales?populate=*';
       
@@ -93,11 +92,11 @@ function AdminSales() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [store, timeFilter]);
 
   useEffect(() => {
     fetchSales();
-  }, [store, timeFilter]);
+  }, [store, timeFilter, fetchSales]);
 
   const handleDownloadInvoice = (sale) => {
     const items = [{
