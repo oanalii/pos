@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { Box, CssBaseline } from '@mui/material';
 import Login from './components/Login';
@@ -34,22 +34,28 @@ const theme = createTheme({
 });
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem('jwtToken');
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline /> {/* Normalizes CSS */}
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <Router>
+        <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route 
               path="/pos" 
-              element={isAuthenticated ? <ProductList /> : <Navigate to="/login" />} 
+              element={
+                <ProtectedRoute>
+                  <ProductList />
+                </ProtectedRoute>
+              } 
             />
             <Route 
               path="/pos/sales" 
-              element={isAuthenticated ? <SalesDashboard /> : <Navigate to="/login" />} 
+              element={
+                <ProtectedRoute>
+                  <SalesDashboard />
+                </ProtectedRoute>
+              } 
             />
             <Route path="/admin" element={<AdminLogin />} />
             <Route 
@@ -61,12 +67,25 @@ function App() {
               } 
             />
             <Route path="/admin/sales/:store" element={<AdminSales />} />
-            <Route path="*" element={<Navigate to="/pos" />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Router>
+        </BrowserRouter>
       </Box>
     </ThemeProvider>
   );
+}
+
+// Protected route component
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('jwtToken');
+  const storeId = localStorage.getItem('storeId');
+  const userId = localStorage.getItem('userId');
+  
+  if (!token || !storeId || !userId) {
+    console.log('Missing auth:', { token: !!token, storeId, userId });
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 }
 
 // Protect admin routes

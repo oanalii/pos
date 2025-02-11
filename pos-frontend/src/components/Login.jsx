@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API from '../services/api';  // Import our API service
 import {
   Box,
   Card,
@@ -25,14 +25,11 @@ function Login() {
     setError('');
 
     try {
-      // First API call - login
-      const loginResponse = await axios.post(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/auth/local`,
-        {
-          identifier,
-          password,
-        }
-      );
+      // Use API service instead of axios directly
+      const loginResponse = await API.post('/api/auth/local', {
+        identifier,
+        password,
+      });
       
       const jwt = loginResponse.data.jwt;
       if (!jwt) {
@@ -41,27 +38,22 @@ function Login() {
       
       localStorage.setItem('jwtToken', jwt);
       
-      // Second API call - get user data with store info
-      const userResponse = await axios.get(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:1337'}/api/users/me?populate=store`,
-        {
-          headers: {
-            Authorization: `Bearer ${jwt}`
-          }
-        }
-      );
-      
+      // Use API service for user data
+      const userResponse = await API.get('/api/users/me?populate=store');
       console.log('User data:', userResponse.data);
       
       if (!userResponse.data.store?.id) {
         throw new Error('User has no assigned store');
       }
 
-      // Save store ID
+      // Save store ID and user ID
       localStorage.setItem('storeId', userResponse.data.store.id);
+      localStorage.setItem('userId', userResponse.data.id);
       console.log('Stored storeId:', userResponse.data.store.id);
+      console.log('Stored userId:', userResponse.data.id);
 
-      navigate('/pos');
+      // Navigate with replace
+      navigate('/pos', { replace: true });
 
     } catch (error) {
       console.error('Login error:', error);
