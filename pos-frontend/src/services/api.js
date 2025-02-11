@@ -1,11 +1,13 @@
-import axios from 'axios';
-import { API_URL } from '../config';
+import axios from 'axios';const API_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:1337'
+  : 'https://api.hgtpos.es';
 
 const API = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false
 });
 
 // Add a request interceptor to add the token to all requests
