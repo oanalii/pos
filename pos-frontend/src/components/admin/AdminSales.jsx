@@ -16,10 +16,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Container,
-  Grid,
-  Card,
-  CardContent
+  Container
 } from '@mui/material';
 
 const STORE_IDS = {
@@ -33,25 +30,8 @@ function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('all');
-  const [productSummary, setProductSummary] = useState({});
   const navigate = useNavigate();
   const { store } = useParams();
-
-  const calculateProductSummary = (salesData) => {
-    const summary = {};
-    salesData.forEach(sale => {
-      const productName = sale.attributes.product.data.attributes.Product;
-      if (!summary[productName]) {
-        summary[productName] = {
-          count: 0,
-          totalRevenue: 0
-        };
-      }
-      summary[productName].count += 1;
-      summary[productName].totalRevenue += parseFloat(sale.attributes.Price);
-    });
-    return summary;
-  };
 
   const fetchSales = async () => {
     try {
@@ -100,10 +80,6 @@ function AdminSales() {
             return true;
         }
       });
-
-      // Calculate product summary
-      const summary = calculateProductSummary(filteredSales);
-      setProductSummary(summary);
 
       // Sort by date (newest first)
       const sortedSales = filteredSales.sort((a, b) => 
@@ -187,37 +163,6 @@ function AdminSales() {
               Logout
             </Button>
           </Box>
-
-          {/* Product Summary Widget */}
-          <Card sx={{ mb: 3, bgcolor: '#f8fafc' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Product Sales Summary
-              </Typography>
-              <Grid container spacing={2}>
-                {Object.entries(productSummary).map(([product, data]) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={product}>
-                    <Card sx={{ 
-                      bgcolor: 'white',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>
-                      <CardContent>
-                        <Typography variant="h6" color="primary">
-                          {product}
-                        </Typography>
-                        <Typography variant="body1">
-                          Units Sold: <strong>{data.count}</strong>
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Revenue: €{data.totalRevenue.toFixed(2)}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </CardContent>
-          </Card>
 
           <TableContainer component={Paper}>
             <Table>

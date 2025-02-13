@@ -11,12 +11,14 @@ import {
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
     { name: 'General', path: '/admin/sales', icon: <DashboardIcon /> },
+    { name: 'Product Stats', path: '/admin/product-stats', icon: <BarChartIcon /> },
     { name: 'Gaudi', path: '/admin/sales/gaudi', icon: <StoreIcon /> },
     { name: 'Paralel', path: '/admin/sales/paralel', icon: <StoreIcon /> },
     { name: 'Mallorca', path: '/admin/sales/mallorca', icon: <StoreIcon /> },

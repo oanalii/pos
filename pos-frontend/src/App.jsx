@@ -6,6 +6,7 @@ import ProductList from './components/ProductList';
 import SalesDashboard from './components/SalesDashboard';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminSales from './components/admin/AdminSales';
+import ProductStats from './components/admin/ProductStats';
 
 // Create a custom theme
 const theme = createTheme({
@@ -67,6 +68,14 @@ function App() {
               } 
             />
             <Route path="/admin/sales/:store" element={<AdminSales />} />
+            <Route 
+              path="/admin/product-stats" 
+              element={
+                <AdminProtectedRoute>
+                  <ProductStats />
+                </AdminProtectedRoute>
+              } 
+            />
             <Route path="*" element={<Navigate to="/pos" replace />} />
           </Routes>
         </BrowserRouter>
