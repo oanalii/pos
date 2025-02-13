@@ -22,24 +22,26 @@ function ProductStats() {
       try {
         // Get all products first
         const productsResponse = await API.get('/api/products');
-        const products = productsResponse.data.data;
-
-        // Initialize stats for each product
-        const stats = products.map(product => ({
-          id: product.id,
-          name: product.attributes.Product,
-          count: 0,
-          totalRevenue: 0
-        }));
+        console.log('Products response:', productsResponse.data);
 
         // Get all sales
         const salesResponse = await API.get('/api/sales');
-        const sales = salesResponse.data.data;
+        console.log('Sales response:', salesResponse.data);
 
-        // Calculate stats
-        sales.forEach(sale => {
+        // Map products to their stats
+        const stats = [
+          { id: 1, name: "Phone", count: 0, totalRevenue: 0 },
+          { id: 3, name: "Laptop", count: 0, totalRevenue: 0 },
+          { id: 5, name: "Funda", count: 0, totalRevenue: 0 },
+          { id: 7, name: "Charger", count: 0, totalRevenue: 0 },
+          { id: 9, name: "Figura", count: 0, totalRevenue: 0 },
+          { id: 11, name: "Custom", count: 0, totalRevenue: 0 }
+        ];
+
+        // Process each sale
+        salesResponse.data.data.forEach(sale => {
           const productId = sale.attributes.product;
-          const price = parseFloat(sale.attributes.Price);
+          const price = parseFloat(sale.attributes.Price || 0);
 
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
