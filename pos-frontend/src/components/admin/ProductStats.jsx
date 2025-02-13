@@ -20,8 +20,21 @@ function ProductStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        console.log('API URL:', API.defaults.baseURL); // Debug API URL
+        
         const response = await API.get('/api/sales?populate=*');
         console.log('Raw sales data:', response.data);
+        
+        // Check data structure
+        if (!response.data?.data?.length) {
+          console.error('No sales data received');
+          setLoading(false);
+          return;
+        }
+
+        // Log first sale for debugging
+        console.log('First sale:', response.data.data[0]);
+        
         const sales = response.data.data;
 
         // Create stats object
