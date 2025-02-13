@@ -17,55 +17,34 @@ function ProductStats() {
   const [productStats, setProductStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Product IDs and their names
-  const PRODUCTS = {
-    1: 'Phone',
-    3: 'Laptop',
-    5: 'Funda',
-    7: 'Charger',
-    9: 'Figura',
-    11: 'Custom'
-  };
-
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await API.get('/api/sales');
         const sales = response.data.data;
-        
-        console.log('Raw sales data:', sales[0]); // Let's see the structure of a single sale
 
-        // Calculate stats for each product
-        const stats = Object.entries(PRODUCTS).map(([id, name]) => {
-          // Filter sales for this product
-          const productSales = sales.filter(sale => {
-            // Debug log to see what we're filtering
-            console.log('Checking sale:', {
-              saleId: sale.id,
-              productId: sale.attributes?.product,
-              lookingFor: parseInt(id)
-            });
-            
-            return sale.attributes?.product === parseInt(id);
-          });
-          
-          // Log matches for this product
-          console.log(`Found ${productSales.length} sales for ${name}`);
-          
-          // Calculate total revenue
-          const totalRevenue = productSales.reduce((sum, sale) => 
-            sum + parseFloat(sale.attributes?.Price || 0), 0
-          );
+        // Simple stats calculation
+        const stats = [
+          { id: 1, name: 'Phone', count: 0, totalRevenue: 0 },
+          { id: 3, name: 'Laptop', count: 0, totalRevenue: 0 },
+          { id: 5, name: 'Funda', count: 0, totalRevenue: 0 },
+          { id: 7, name: 'Charger', count: 0, totalRevenue: 0 },
+          { id: 9, name: 'Figura', count: 0, totalRevenue: 0 },
+          { id: 11, name: 'Custom', count: 0, totalRevenue: 0 }
+        ];
 
-          return {
-            id: parseInt(id),
-            name,
-            count: productSales.length,
-            totalRevenue
-          };
+        // Count and sum
+        sales.forEach(sale => {
+          const product = sale.product;
+          const price = parseFloat(sale.Price || 0);
+          
+          const statItem = stats.find(s => s.id === product);
+          if (statItem) {
+            statItem.count += 1;
+            statItem.totalRevenue += price;
+          }
         });
 
-        console.log('Final stats:', stats);
         setProductStats(stats);
       } catch (error) {
         console.error('Error:', error);
