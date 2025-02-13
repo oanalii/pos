@@ -20,22 +20,17 @@ function ProductStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await API.get('/api/sales?populate=*');
+        const response = await API.get('/api/sales');
         const sales = response.data.data;
-
-        // Debug first sale
-        console.log('Sample sale:', sales[0]);
 
         // Create stats object
         const stats = {};
         
         sales.forEach(sale => {
-          // Get product ID from the correct path
-          const productId = sale.attributes?.product?.data?.id;
-          if (!productId) {
-            console.log('Sale with no product ID:', sale);
-            return;
-          }
+          // Skip sales with no product
+          if (!sale.product) return;
+
+          const productId = sale.product;
 
           // Initialize if not exists
           if (!stats[productId]) {
@@ -47,10 +42,9 @@ function ProductStats() {
           }
 
           stats[productId].count += 1;
-          stats[productId].totalRevenue += parseFloat(sale.attributes.Price || 0);
+          stats[productId].totalRevenue += parseFloat(sale.Price || 0);
         });
 
-        // Convert to array and sort by product name
         const statsArray = Object.entries(stats)
           .map(([id, data]) => ({
             id: parseInt(id),
@@ -58,10 +52,9 @@ function ProductStats() {
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
 
-        console.log('Processed stats:', statsArray);
         setProductStats(statsArray);
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Error:', error);
       } finally {
         setLoading(false);
       }
