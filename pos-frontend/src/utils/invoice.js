@@ -41,8 +41,11 @@ export const generateInvoice = (items, total) => {
   let yPos = 110;
   items.forEach(item => {
     doc.text(item.product.Product, 20, yPos);
+    doc.setFontSize(8);
+    doc.text(item.description || '', 20, yPos + 4);
+    doc.setFontSize(10);
     doc.text(`€${item.price.toFixed(2)}`, 150, yPos);
-    yPos += 10;
+    yPos += 12;
   });
 
   // Total

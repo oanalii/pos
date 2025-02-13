@@ -68,6 +68,15 @@ function ProductList() {
     setCartItems(cartItems.filter((_, i) => i !== index));
   };
 
+  const handlePriceSubmit = ({ price, description, product }) => {
+    setCartItems(prev => [...prev, {
+      product,
+      price,
+      description
+    }]);
+    setSelectedProduct(null);
+  };
+
   const handleCheckout = async () => {
     try {
       console.log('=== STARTING CHECKOUT ===');
@@ -93,6 +102,7 @@ function ProductList() {
           Time: new Date().toISOString(),
           store: storeId,
           product: item.product.id,
+          Description: item.description,
           orderGroupId
         };
 

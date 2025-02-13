@@ -34,9 +34,18 @@ function Cart({ items, removeFromCart, checkout }) {
             borderRadius: '12px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
           }}>
-            <span style={{ fontSize: '18px', fontWeight: '500' }}>
-              {item.product.Product}
-            </span>
+            <div>
+              <span style={{ fontSize: '18px', fontWeight: '500' }}>
+                {item.product.Product}
+              </span>
+              <span style={{ 
+                fontSize: '14px', 
+                color: '#666',
+                display: 'block' 
+              }}>
+                {item.description}
+              </span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ 
                 fontSize: '18px', 
