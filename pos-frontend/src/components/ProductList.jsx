@@ -4,6 +4,7 @@ import ProductBlock from './ProductBlock';
 import Cart from './Cart';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import PriceModal from './PriceModal';
 
 const ID_MAP = {
   'Phone': 1,
@@ -31,6 +32,7 @@ function ProductList() {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -127,6 +129,10 @@ function ProductList() {
   const handlePrintInvoice = () => {
     setShowSuccessModal(false);
     navigate('/pos/sales');
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
   };
 
   return (
@@ -255,6 +261,14 @@ function ProductList() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add PriceModal */}
+      <PriceModal
+        open={selectedProduct !== null}
+        onClose={() => setSelectedProduct(null)}
+        onSubmit={handlePriceSubmit}
+        product={selectedProduct}
+      />
     </div>
   );
 }
