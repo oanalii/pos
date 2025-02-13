@@ -17,42 +17,39 @@ function ProductStats() {
   const [productStats, setProductStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Product IDs and their names
+  const PRODUCTS = {
+    1: 'Phone',
+    3: 'Laptop',
+    5: 'Funda',
+    7: 'Charger',
+    9: 'Figura',
+    11: 'Custom'
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await API.get('/api/sales');
         const sales = response.data.data;
 
-        // Create stats object
-        const stats = {};
-        
-        sales.forEach(sale => {
-          // Skip sales with no product
-          if (!sale.product) return;
+        // Calculate stats for each product
+        const stats = Object.entries(PRODUCTS).map(([id, name]) => {
+          // Filter sales for this product
+          const productSales = sales.filter(sale => sale.product === parseInt(id));
+          
+          // Calculate total revenue
+          const totalRevenue = productSales.reduce((sum, sale) => sum + parseFloat(sale.Price), 0);
 
-          const productId = sale.product;
-
-          // Initialize if not exists
-          if (!stats[productId]) {
-            stats[productId] = {
-              name: getProductName(productId),
-              count: 0,
-              totalRevenue: 0
-            };
-          }
-
-          stats[productId].count += 1;
-          stats[productId].totalRevenue += parseFloat(sale.Price || 0);
+          return {
+            id: parseInt(id),
+            name,
+            count: productSales.length,
+            totalRevenue
+          };
         });
 
-        const statsArray = Object.entries(stats)
-          .map(([id, data]) => ({
-            id: parseInt(id),
-            ...data
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setProductStats(statsArray);
+        setProductStats(stats);
       } catch (error) {
         console.error('Error:', error);
       } finally {
@@ -62,27 +59,6 @@ function ProductStats() {
 
     fetchStats();
   }, []);
-
-  // Helper function to get product name based on ID
-  const getProductName = (id) => {
-    const idNum = parseInt(id);
-    switch (idNum) {
-      case 1:
-        return 'Phone';
-      case 3:
-        return 'Laptop';
-      case 5:
-        return 'Funda';
-      case 7:
-        return 'Charger';
-      case 9:
-        return 'Figura';
-      case 11:
-        return 'Custom';
-      default:
-        return `Product ${id}`;
-    }
-  };
 
   if (loading) {
     return (
