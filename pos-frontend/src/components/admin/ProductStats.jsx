@@ -21,12 +21,16 @@ function ProductStats() {
     const fetchStats = async () => {
       try {
         const response = await API.get('/api/sales?populate=*');
+        console.log('Raw sales data:', response.data);
         const sales = response.data.data;
 
         // Create stats object
         const stats = {};
         
         sales.forEach(sale => {
+          // Handle the correct data structure
+          if (!sale.attributes?.product?.data) return;
+
           const productId = sale.attributes.product.data.id;
           const productName = sale.attributes.product.data.attributes.Product;
           const price = parseFloat(sale.attributes.Price);
@@ -43,16 +47,20 @@ function ProductStats() {
           stats[productId].totalRevenue += price;
         });
 
-        // Convert to array for easier rendering
-        const statsArray = Object.entries(stats).map(([id, data]) => ({
-          id,
-          ...data
-        }));
+        // Convert to array and sort by product name
+        const statsArray = Object.entries(stats)
+          .map(([id, data]) => ({
+            id,
+            ...data
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
 
+        console.log('Processed stats:', statsArray);
         setProductStats(statsArray);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching stats:', error);
+        console.error('Full error:', error.response?.data || error);
         setLoading(false);
       }
     };
@@ -97,13 +105,21 @@ function ProductStats() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {productStats.map((stat) => (
-                  <TableRow key={stat.id}>
-                    <TableCell>{stat.name}</TableCell>
-                    <TableCell align="right">{stat.count}</TableCell>
-                    <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
+                {productStats.length > 0 ? (
+                  productStats.map((stat) => (
+                    <TableRow key={stat.id}>
+                      <TableCell>{stat.name}</TableCell>
+                      <TableCell align="right">{stat.count}</TableCell>
+                      <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No sales data found
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </TableContainer>
