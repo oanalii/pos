@@ -23,31 +23,37 @@ function ProductStats() {
         const response = await API.get('/api/sales?populate=*');
         const sales = response.data.data;
 
+        // Debug first sale
+        console.log('Sample sale:', sales[0]);
+
         // Create stats object
         const stats = {};
         
         sales.forEach(sale => {
-          // Get product ID from the sale
-          const productId = sale.product?.data?.id || sale.product;
-          if (!productId) return;
+          // Get product ID from the correct path
+          const productId = sale.attributes?.product?.data?.id;
+          if (!productId) {
+            console.log('Sale with no product ID:', sale);
+            return;
+          }
 
           // Initialize if not exists
           if (!stats[productId]) {
             stats[productId] = {
-              name: getProductName(productId), // Helper function below
+              name: getProductName(productId),
               count: 0,
               totalRevenue: 0
             };
           }
 
           stats[productId].count += 1;
-          stats[productId].totalRevenue += parseFloat(sale.Price || 0);
+          stats[productId].totalRevenue += parseFloat(sale.attributes.Price || 0);
         });
 
         // Convert to array and sort by product name
         const statsArray = Object.entries(stats)
           .map(([id, data]) => ({
-            id,
+            id: parseInt(id),
             ...data
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
@@ -66,23 +72,18 @@ function ProductStats() {
 
   // Helper function to get product name based on ID
   const getProductName = (id) => {
-    switch (id) {
-      case '1':
+    const idNum = parseInt(id);
+    switch (idNum) {
       case 1:
         return 'Phone';
-      case '3':
       case 3:
         return 'Laptop';
-      case '5':
       case 5:
         return 'Funda';
-      case '7':
       case 7:
         return 'Charger';
-      case '9':
       case 9:
         return 'Figura';
-      case '11':
       case 11:
         return 'Custom';
       default:
