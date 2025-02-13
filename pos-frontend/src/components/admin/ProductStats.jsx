@@ -20,44 +20,28 @@ function ProductStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        console.log('API URL:', API.defaults.baseURL); // Debug API URL
-        
         const response = await API.get('/api/sales?populate=*');
-        console.log('Raw sales data:', response.data);
-        
-        // Check data structure
-        if (!response.data?.data?.length) {
-          console.error('No sales data received');
-          setLoading(false);
-          return;
-        }
-
-        // Log first sale for debugging
-        console.log('First sale:', response.data.data[0]);
-        
         const sales = response.data.data;
 
         // Create stats object
         const stats = {};
         
         sales.forEach(sale => {
-          // Handle the correct data structure
-          if (!sale.attributes?.product?.data) return;
+          // Get product ID from the sale
+          const productId = sale.product?.data?.id || sale.product;
+          if (!productId) return;
 
-          const productId = sale.attributes.product.data.id;
-          const productName = sale.attributes.product.data.attributes.Product;
-          const price = parseFloat(sale.attributes.Price);
-
+          // Initialize if not exists
           if (!stats[productId]) {
             stats[productId] = {
-              name: productName,
+              name: getProductName(productId), // Helper function below
               count: 0,
               totalRevenue: 0
             };
           }
 
           stats[productId].count += 1;
-          stats[productId].totalRevenue += price;
+          stats[productId].totalRevenue += parseFloat(sale.Price || 0);
         });
 
         // Convert to array and sort by product name
@@ -70,16 +54,41 @@ function ProductStats() {
 
         console.log('Processed stats:', statsArray);
         setProductStats(statsArray);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching stats:', error);
-        console.error('Full error:', error.response?.data || error);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchStats();
   }, []);
+
+  // Helper function to get product name based on ID
+  const getProductName = (id) => {
+    switch (id) {
+      case '1':
+      case 1:
+        return 'Phone';
+      case '3':
+      case 3:
+        return 'Laptop';
+      case '5':
+      case 5:
+        return 'Funda';
+      case '7':
+      case 7:
+        return 'Charger';
+      case '9':
+      case 9:
+        return 'Figura';
+      case '11':
+      case 11:
+        return 'Custom';
+      default:
+        return `Product ${id}`;
+    }
+  };
 
   if (loading) {
     return (
