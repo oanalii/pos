@@ -20,13 +20,13 @@ function ProductStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get all products first
-        const productsResponse = await API.get('/api/products');
-        console.log('Products response:', productsResponse.data);
-
         // Get all sales
         const salesResponse = await API.get('/api/sales');
-        console.log('Sales response:', salesResponse.data);
+        const sales = salesResponse.data.data;
+
+        // Log the first sale to see its structure
+        console.log('First sale:', sales[0]);
+        console.log('First sale attributes:', sales[0].attributes);
 
         // Map products to their stats
         const stats = [
@@ -39,8 +39,17 @@ function ProductStats() {
         ];
 
         // Process each sale
-        salesResponse.data.data.forEach(sale => {
-          const productId = sale.attributes.product;
+        sales.forEach(sale => {
+          if (!sale.attributes) return;
+
+          // Log each sale's product ID and price
+          console.log('Processing sale:', {
+            id: sale.id,
+            productId: sale.attributes.product,
+            price: sale.attributes.Price
+          });
+
+          const productId = parseInt(sale.attributes.product);
           const price = parseFloat(sale.attributes.Price || 0);
 
           const productStat = stats.find(s => s.id === productId);
