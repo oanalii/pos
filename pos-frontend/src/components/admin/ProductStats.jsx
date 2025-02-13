@@ -32,14 +32,30 @@ function ProductStats() {
       try {
         const response = await API.get('/api/sales');
         const sales = response.data.data;
+        
+        console.log('Raw sales data:', sales[0]); // Let's see the structure of a single sale
 
         // Calculate stats for each product
         const stats = Object.entries(PRODUCTS).map(([id, name]) => {
           // Filter sales for this product
-          const productSales = sales.filter(sale => sale.product === parseInt(id));
+          const productSales = sales.filter(sale => {
+            // Debug log to see what we're filtering
+            console.log('Checking sale:', {
+              saleId: sale.id,
+              productId: sale.attributes?.product,
+              lookingFor: parseInt(id)
+            });
+            
+            return sale.attributes?.product === parseInt(id);
+          });
+          
+          // Log matches for this product
+          console.log(`Found ${productSales.length} sales for ${name}`);
           
           // Calculate total revenue
-          const totalRevenue = productSales.reduce((sum, sale) => sum + parseFloat(sale.Price), 0);
+          const totalRevenue = productSales.reduce((sum, sale) => 
+            sum + parseFloat(sale.attributes?.Price || 0), 0
+          );
 
           return {
             id: parseInt(id),
@@ -49,6 +65,7 @@ function ProductStats() {
           };
         });
 
+        console.log('Final stats:', stats);
         setProductStats(stats);
       } catch (error) {
         console.error('Error:', error);
