@@ -20,6 +20,7 @@ interface Sale {
   id: number;
   Price: number;
   Time: string;
+  description?: string;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +75,7 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
           Time: data.Time,
           store: data.store,
           product: data.product,
+          description: data.Description,
           publishedAt: new Date()
         },
         populate: ['store', 'product']

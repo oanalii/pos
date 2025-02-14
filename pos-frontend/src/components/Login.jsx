@@ -25,36 +25,16 @@ function Login() {
     setError('');
 
     try {
-      // Use API service instead of axios directly
-      const loginResponse = await API.post('/api/auth/local', {
-        identifier,
-        password,
+      const response = await API.post('/api/auth/local', {
+        identifier: identifier,
+        password: password
       });
-      
-      const jwt = loginResponse.data.jwt;
-      if (!jwt) {
-        throw new Error('No JWT received');
+
+      if (response.data.jwt) {
+        localStorage.setItem('jwtToken', response.data.jwt);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        navigate('/products');
       }
-      
-      localStorage.setItem('jwtToken', jwt);
-      
-      // Use API service for user data
-      const userResponse = await API.get('/api/users/me?populate=store');
-      console.log('User data:', userResponse.data);
-      
-      if (!userResponse.data.store?.id) {
-        throw new Error('User has no assigned store');
-      }
-
-      // Save store ID and user ID
-      localStorage.setItem('storeId', userResponse.data.store.id);
-      localStorage.setItem('userId', userResponse.data.id);
-      console.log('Stored storeId:', userResponse.data.store.id);
-      console.log('Stored userId:', userResponse.data.id);
-
-      // Navigate with replace
-      navigate('/pos', { replace: true });
-
     } catch (error) {
       console.error('Login error:', error);
       setError(error.response?.data?.error?.message || 'Login failed. Please try again.');

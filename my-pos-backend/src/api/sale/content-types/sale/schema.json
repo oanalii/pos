@@ -18,6 +18,9 @@
     "Time": {
       "type": "datetime"
     },
+    "description": {
+      "type": "text"
+    },
     "store": {
       "type": "relation",
       "relation": "manyToOne",
