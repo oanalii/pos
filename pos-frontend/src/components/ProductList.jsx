@@ -71,21 +71,32 @@ function ProductList() {
   };
 
   const handlePriceSubmit = ({ price, description, product }) => {
-    console.log('Price Modal submitted:', { price, description, product });
     setCartItems(prev => [...prev, {
       product,
       price,
-      description  // Make sure description is included here
+      description
     }]);
     setSelectedProduct(null);
   };
 
   const handleCheckout = async () => {
     try {
-      const storeId = Number(localStorage.getItem('storeId'));
-      const orderGroupId = crypto.randomUUID();
+      console.log('=== STARTING CHECKOUT ===');
+      
+      const rawStoreId = localStorage.getItem('storeId');
+      console.log('Raw storeId from localStorage:', rawStoreId);
+      
+      const storeId = Number(rawStoreId);
+      console.log('Converted storeId:', storeId);
+      
+      if (!storeId || isNaN(storeId)) {
+        console.error('Invalid store ID:', storeId);
+        alert('Error: No store ID found. Please log in again.');
+        navigate('/login');
+        return;
+      }
 
-      console.log('Cart items before checkout:', cartItems);
+      const orderGroupId = crypto.randomUUID();
 
       for (const item of cartItems) {
         const saleData = {
@@ -97,19 +108,21 @@ function ProductList() {
           orderGroupId
         };
 
-        console.log('Sending sale data to Strapi:', saleData);
+        console.log('Sending sale data:', saleData);
 
-        const response = await API.post('/api/sales/create-with-relation', {
+        await API.post('/api/sales/create-with-relation', {
           data: saleData
         });
-
-        console.log('Strapi response:', response.data);
       }
 
       setCartItems([]);
+      
+      // Show success message instead
       setShowSuccessModal(true);
+
     } catch (error) {
-      console.error('Checkout error:', error);
+      console.error('=== CHECKOUT ERROR ===');
+      console.error('Error:', error);
     }
   };
 

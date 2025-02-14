@@ -20,7 +20,6 @@ interface Sale {
   id: number;
   Price: number;
   Time: string;
-  Description: string;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -42,13 +41,13 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
     try {
       const query: any = {
         ...ctx.query,
-        populate: '*'
+        populate: ['product', 'store']
       };
 
       // Get sales using the core controller
       const entries = await strapi.entityService.findMany('api::sale.sale', {
         filters: query.filters,
-        populate: '*',
+        populate: query.populate,
         sort: { createdAt: 'desc' }
       });
 
@@ -66,10 +65,7 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
   async createWithRelation(ctx) {
     try {
       const { data } = ctx.request.body;
-      
-      // Log the schema
-      const schema = await strapi.db.metadata.get('api::sale.sale');
-      console.log('Sale schema:', schema);
+      console.log('Creating sale with data:', data);
 
       // Create sale first
       const sale = await strapi.entityService.create('api::sale.sale', {
@@ -78,25 +74,12 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
           Time: data.Time,
           store: data.store,
           product: data.product,
-          Description: data.Description,
           publishedAt: new Date()
         },
-        populate: '*'
+        populate: ['store', 'product']
       }) as Sale;
 
-      // Log the raw sale data
-      const rawSale = await strapi.db.query('api::sale.sale').findOne({
-        where: { id: sale.id },
-        populate: '*'
-      });
-      console.log('Raw sale data:', rawSale);
-
-      console.log('Created sale details:', {
-        id: sale.id,
-        Price: sale.Price,
-        Description: sale.Description,
-        Time: sale.Time
-      });
+      console.log('Created sale with ID:', sale.id);
 
       // Create invoice with sale.id - 1
       const invoiceData = {

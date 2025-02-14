@@ -9,7 +9,7 @@ export default {
     {
       method: 'POST',
       path: '/sales/create-with-relation',
-      handler: 'sale.createWithRelation',
+      handler: 'sale.create',
       config: {
         policies: [],
         auth: {

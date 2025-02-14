@@ -43,8 +43,6 @@ function AdminSales() {
       }
 
       const response = await API.get(url);
-      console.log('Raw sales response:', response.data);
-      
       let filteredSales = response.data.data;
 
       // Apply time filter
@@ -88,16 +86,7 @@ function AdminSales() {
         new Date(b.Time).getTime() - new Date(a.Time).getTime()
       );
       
-      // Strapi v4 returns data in a specific format - we need to transform it
-      const formattedSales = sortedSales.map(sale => ({
-        id: sale.id,
-        ...sale.attributes,
-        product: sale.attributes.product?.data?.attributes,
-        store: sale.attributes.store?.data?.attributes
-      }));
-      
-      console.log('Formatted sales:', formattedSales);
-      setSales(formattedSales);
+      setSales(sortedSales);
     } catch (error) {
       console.error('Error fetching sales:', error);
     } finally {
@@ -183,7 +172,6 @@ function AdminSales() {
                   <TableCell>Date</TableCell>
                   <TableCell>Time</TableCell>
                   <TableCell>Product</TableCell>
-                  <TableCell>Description</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -196,7 +184,6 @@ function AdminSales() {
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                       <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
                       <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                      <TableCell>{sale.Description || 'N/A'}</TableCell>
                       <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>
                         <Button
@@ -211,7 +198,7 @@ function AdminSales() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={6} align="center">
                       No sales records found
                     </TableCell>
                   </TableRow>

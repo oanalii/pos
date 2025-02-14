@@ -13,8 +13,6 @@ function ProductBlock({ product, onAddToCart, onClick }) {
     onAddToCart(product, price);
   };
 
-  if (!product) return null;
-
   return (
     <>
       <div 
@@ -51,13 +49,13 @@ function ProductBlock({ product, onAddToCart, onClick }) {
           transition: 'opacity 0.3s ease'
         }} />
         
-        <h3 style={{
-          margin: 0,
+        <span style={{ 
           fontSize: '18px',
-          fontWeight: '500'
+          fontWeight: '600',
+          color: '#1F2937'
         }}>
           {product.Product}
-        </h3>
+        </span>
       </div>
 
       {showModal && (
