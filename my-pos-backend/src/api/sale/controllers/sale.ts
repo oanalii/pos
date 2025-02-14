@@ -20,7 +20,6 @@ interface Sale {
   id: number;
   Price: number;
   Time: string;
-  description?: string;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
