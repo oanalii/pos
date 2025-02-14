@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PriceModal from './PriceModal';
 
-function ProductBlock({ product, onAddToCart }) {
+function ProductBlock({ product, onAddToCart, onClick }) {
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -13,10 +13,12 @@ function ProductBlock({ product, onAddToCart }) {
     onAddToCart(product, price);
   };
 
+  if (!product) return null;
+
   return (
     <>
       <div 
-        onClick={handleClick}
+        onClick={() => onClick(product)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{ 
@@ -49,13 +51,13 @@ function ProductBlock({ product, onAddToCart }) {
           transition: 'opacity 0.3s ease'
         }} />
         
-        <span style={{ 
+        <h3 style={{
+          margin: 0,
           fontSize: '18px',
-          fontWeight: '600',
-          color: '#1F2937'
+          fontWeight: '500'
         }}>
           {product.Product}
-        </span>
+        </h3>
       </div>
 
       {showModal && (

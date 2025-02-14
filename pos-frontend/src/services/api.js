@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:1337'
-    : 'https://api.hgtpos.es',
+  baseURL: 'https://api.hgtpos.es',  // Always use production backend
   headers: {
     'Content-Type': 'application/json',
   },

@@ -71,32 +71,21 @@ function ProductList() {
   };
 
   const handlePriceSubmit = ({ price, description, product }) => {
+    console.log('Price Modal submitted:', { price, description, product });
     setCartItems(prev => [...prev, {
       product,
       price,
-      description
+      description  // Make sure description is included here
     }]);
     setSelectedProduct(null);
   };
 
   const handleCheckout = async () => {
     try {
-      console.log('=== STARTING CHECKOUT ===');
-      
-      const rawStoreId = localStorage.getItem('storeId');
-      console.log('Raw storeId from localStorage:', rawStoreId);
-      
-      const storeId = Number(rawStoreId);
-      console.log('Converted storeId:', storeId);
-      
-      if (!storeId || isNaN(storeId)) {
-        console.error('Invalid store ID:', storeId);
-        alert('Error: No store ID found. Please log in again.');
-        navigate('/login');
-        return;
-      }
-
+      const storeId = Number(localStorage.getItem('storeId'));
       const orderGroupId = crypto.randomUUID();
+
+      console.log('Cart items before checkout:', cartItems);
 
       for (const item of cartItems) {
         const saleData = {
@@ -108,21 +97,19 @@ function ProductList() {
           orderGroupId
         };
 
-        console.log('Sending sale data:', saleData);
+        console.log('Sending sale data to Strapi:', saleData);
 
-        await API.post('/api/sales/create-with-relation', {
+        const response = await API.post('/api/sales/create-with-relation', {
           data: saleData
         });
+
+        console.log('Strapi response:', response.data);
       }
 
       setCartItems([]);
-      
-      // Show success message instead
       setShowSuccessModal(true);
-
     } catch (error) {
-      console.error('=== CHECKOUT ERROR ===');
-      console.error('Error:', error);
+      console.error('Checkout error:', error);
     }
   };
 
@@ -221,7 +208,7 @@ function ProductList() {
               <ProductBlock 
                 key={product.id} 
                 product={product}
-                onAddToCart={addToCart}
+                onClick={handleProductClick}
               />
             ))}
           </div>

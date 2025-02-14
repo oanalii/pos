@@ -13,10 +13,17 @@
   "pluginOptions": {},
   "attributes": {
     "Price": {
-      "type": "decimal"
+      "type": "decimal",
+      "required": true
     },
     "Time": {
-      "type": "datetime"
+      "type": "datetime",
+      "required": true
+    },
+    "Description": {
+      "type": "text",
+      "required": false,
+      "visible": true
     },
     "store": {
       "type": "relation",
