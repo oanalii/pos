@@ -46,13 +46,18 @@ function SalesDashboard() {
     const saleTime = new Date(sale.Time).getTime();
     const relatedSales = sales.filter(s => {
       const timeDiff = Math.abs(new Date(s.Time).getTime() - saleTime);
-      return timeDiff < 1000; // Within 1 second (store filter not needed here since we only see our store)
+      return timeDiff < 1000;
     });
+    
+    console.log('Related sales with description:', relatedSales);
     
     const items = relatedSales.map(s => ({
       product: { Product: s.product.Product },
-      price: s.Price
+      price: s.Price,
+      description: s.Description
     }));
+    
+    console.log('Items for invoice:', items);
     
     const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
     
