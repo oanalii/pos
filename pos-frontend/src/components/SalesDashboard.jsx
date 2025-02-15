@@ -54,7 +54,7 @@ function SalesDashboard() {
     const items = relatedSales.map(s => ({
       product: { Product: s.product.Product },
       price: s.Price,
-      description: s.Description
+      description: s.description
     }));
     
     console.log('Items for invoice:', items);
