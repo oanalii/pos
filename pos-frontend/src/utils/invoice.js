@@ -23,11 +23,11 @@ export const generateInvoice = async (items, total) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text('Calle Hospital, 14, 08001, Barcelona, España', 20, 57);
-  doc.text('Teléfono: 34933297250', 20, 57);
-  doc.text('Web: www.hgtonline.es', 20, 64);
-  doc.text('Email: info@hgtonline.es', 20, 71);
-  doc.text('CIF/NIF: B44726511', 20, 78);
-  doc.text('NIF: ESB44726511', 20, 85);
+  doc.text('Teléfono: 34933297250', 20, 64);
+  doc.text('Web: www.hgtonline.es', 20, 71);
+  doc.text('Email: info@hgtonline.es', 20, 78);
+  doc.text('CIF/NIF: B44726511', 20, 85);
+  doc.text('NIF: ESB44726511', 20, 92);
 
   // Receipt info (right side)
   doc.setFont('helvetica', 'bold');
@@ -66,6 +66,10 @@ export const generateInvoice = async (items, total) => {
   doc.setFont('helvetica', 'bold');
   doc.text('Total:', 120, yPos + 15);
   doc.text(`€${total.toFixed(2)}`, 150, yPos + 15);
+
+  // Thank you message
+  doc.setFont('helvetica', 'normal');
+  doc.text('¡Muchas gracias por su compra!', 20, yPos + 30);
 
   // Save the PDF
   doc.save('recibo.pdf');
