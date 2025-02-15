@@ -40,16 +40,16 @@ export const generateInvoice = async (items, total) => {
   doc.text(`${currentDate} ${currentTime}`, 150, 57);
   doc.text(`Factura #${nextInvoiceNumber.toString().padStart(6, '0')}`, 150, 64);
 
-  // Products table with lines
+  // Products table with lines - increased margin from NIF
   doc.setFontSize(10);
-  doc.text('Producto', 20, 100);
-  doc.text('Precio', 150, 100);
+  doc.text('Producto', 20, 120);  // Moved down from 100 to 120
+  doc.text('Precio', 150, 120);   // Moved down to match
   
-  // Add top line
+  // Add top line - moved down
   doc.setLineWidth(0.5);
-  doc.line(20, 105, 190, 105);
+  doc.line(20, 125, 190, 125);    // Moved down from 105 to 125
   
-  let yPos = 110;
+  let yPos = 130;                 // Moved down from 110 to 130
   items.forEach(item => {
     doc.text(item.product.Product, 20, yPos);
     doc.setFontSize(8);
@@ -67,9 +67,12 @@ export const generateInvoice = async (items, total) => {
   doc.text('Total:', 120, yPos + 15);
   doc.text(`€${total.toFixed(2)}`, 150, yPos + 15);
 
-  // Thank you message
+  // Thank you message - centered at bottom
   doc.setFont('helvetica', 'normal');
-  doc.text('¡Muchas gracias por su compra!', 20, yPos + 30);
+  const thankYouText = '¡Muchas gracias por su compra!';
+  const textWidth = doc.getStringUnitWidth(thankYouText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const textX = (doc.internal.pageSize.width - textWidth) / 2;
+  doc.text(thankYouText, textX, 270);  // Fixed Y position near bottom of page
 
   // Save the PDF
   doc.save('recibo.pdf');
