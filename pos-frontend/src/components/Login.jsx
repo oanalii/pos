@@ -31,13 +31,33 @@ function Login() {
       });
 
       if (response.data.jwt) {
+        // Store JWT
         localStorage.setItem('jwtToken', response.data.jwt);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        navigate('/products');
+        
+        // Get user data with store info
+        const userResponse = await API.get('/api/users/me?populate=*', {
+          headers: {
+            Authorization: `Bearer ${response.data.jwt}`
+          }
+        });
+        
+        const userData = userResponse.data;
+        
+        // Store user and store IDs
+        localStorage.setItem('userId', userData.id);
+        if (userData.store) {
+          localStorage.setItem('storeId', userData.store.id);
+          navigate('/pos');  // Navigate to POS if store exists
+        } else {
+          setError('User is not associated with a store');
+          localStorage.clear();
+          return;
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
       setError(error.response?.data?.error?.message || 'Login failed. Please try again.');
+      localStorage.clear();
     } finally {
       setLoading(false);
     }
