@@ -2,16 +2,16 @@ import { jsPDF } from 'jspdf';
 import hgtLogo from '../assets/hgt.jpeg';  // Make sure to add this image to your assets
 import API from '../services/api';
 
-export const generateInvoice = async (items, total) => {
-  // Get next invoice number from backend
-  const response = await API.get('/api/invoices/count');
-  const nextInvoiceNumber = response.data + 1;
+export const generateInvoice = async (items, total, sale) => {
+  // Get the invoice for this specific sale
+  const response = await API.get(`/api/invoices?filters[sale][id][$eq]=${sale.id}&populate=*`);
+  const invoice = response.data.data[0];
   
   const doc = new jsPDF();
   
   // Add logo at the top center - adjusted size and position
   try {
-    doc.addImage(hgtLogo, 'JPEG', 85, 10, 40, 20); // Centered (85 instead of 75) and thinner (40 width)
+    doc.addImage(hgtLogo, 'JPEG', 75, 10, 40, 20); // Centered (85 instead of 75) and thinner (40 width)
   } catch (error) {
     console.error('Error adding logo:', error);
   }
@@ -29,16 +29,11 @@ export const generateInvoice = async (items, total) => {
   doc.text('CIF/NIF: B44726511', 20, 85);
   doc.text('NIF: ESB44726511', 20, 92);
 
-  // Receipt info (right side)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text('RECIBO', 150, 50);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  const currentDate = new Date().toLocaleDateString('es-ES');
-  const currentTime = new Date().toLocaleTimeString('es-ES');
-  doc.text(`${currentDate} ${currentTime}`, 150, 57);
-  doc.text(`Factura #${nextInvoiceNumber.toString().padStart(6, '0')}`, 150, 64);
+  // Use the sale's actual time and invoice number
+  const saleDate = new Date(sale.Time).toLocaleDateString('es-ES');
+  const saleTime = new Date(sale.Time).toLocaleTimeString('es-ES');
+  doc.text(`${saleDate} ${saleTime}`, 150, 57);
+  doc.text(`Factura #${invoice.InvoiceNumber.replace('INV-', '')}`, 150, 64);
 
   // Products table with lines - increased margin from NIF
   doc.setFontSize(10);
