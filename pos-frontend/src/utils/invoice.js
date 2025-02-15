@@ -55,4 +55,4 @@ export const generateInvoice = (items, total) => {
 
   // Save the PDF
   doc.save('recibo.pdf');
-}; 
+};
