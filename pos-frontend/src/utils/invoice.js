@@ -9,9 +9,9 @@ export const generateInvoice = async (items, total) => {
   
   const doc = new jsPDF();
   
-  // Add logo at the top center - reduced width
+  // Add logo at the top center - adjusted size and position
   try {
-    doc.addImage(hgtLogo, 'JPEG', 75, 10, 40, 20); // Reduced from 60,30 to 40,20
+    doc.addImage(hgtLogo, 'JPEG', 85, 10, 40, 20); // Centered (85 instead of 75) and thinner (40 width)
   } catch (error) {
     console.error('Error adding logo:', error);
   }
@@ -55,17 +55,19 @@ export const generateInvoice = async (items, total) => {
     doc.setFontSize(8);
     doc.text(item.description || '', 20, yPos + 4);
     doc.setFontSize(10);
-    doc.text(`€ ${item.price.toFixed(2)}`, 150, yPos);  // Added space after €
+    doc.text('€', 140, yPos);  // Euro symbol moved left
+    doc.text(item.price.toFixed(2), 150, yPos);  // Price number separate from €
     yPos += 12;
   });
 
   // Add bottom line
   doc.line(20, yPos + 5, 190, yPos + 5);
 
-  // Total with space after €
+  // Total with separated euro symbol
   doc.setFont('helvetica', 'bold');
   doc.text('Total:', 120, yPos + 15);
-  doc.text(`€ ${total.toFixed(2)}`, 150, yPos + 15);  // Added space after €
+  doc.text('€', 140, yPos + 15);  // Euro symbol moved left
+  doc.text(total.toFixed(2), 150, yPos + 15);  // Total number separate from €
 
   // Thank you message - centered at bottom
   doc.setFont('helvetica', 'normal');
