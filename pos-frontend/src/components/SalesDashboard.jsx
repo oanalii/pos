@@ -41,7 +41,7 @@ function SalesDashboard() {
     fetchSales();
   }, [storeId, navigate]);
 
-  const handleDownloadInvoice = async (sale) => {
+  const handleDownloadInvoice = (sale) => {
     // Find sales made within 1 second of this sale
     const saleTime = new Date(sale.Time).getTime();
     const relatedSales = sales.filter(s => {
@@ -61,7 +61,7 @@ function SalesDashboard() {
     
     const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
     
-    await generateInvoice(items, total, sale);
+    generateInvoice(items, total);
   };
 
   if (loading) return <div>Cargando ventas...</div>;
