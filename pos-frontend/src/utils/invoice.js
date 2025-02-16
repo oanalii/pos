@@ -119,19 +119,19 @@ export const generateInvoice = async (items, total, sale) => {
   // Add guarantee message
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  const textWidth = doc.getStringUnitWidth('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)') * doc.internal.getFontSize() / doc.internal.scaleFactor;
-  const textX = (doc.internal.pageSize.width - textWidth) / 2;
-  doc.text('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)', textX, 250);
-  doc.text('Ofrecemos cambio dentro de los primeros 14 días de su compra. La reparación o el cambio', textX, 255);
-  doc.text('(en caso de avería) se realizará durante el periodo de garantía.', textX, 260);
+  const guaranteeWidth = doc.getStringUnitWidth('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)') * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const guaranteeX = (doc.internal.pageSize.width - guaranteeWidth) / 2;
+  doc.text('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)', guaranteeX, 250);
+  doc.text('Ofrecemos cambio dentro de los primeros 14 días de su compra. La reparación o el cambio', guaranteeX, 255);
+  doc.text('(en caso de avería) se realizará durante el periodo de garantía.', guaranteeX, 260);
 
   // Thank you message - elegant and centered
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   const thankYouText = '¡Gracias por confiar en High Gate Technologies!';
-  const textWidth = doc.getStringUnitWidth(thankYouText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-  const textX = (doc.internal.pageSize.width - textWidth) / 2;
-  doc.text(thankYouText, textX, 270);
+  const thankYouWidth = doc.getStringUnitWidth(thankYouText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const thankYouX = (doc.internal.pageSize.width - thankYouWidth) / 2;
+  doc.text(thankYouText, thankYouX, 270);
 
   // Save the PDF
   doc.save('recibo.pdf');
