@@ -47,18 +47,25 @@ function SalesDashboard() {
   }, [storeId, navigate]);
 
   const handleDownloadInvoice = async (sale) => {
-    if (!sale.orderGroupId) {
-      console.error('No orderGroupId found for sale:', sale);
-      return;
+    // Find related sales either by orderGroupId or by time (within 1 second)
+    let relatedSales;
+    
+    if (sale.orderGroupId) {
+      // If orderGroupId exists, use it
+      relatedSales = sales.filter(s => s.orderGroupId === sale.orderGroupId);
+    } else {
+      // Fallback to time-based grouping for older sales
+      const saleTime = new Date(sale.Time).getTime();
+      relatedSales = sales.filter(s => {
+        const timeDiff = Math.abs(new Date(s.Time).getTime() - saleTime);
+        return timeDiff < 1000;
+      });
     }
-
-    // Find sales with the same orderGroupId
-    const relatedSales = sales.filter(s => s.orderGroupId === sale.orderGroupId);
     
     console.log('Related sales:', relatedSales);
     
     if (relatedSales.length === 0) {
-      console.error('No related sales found for orderGroupId:', sale.orderGroupId);
+      console.error('No related sales found for sale:', sale);
       return;
     }
 
