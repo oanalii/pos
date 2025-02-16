@@ -21,7 +21,7 @@ function SalesDashboard() {
         const response = await API.get('/api/sales', {
           params: {
             'filters[store][id][$eq]': storeId,
-            'populate': '*'
+            'populate': ['*', 'invoice']
           }
         });
         
@@ -41,7 +41,7 @@ function SalesDashboard() {
     fetchSales();
   }, [storeId, navigate]);
 
-  const handleDownloadInvoice = (sale) => {
+  const handleDownloadInvoice = async (sale) => {
     // Find sales made within 1 second of this sale
     const saleTime = new Date(sale.Time).getTime();
     const relatedSales = sales.filter(s => {
@@ -61,7 +61,7 @@ function SalesDashboard() {
     
     const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
     
-    generateInvoice(items, total);
+    await generateInvoice(items, total, sale);
   };
 
   if (loading) return <div>Cargando ventas...</div>;

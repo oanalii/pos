@@ -4,8 +4,13 @@ import API from '../services/api';
 
 export const generateInvoice = async (items, total, sale) => {
   // Get the invoice for this specific sale
-  const response = await API.get(`/api/invoices?filters[sale][id][$eq]=${sale.id}&populate=*`);
+  const response = await API.get(`/api/invoices?filters[sale][id][$eq]=${sale.id - 1}&populate=*`);
   const invoice = response.data.data[0];
+  
+  if (!invoice) {
+    console.error('No invoice found for sale:', sale);
+    return;
+  }
   
   const doc = new jsPDF();
   
