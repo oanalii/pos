@@ -40,10 +40,10 @@ export const generateInvoice = async (items, total, sale) => {
     console.error('Error adding logo:', error);
   }
 
-  // Company info (left side) - better spacing and hierarchy
+  // Company info (left side) - increased Y coordinates
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('HIGH GATE TECHNOLOGIES', 20, 40);
+  doc.text('HIGH GATE TECHNOLOGIES', 20, 50);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -55,12 +55,12 @@ export const generateInvoice = async (items, total, sale) => {
     'info@hgtonline.es',
     'CIF/NIF: B44726511',
     'NIF: ESB44726511'
-  ], 20, 50);
+  ], 20, 60);
 
-  // Invoice details (right side) - better alignment and spacing
+  // Invoice details (right side) - increased Y coordinates
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('FACTURA', 140, 40);
+  doc.text('FACTURA', 140, 50);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -70,7 +70,7 @@ export const generateInvoice = async (items, total, sale) => {
     `Nº: ${(invoice?.InvoiceNumber || 0).toString().padStart(6, '0')}`,
     `Fecha: ${saleDate}`,
     `Hora: ${saleTime}`
-  ], 140, 50);
+  ], 140, 60);
 
   // Add a separator line
   doc.setLineWidth(0.5);
