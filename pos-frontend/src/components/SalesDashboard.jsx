@@ -21,7 +21,8 @@ function SalesDashboard() {
         const response = await API.get('/api/sales', {
           params: {
             'filters[store][id][$eq]': storeId,
-            'populate': ['*', 'invoice', 'product'],
+            'populate[0]': 'invoice',
+            'populate[1]': 'product',
             'sort': 'createdAt:desc'
           }
         });
@@ -49,9 +50,11 @@ function SalesDashboard() {
     console.log('Related sales with description:', relatedSales);
     
     const items = relatedSales.map(s => ({
-      product: { Product: s.product.Product },
+      product: { 
+        Product: s.product?.Product || 'Producto no especificado'
+      },
       price: s.Price,
-      description: s.description
+      description: s.description || ''
     }));
     
     console.log('Items for invoice:', items);
