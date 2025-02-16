@@ -116,6 +116,15 @@ export const generateInvoice = async (items, total, sale) => {
   doc.text('€', 155, yPos + 17);
   doc.text(total.toFixed(2), 165, yPos + 17);
 
+  // Add guarantee message
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  const textWidth = doc.getStringUnitWidth('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)') * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const textX = (doc.internal.pageSize.width - textWidth) / 2;
+  doc.text('Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)', textX, 250);
+  doc.text('Ofrecemos cambio dentro de los primeros 14 días de su compra. La reparación o el cambio', textX, 255);
+  doc.text('(en caso de avería) se realizará durante el periodo de garantía.', textX, 260);
+
   // Thank you message - elegant and centered
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
