@@ -107,6 +107,11 @@ export const generateInvoice = async (items, total, sale) => {
   doc.rect(120, yPos + 5, 70, 20);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
+  
+  // Add IVA line
+  doc.text('IVA: 0%', 125, yPos + 13);
+  
+  // Total line (moved down slightly)
   doc.text('Total:', 125, yPos + 17);
   doc.text('€', 155, yPos + 17);
   doc.text(total.toFixed(2), 165, yPos + 17);
