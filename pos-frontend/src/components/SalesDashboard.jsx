@@ -21,8 +21,11 @@ function SalesDashboard() {
         const response = await API.get('/api/sales', {
           params: {
             'filters[store][id][$eq]': storeId,
-            'populate[0]': 'invoice',
-            'populate[1]': 'product',
+            'populate': {
+              'invoice': true,
+              'product': true,
+              '*': true
+            },
             'sort': 'createdAt:desc'
           }
         });
