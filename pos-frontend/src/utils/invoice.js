@@ -28,22 +28,19 @@ export const generateInvoice = async (items, total, sale) => {
   
   // Add logo at the top center with correct 4:3 aspect ratio
   try {
-    const imgWidth = 40;  // Base width
-    const imgHeight = imgWidth * (3/4);  // Height calculated to maintain 4:3 ratio
-    
-    // Center the image
+    const imgWidth = 40;
+    const imgHeight = imgWidth * (3/4);
     const pageWidth = doc.internal.pageSize.width;
     const x = (pageWidth - imgWidth) / 2;
-    
-    doc.addImage(hgtLogo, 'JPEG', x, 10, imgWidth, imgHeight);
+    doc.addImage(hgtLogo, 'JPEG', x, 15, imgWidth, imgHeight);
   } catch (error) {
     console.error('Error adding logo:', error);
   }
 
-  // Company info (left side) - increased Y coordinates
+  // Company info (left side) - better spacing
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('HIGH GATE TECHNOLOGIES', 20, 50);
+  doc.text('HIGH GATE TECHNOLOGIES', 20, 55);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -55,12 +52,12 @@ export const generateInvoice = async (items, total, sale) => {
     'info@hgtonline.es',
     'CIF/NIF: B44726511',
     'NIF: ESB44726511'
-  ], 20, 60);
+  ], 20, 65);
 
-  // Invoice details (right side) - increased Y coordinates
+  // Invoice details (right side)
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('FACTURA', 140, 50);
+  doc.text('FACTURA', 140, 55);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -70,21 +67,21 @@ export const generateInvoice = async (items, total, sale) => {
     `Nº: ${(invoice?.InvoiceNumber || 0).toString().padStart(6, '0')}`,
     `Fecha: ${saleDate}`,
     `Hora: ${saleTime}`
-  ], 140, 60);
+  ], 140, 65);
 
-  // Add a separator line
+  // Add a separator line - moved down
   doc.setLineWidth(0.5);
-  doc.line(20, 85, 190, 85);
+  doc.line(20, 95, 190, 95);
 
-  // Products table header - better spacing
+  // Products table header - adjusted spacing
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Producto', 20, 95);
-  doc.text('Descripción', 20, 102);
-  doc.text('Precio', 150, 95);
+  doc.text('Producto', 20, 105);
+  doc.text('Descripción', 20, 112);
+  doc.text('Precio', 150, 105);
   
-  // Products table with alternating background
-  let yPos = 110;
+  // Products table with alternating background - adjusted starting position
+  let yPos = 120;
   items.forEach((item, index) => {
     // Add subtle alternating background
     if (index % 2 === 0) {
