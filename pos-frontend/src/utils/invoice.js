@@ -33,7 +33,7 @@ export const generateInvoice = async (items, total, sale) => {
   const saleDate = new Date(sale.Time).toLocaleDateString('es-ES');
   const saleTime = new Date(sale.Time).toLocaleTimeString('es-ES');
   doc.text(`${saleDate} ${saleTime}`, 150, 57);
-  doc.text(`Factura #${invoice.InvoiceNumber.replace('INV-', '')}`, 150, 64);
+  doc.text(`Factura #${invoice.InvoiceNumber.toString().padStart(6, '0')}`, 150, 64);
 
   // Products table with lines - increased margin from NIF
   doc.setFontSize(10);
