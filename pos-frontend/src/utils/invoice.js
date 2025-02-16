@@ -26,15 +26,17 @@ export const generateInvoice = async (items, total, sale) => {
   
   const doc = new jsPDF();
   
-  // Add logo at the top center with proper aspect ratio
+  // Add logo at the top center with fixed aspect ratio
   try {
-    const imgWidth = 30;  // Desired width
-    const imgHeight = imgWidth * (hgtLogo.height / hgtLogo.width); // Calculate height to maintain aspect ratio
+    // Fixed dimensions that maintain roughly 1:1 aspect ratio
+    const imgWidth = 25;
+    const imgHeight = 25;
     
-    doc.addImage(hgtLogo, 'JPEG', 85, 10, imgWidth, imgHeight, undefined, 'FAST');
+    // Center the image by calculating x position
+    const pageWidth = doc.internal.pageSize.width;
+    const x = (pageWidth - imgWidth) / 2;
     
-    // Alternative approach using fitToWidth:
-    // doc.addImage(hgtLogo, 'JPEG', 85, 10, undefined, undefined, undefined, 'FAST', 0, 30);
+    doc.addImage(hgtLogo, 'JPEG', x, 10, imgWidth, imgHeight);
   } catch (error) {
     console.error('Error adding logo:', error);
   }
