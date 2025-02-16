@@ -21,7 +21,8 @@ function SalesDashboard() {
         const response = await API.get('/api/sales', {
           params: {
             'filters[store][id][$eq]': storeId,
-            'populate': ['*', 'invoice']
+            'populate': ['*', 'invoice', 'product'],
+            'sort': 'createdAt:desc'
           }
         });
         
@@ -42,12 +43,8 @@ function SalesDashboard() {
   }, [storeId, navigate]);
 
   const handleDownloadInvoice = async (sale) => {
-    // Find sales made within 1 second of this sale
-    const saleTime = new Date(sale.Time).getTime();
-    const relatedSales = sales.filter(s => {
-      const timeDiff = Math.abs(new Date(s.Time).getTime() - saleTime);
-      return timeDiff < 1000;
-    });
+    // Find sales with the same orderGroupId
+    const relatedSales = sales.filter(s => s.orderGroupId === sale.orderGroupId);
     
     console.log('Related sales with description:', relatedSales);
     

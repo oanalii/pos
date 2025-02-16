@@ -3,12 +3,18 @@ import hgtLogo from '../assets/hgt.jpeg';  // Make sure to add this image to you
 import API from '../services/api';
 
 export const generateInvoice = async (items, total, sale) => {
-  // Get the invoice for this specific sale
-  const response = await API.get(`/api/invoices?filters[sale][id][$eq]=${sale.id - 1}&populate=*`);
+  // Get the invoice using orderGroupId instead of sale.id
+  const response = await API.get(`/api/invoices`, {
+    params: {
+      'filters[orderGroupId][$eq]': sale.orderGroupId,
+      'populate': '*'
+    }
+  });
+  
   const invoice = response.data.data[0];
   
   if (!invoice) {
-    console.error('No invoice found for sale:', sale);
+    console.error('No invoice found for orderGroup:', sale.orderGroupId);
     return;
   }
   
