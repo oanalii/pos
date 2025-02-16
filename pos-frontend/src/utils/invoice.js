@@ -54,7 +54,7 @@ export const generateInvoice = async (items, total, sale) => {
   const saleDate = new Date(sale.Time).toLocaleDateString('es-ES');
   const saleTime = new Date(sale.Time).toLocaleTimeString('es-ES');
   doc.text([
-    `Nº: ${invoice.InvoiceNumber.toString().padStart(6, '0')}`,
+    `Nº: ${(invoice?.InvoiceNumber || 0).toString().padStart(6, '0')}`,
     `Fecha: ${saleDate}`,
     `Hora: ${saleTime}`
   ], 140, 50);

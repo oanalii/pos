@@ -44,11 +44,21 @@ function SalesDashboard() {
   }, [storeId, navigate]);
 
   const handleDownloadInvoice = async (sale) => {
+    if (!sale.orderGroupId) {
+      console.error('No orderGroupId found for sale:', sale);
+      return;
+    }
+
     // Find sales with the same orderGroupId
     const relatedSales = sales.filter(s => s.orderGroupId === sale.orderGroupId);
     
-    console.log('Related sales with description:', relatedSales);
+    console.log('Related sales:', relatedSales);
     
+    if (relatedSales.length === 0) {
+      console.error('No related sales found for orderGroupId:', sale.orderGroupId);
+      return;
+    }
+
     const items = relatedSales.map(s => ({
       product: { 
         Product: s.product?.Product || 'Producto no especificado'
