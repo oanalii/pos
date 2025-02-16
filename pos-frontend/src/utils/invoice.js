@@ -28,15 +28,14 @@ export const generateInvoice = async (items, total, sale) => {
   
   // Add logo at the top center with fixed aspect ratio
   try {
-    // Fixed dimensions that maintain roughly 1:1 aspect ratio
-    const imgWidth = 25;
-    const imgHeight = 25;
+    // Square dimensions for the logo - slightly larger
+    const imgSize = 35;  // Increased from 25 to 35
     
-    // Center the image by calculating x position
+    // Center the image
     const pageWidth = doc.internal.pageSize.width;
-    const x = (pageWidth - imgWidth) / 2;
+    const x = (pageWidth - imgSize) / 2;
     
-    doc.addImage(hgtLogo, 'JPEG', x, 10, imgWidth, imgHeight);
+    doc.addImage(hgtLogo, 'JPEG', x, 10, imgSize, imgSize);
   } catch (error) {
     console.error('Error adding logo:', error);
   }
