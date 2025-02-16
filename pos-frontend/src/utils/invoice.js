@@ -14,67 +14,94 @@ export const generateInvoice = async (items, total, sale) => {
   
   const doc = new jsPDF();
   
-  // Add logo at the top center - adjusted size and position
+  // Add logo at the top center with better proportions
   try {
-    doc.addImage(hgtLogo, 'JPEG', 75, 10, 40, 20); // Centered (85 instead of 75) and thinner (40 width)
+    doc.addImage(hgtLogo, 'JPEG', 85, 10, 30, 15);
   } catch (error) {
     console.error('Error adding logo:', error);
   }
 
-  // Company info (left side)
-  doc.setFontSize(12);
+  // Company info (left side) - better spacing and hierarchy
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('HIGH GATE TECHNOLOGIES', 20, 50);
-  doc.setFont('helvetica', 'normal');
+  doc.text('HIGH GATE TECHNOLOGIES', 20, 40);
+  
   doc.setFontSize(10);
-  doc.text('Calle Hospital, 14, 08001, Barcelona, España', 20, 57);
-  doc.text('Teléfono: 34933297250', 20, 64);
-  doc.text('Web: www.hgtonline.es', 20, 71);
-  doc.text('Email: info@hgtonline.es', 20, 78);
-  doc.text('CIF/NIF: B44726511', 20, 85);
-  doc.text('NIF: ESB44726511', 20, 92);
+  doc.setFont('helvetica', 'normal');
+  doc.text([
+    'Calle Hospital, 14',
+    '08001, Barcelona, España',
+    'Tel: +34 933 297 250',
+    'www.hgtonline.es',
+    'info@hgtonline.es',
+    'CIF/NIF: B44726511',
+    'NIF: ESB44726511'
+  ], 20, 50);
 
-  // Use the sale's actual time and invoice number
+  // Invoice details (right side) - better alignment and spacing
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FACTURA', 140, 40);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
   const saleDate = new Date(sale.Time).toLocaleDateString('es-ES');
   const saleTime = new Date(sale.Time).toLocaleTimeString('es-ES');
-  doc.text(`${saleDate} ${saleTime}`, 150, 57);
-  doc.text(`Factura #${invoice.InvoiceNumber.toString().padStart(6, '0')}`, 150, 64);
+  doc.text([
+    `Nº: ${invoice.InvoiceNumber.toString().padStart(6, '0')}`,
+    `Fecha: ${saleDate}`,
+    `Hora: ${saleTime}`
+  ], 140, 50);
 
-  // Products table with lines - increased margin from NIF
-  doc.setFontSize(10);
-  doc.text('Producto', 20, 120);  // Moved down from 100 to 120
-  doc.text('Precio', 150, 120);   // Moved down to match
-  
-  // Add top line - moved down
+  // Add a separator line
   doc.setLineWidth(0.5);
-  doc.line(20, 125, 190, 125);    // Moved down from 105 to 125
+  doc.line(20, 85, 190, 85);
+
+  // Products table header - better spacing
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Producto', 20, 95);
+  doc.text('Descripción', 20, 102);
+  doc.text('Precio', 150, 95);
   
-  let yPos = 130;                 // Moved down from 110 to 130
-  items.forEach(item => {
+  // Products table with alternating background
+  let yPos = 110;
+  items.forEach((item, index) => {
+    // Add subtle alternating background
+    if (index % 2 === 0) {
+      doc.setFillColor(245, 245, 245);
+      doc.rect(15, yPos - 5, 180, 15, 'F');
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
     doc.text(item.product.Product, 20, yPos);
     doc.setFontSize(8);
     doc.text(item.description || '', 20, yPos + 4);
+    
     doc.setFontSize(10);
-    doc.text('€', 140, yPos);  // Euro symbol moved left
-    doc.text(item.price.toFixed(2), 150, yPos);  // Price number separate from €
-    yPos += 12;
+    doc.text('€', 140, yPos);
+    doc.text(item.price.toFixed(2), 150, yPos);
+    
+    yPos += 15;
   });
 
-  // Add bottom line
-  doc.line(20, yPos + 5, 190, yPos + 5);
-
-  // Total with separated euro symbol
+  // Total section with box
+  doc.setLineWidth(0.5);
+  doc.rect(120, yPos + 5, 70, 20);
   doc.setFont('helvetica', 'bold');
-  doc.text('Total:', 120, yPos + 15);
-  doc.text('€', 140, yPos + 15);  // Euro symbol moved left
-  doc.text(total.toFixed(2), 150, yPos + 15);  // Total number separate from €
+  doc.setFontSize(11);
+  doc.text('Total:', 125, yPos + 17);
+  doc.text('€', 155, yPos + 17);
+  doc.text(total.toFixed(2), 165, yPos + 17);
 
-  // Thank you message - centered at bottom
+  // Thank you message - elegant and centered
   doc.setFont('helvetica', 'normal');
-  const thankYouText = '¡Muchas gracias por su compra!';
+  doc.setFontSize(10);
+  const thankYouText = '¡Gracias por confiar en High Gate Technologies!';
   const textWidth = doc.getStringUnitWidth(thankYouText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
   const textX = (doc.internal.pageSize.width - textWidth) / 2;
-  doc.text(thankYouText, textX, 270);  // Fixed Y position near bottom of page
+  doc.text(thankYouText, textX, 270);
 
   // Save the PDF
   doc.save('recibo.pdf');
