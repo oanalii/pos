@@ -49,7 +49,7 @@ function AdminSales() {
 
       // Calculate today's revenue
       const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.attributes.Price || 0), 0
+        sum + parseFloat(sale.Price || 0), 0
       );
       setTodayRevenue(todayTotal);
 
