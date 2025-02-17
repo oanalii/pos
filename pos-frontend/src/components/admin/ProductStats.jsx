@@ -16,17 +16,56 @@ import {
 function ProductStats() {
   const [productStats, setProductStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [revenueStats, setRevenueStats] = useState([]);
+  const [todayRevenue, setTodayRevenue] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get all sales
-        const salesResponse = await API.get('/api/sales');
+        // Get sales for last 4 days
+        const fourDaysAgo = new Date();
+        fourDaysAgo.setDate(fourDaysAgo.getDate() - 3);
+        
+        const salesResponse = await API.get('/api/sales', {
+          params: {
+            'filters[Time][$gte]': fourDaysAgo.toISOString(),
+            'populate': '*'
+          }
+        });
         const sales = salesResponse.data.data;
 
+        // Group by day for the last 4 days
+        const dailyRevenue = sales.reduce((acc, sale) => {
+          const date = new Date(sale.attributes.Time).toLocaleDateString('es-ES');
+          acc[date] = (acc[date] || 0) + parseFloat(sale.attributes.Price || 0);
+          return acc;
+        }, {});
+
+        // Convert to array and sort by date (newest first)
+        const revenueByDay = Object.entries(dailyRevenue)
+          .map(([date, amount]) => ({ date, amount }))
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        setRevenueStats(revenueByDay);
+
+        // Get all sales
+        const allSalesResponse = await API.get('/api/sales');
+        const allSales = allSalesResponse.data.data;
+
+        // Calculate today's revenue
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const todayTotal = allSales.reduce((sum, sale) => {
+          const saleDate = new Date(sale.attributes.Time);
+          return saleDate >= today ? sum + parseFloat(sale.attributes.Price || 0) : sum;
+        }, 0);
+        
+        setTodayRevenue(todayTotal);
+
         // Log the first sale to see its structure
-        console.log('First sale:', sales[0]);
-        console.log('First sale attributes:', sales[0].attributes);
+        console.log('First sale:', allSales[0]);
+        console.log('First sale attributes:', allSales[0].attributes);
 
         // Map products to their stats
         const stats = [
@@ -39,7 +78,7 @@ function ProductStats() {
         ];
 
         // Process each sale
-        sales.forEach(sale => {
+        allSales.forEach(sale => {
           if (!sale.attributes) return;
 
           // Log each sale's product ID and price
@@ -97,6 +136,35 @@ function ProductStats() {
             Product Statistics
           </Typography>
 
+          {/* Add Revenue Stats Cards */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            mb: 4,
+            overflowX: 'auto',
+            pb: 1
+          }}>
+            {revenueStats.map(({ date, amount }) => (
+              <Box 
+                key={date}
+                sx={{
+                  p: 3,
+                  bgcolor: 'primary.light',
+                  borderRadius: 2,
+                  minWidth: 200,
+                  textAlign: 'center'
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ color: 'white', mb: 1 }}>
+                  {date === new Date().toLocaleDateString('es-ES') ? 'Today' : date}
+                </Typography>
+                <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                  €{amount.toFixed(2)}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -122,6 +190,15 @@ function ProductStats() {
                     </TableCell>
                   </TableRow>
                 )}
+                
+                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                  <TableCell colSpan={2}>
+                    <strong>Today's Total Revenue</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>€{todayRevenue.toFixed(2)}</strong>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>

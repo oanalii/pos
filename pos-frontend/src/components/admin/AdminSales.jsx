@@ -30,18 +30,34 @@ function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('all');
+  const [todayRevenue, setTodayRevenue] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
 
   const fetchSales = async () => {
     try {
+      // Get today's sales specifically
+      const todayResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      // Calculate today's revenue
+      const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.attributes.Price || 0), 0
+      );
+      setTodayRevenue(todayTotal);
+
+      // Get filtered sales as before...
       let url = '/api/sales?populate=*';
-      
-      // Add store filter if we're not on the general page
       if (store && STORE_IDS[store]) {
         url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
       }
-
       const response = await API.get(url);
       let filteredSales = response.data.data;
 
@@ -162,6 +178,12 @@ function AdminSales() {
             >
               Logout
             </Button>
+          </Box>
+
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>
+              Today's Revenue: €{todayRevenue.toFixed(2)}
+            </Typography>
           </Box>
 
           <TableContainer component={Paper}>
