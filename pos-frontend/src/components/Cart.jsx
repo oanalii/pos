@@ -52,7 +52,7 @@ function Cart({ items, removeFromCart, checkout }) {
                 marginRight: '20px',
                 fontWeight: '500'
               }}>
-                ${item.price}
+                €{item.price}
               </span>
               <button 
                 onClick={() => removeFromCart(index)} 
@@ -85,7 +85,7 @@ function Cart({ items, removeFromCart, checkout }) {
           fontSize: '28px'
         }}>
           <strong>Total</strong>
-          <span>${total.toFixed(2)}</span>
+          <span>€{total.toFixed(2)}</span>
         </div>
         <button 
           onClick={checkout}
