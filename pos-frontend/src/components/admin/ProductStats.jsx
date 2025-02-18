@@ -90,7 +90,7 @@ function ProductStats() {
           { id: 41, name: "Repair", count: 0, totalRevenue: 0 },
           { id: 43, name: "Data transfer", count: 0, totalRevenue: 0 },
           { id: 45, name: "Smartwatch", count: 0, totalRevenue: 0 },
-          { id: 47, name: "Orange SIM", count: 0, totalRevenue: 0 },
+          { id: 47, name: "Lyca SIM", count: 0, totalRevenue: 0 },
           { id: 49, name: "Raton", count: 0, totalRevenue: 0 },
           { id: 51, name: "Watch Strap", count: 0, totalRevenue: 0 },
           { id: 53, name: "USB Drive", count: 0, totalRevenue: 0 },
