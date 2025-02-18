@@ -378,27 +378,25 @@ function AdminSales() {
                 maxHeight: '250px',
                 '& .MuiTable-root': {
                   minWidth: 650,
+                },
+                '& .MuiTableCell-root': {
+                  padding: '12px 16px',
+                  height: '48px',
+                },
+                '& .MuiTableCell-head': {
+                  bgcolor: '#fff',
+                  borderBottom: '2px solid #f1f5f9',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  color: '#64748b',
                 }
               }}>
-                <Table stickyHeader size="small">
+                <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ 
-                        bgcolor: '#fff',
-                        borderBottom: '2px solid #f1f5f9',
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
-                        color: '#64748b',
-                        py: 3,
-                      }}>
-                        Product Name
-                      </TableCell>
-                      <TableCell align="right" sx={{ /* ... same styles ... */ }}>
-                        Total Sales
-                      </TableCell>
-                      <TableCell align="right" sx={{ /* ... same styles ... */ }}>
-                        Total Revenue
-                      </TableCell>
+                      <TableCell>Product Name</TableCell>
+                      <TableCell align="right">Total Sales</TableCell>
+                      <TableCell align="right">Total Revenue</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
