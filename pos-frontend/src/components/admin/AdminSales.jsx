@@ -123,45 +123,63 @@ function AdminSales() {
   };
 
   if (loading) return (
-    <Box sx={{ ml: '240px', p: 3 }}>
-      <Typography>Loading sales data...</Typography>
+    <Box sx={{ display: 'flex' }}>
+      <Sidebar />
+      <Box sx={{ 
+        flexGrow: 1,
+        p: 3,
+      }}>
+        <Typography>Loading sales data...</Typography>
+      </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', bgcolor: '#f8fafc' }}>
       <Sidebar />
       <Box sx={{ 
-        flexGrow: 1, 
-        ml: '280px',  // Match sidebar width
-        backgroundColor: '#f5f5f5',  // Moved bgcolor here
-        minHeight: '100vh',
-        p: 2,
+        flexGrow: 1,
+        p: 3,
       }}>
         <Box sx={{ 
-          backgroundColor: '#fff',
-          borderRadius: 1,
+          bgcolor: '#fff',
+          borderRadius: '16px',
           p: 3,
+          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
         }}>
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            mb: 3,
+            mb: 4,
           }}>
             <Box>
-              <Typography variant="h4" sx={{ 
-                mb: 1,
-                fontWeight: 600,
-                color: '#333'  // Dark text for better contrast
-              }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  mb: 1,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  letterSpacing: '-0.02em',
+                  fontSize: '1.75rem',
+                }}
+              >
                 {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
               </Typography>
               <Select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
                 size="small"
-                sx={{ minWidth: 200 }}
+                sx={{ 
+                  minWidth: 200,
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgb(226, 232, 240)',
+                    borderRadius: '8px',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgb(148, 163, 184)',
+                  },
+                }}
               >
                 <MenuItem value="all">All Time</MenuItem>
                 <MenuItem value="day">Today</MenuItem>
@@ -175,27 +193,49 @@ function AdminSales() {
               variant="contained" 
               color="error"
               onClick={() => navigate('/admin')}
+              sx={{
+                bgcolor: '#ef4444',
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 500,
+                boxShadow: 'none',
+                '&:hover': {
+                  bgcolor: '#dc2626',
+                  boxShadow: 'none',
+                },
+              }}
             >
               Logout
             </Button>
           </Box>
 
-          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
+          <Box sx={{ 
+            mb: 4, 
+            p: 3, 
+            bgcolor: '#2563eb',
+            borderRadius: '12px',
+            color: 'white',
+            boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 500 }}>
               Today's Revenue: €{todayRevenue.toFixed(2)}
             </Typography>
           </Box>
 
-          <TableContainer component={Paper}>
+          <TableContainer sx={{ 
+            borderRadius: '12px',
+            border: '1px solid rgb(226, 232, 240)',
+            overflow: 'hidden',
+          }}>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell>Store</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Time</TableCell>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Actions</TableCell>
+                <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

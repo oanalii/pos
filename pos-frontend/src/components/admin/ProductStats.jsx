@@ -143,8 +143,14 @@ function ProductStats() {
 
   if (loading) {
     return (
-      <Box sx={{ ml: '280px', p: 3 }}>
-        <Typography>Loading stats...</Typography>
+      <Box sx={{ display: 'flex' }}>
+        <Sidebar />
+        <Box sx={{ 
+          flexGrow: 1,
+          p: 3,
+        }}>
+          <Typography>Loading stats...</Typography>
+        </Box>
       </Box>
     );
   }
@@ -153,11 +159,8 @@ function ProductStats() {
     <Box sx={{ display: 'flex' }}>
       <Sidebar />
       <Box sx={{ 
-        flexGrow: 1, 
-        ml: '280px', 
-        backgroundColor: '#f5f5f5', 
-        minHeight: '100vh', 
-        p: 2 
+        flexGrow: 1,
+        p: 3,
       }}>
         <Box sx={{ 
           backgroundColor: '#fff',
@@ -168,16 +171,34 @@ function ProductStats() {
             Product Statistics
           </Typography>
 
+          {/* Revenue Stats Row */}
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 2,
+            mb: 3
+          }}>
+            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
+              <Typography variant="h6" sx={{ color: 'white' }}>
+                Today's Revenue: €{todayRevenue.toFixed(2)}
+              </Typography>
+            </Paper>
+            
+            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
+              <Typography variant="h6" sx={{ color: 'white' }}>
+                Yesterday's Revenue: €{yesterdayRevenue.toFixed(2)}
+              </Typography>
+            </Paper>
+
+            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
+              <Typography variant="h6" sx={{ color: 'white' }}>
+                Total Revenue: €{(todayRevenue + yesterdayRevenue).toFixed(2)}
+              </Typography>
+            </Paper>
+          </Box>
+
           {/* Products Table */}
-          <TableContainer 
-            component={Paper} 
-            sx={{ 
-              maxHeight: '70vh',
-              overflow: 'auto',
-              position: 'relative',
-              mb: 3  // Add margin bottom for spacing
-            }}
-          >
+          <TableContainer component={Paper}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -205,20 +226,6 @@ function ProductStats() {
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Today's Revenue - Original UI */}
-          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Today's Revenue: €{todayRevenue.toFixed(2)}
-            </Typography>
-          </Box>
-
-          {/* Yesterday's Revenue - Same UI as Today's */}
-          <Box sx={{ p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Yesterday's Revenue: €{yesterdayRevenue.toFixed(2)}
-            </Typography>
-          </Box>
         </Box>
       </Box>
     </Box>

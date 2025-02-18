@@ -30,10 +30,10 @@ function Sidebar() {
     <Drawer
       variant="permanent"
       sx={{
-        width: 280,
+        width: 180,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: 280,
+          width: 180,
           boxSizing: 'border-box',
           background: '#fff',
           borderRight: '1px solid rgba(0, 0, 0, 0.12)',
