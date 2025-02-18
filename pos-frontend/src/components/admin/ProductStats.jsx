@@ -156,85 +156,178 @@ function ProductStats() {
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', bgcolor: '#fafafa' }}>
       <Sidebar />
       <Box sx={{ 
         flexGrow: 1,
-        p: 3,
+        p: 4,
         height: '100vh',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
       }}>
-        <Box sx={{ 
-          backgroundColor: '#fff',
-          borderRadius: 1,
-          p: 3,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+        {/* Header Section */}
+        <Box sx={{ mb: 5 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontSize: '2rem',
+              fontWeight: 700,
+              color: '#111827',
+              letterSpacing: '-0.025em',
+              mb: 1,
+            }}
+          >
             Product Statistics
           </Typography>
+          <Typography sx={{ color: '#6B7280', fontSize: '1.1rem' }}>
+            Track your product performance and revenue metrics
+          </Typography>
+        </Box>
 
-          {/* Revenue Stats Row */}
+        {/* Revenue Cards */}
+        <Box sx={{ 
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 3,
+          mb: 4,
+        }}>
           <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 2,
-            mb: 3
+            p: 4,
+            bgcolor: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #f1f5f9',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px -5px rgba(0,0,0,0.05)',
+            }
           }}>
-            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
-              <Typography variant="h6" sx={{ color: 'white' }}>
-                Today's Revenue: €{todayRevenue.toFixed(2)}
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
-              <Typography variant="h6" sx={{ color: 'white' }}>
-                Yesterday's Revenue: €{yesterdayRevenue.toFixed(2)}
-              </Typography>
-            </Paper>
-
-            <Paper sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
-              <Typography variant="h6" sx={{ color: 'white' }}>
-                Total Revenue: €{(todayRevenue + yesterdayRevenue).toFixed(2)}
-              </Typography>
-            </Paper>
+            <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mb: 1 }}>
+              Today's Revenue
+            </Typography>
+            <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
+              €{todayRevenue.toFixed(2)}
+            </Typography>
           </Box>
 
-          {/* Table with proper scrolling */}
-          <TableContainer sx={{ 
-            flexGrow: 1,
-            overflow: 'auto',
-            border: '1px solid rgb(226, 232, 240)',
-            borderRadius: '12px',
+          <Box sx={{ 
+            p: 4,
+            bgcolor: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #f1f5f9',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px -5px rgba(0,0,0,0.05)',
+            }
           }}>
+            <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mb: 1 }}>
+              Yesterday's Revenue
+            </Typography>
+            <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
+              €{yesterdayRevenue.toFixed(2)}
+            </Typography>
+          </Box>
+
+          <Box sx={{ 
+            p: 4,
+            bgcolor: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #f1f5f9',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px -5px rgba(0,0,0,0.05)',
+            }
+          }}>
+            <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mb: 1 }}>
+              Total Revenue
+            </Typography>
+            <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
+              €{(todayRevenue + yesterdayRevenue).toFixed(2)}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Products Table */}
+        <Box sx={{ 
+          bgcolor: '#fff',
+          borderRadius: '16px',
+          border: '1px solid #f1f5f9',
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Product Name</TableCell>
-                  <TableCell align="right">Total Sales</TableCell>
-                  <TableCell align="right">Total Revenue</TableCell>
+                  <TableCell sx={{ 
+                    bgcolor: '#fff',
+                    borderBottom: '2px solid #f1f5f9',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: '#64748b',
+                    py: 3,
+                  }}>
+                    Product Name
+                  </TableCell>
+                  <TableCell 
+                    align="right"
+                    sx={{ 
+                      bgcolor: '#fff',
+                      borderBottom: '2px solid #f1f5f9',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: '#64748b',
+                      py: 3,
+                    }}
+                  >
+                    Total Sales
+                  </TableCell>
+                  <TableCell 
+                    align="right"
+                    sx={{ 
+                      bgcolor: '#fff',
+                      borderBottom: '2px solid #f1f5f9',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: '#64748b',
+                      py: 3,
+                    }}
+                  >
+                    Total Revenue
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {productStats.length > 0 ? (
-                  productStats.map((stat) => (
-                    <TableRow key={stat.id}>
-                      <TableCell>{stat.name}</TableCell>
-                      <TableCell align="right">{stat.count}</TableCell>
-                      <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      No sales data found
+                {productStats.map((stat) => (
+                  <TableRow 
+                    key={stat.id}
+                    sx={{ 
+                      '&:hover': { bgcolor: '#fafafa' },
+                      transition: 'background-color 0.2s ease',
+                    }}
+                  >
+                    <TableCell sx={{ py: 3, fontSize: '0.9375rem', color: '#334155' }}>
+                      {stat.name}
+                    </TableCell>
+                    <TableCell 
+                      align="right"
+                      sx={{ py: 3, fontSize: '0.9375rem', color: '#334155' }}
+                    >
+                      {stat.count}
+                    </TableCell>
+                    <TableCell 
+                      align="right"
+                      sx={{ py: 3, fontSize: '0.9375rem', fontWeight: 600, color: '#334155' }}
+                    >
+                      €{stat.totalRevenue.toFixed(2)}
                     </TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
