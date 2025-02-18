@@ -316,8 +316,11 @@ function AdminSales() {
               <TableContainer sx={{ 
                 borderRadius: '12px',
                 border: '1px solid rgb(226, 232, 240)',
-                overflow: 'hidden',
-                maxHeight: '60vh',
+                overflow: 'auto',
+                maxHeight: '600px',
+                '& .MuiTable-root': {
+                  minWidth: 650,
+                }
               }}>
                 <Table stickyHeader>
                   <TableHead>
@@ -380,13 +383,30 @@ function AdminSales() {
                 overflow: 'auto',
                 border: '1px solid rgb(226, 232, 240)',
                 borderRadius: '12px',
+                maxHeight: '600px',
+                '& .MuiTable-root': {
+                  minWidth: 650,
+                }
               }}>
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600, color: '#475569' }}>Sales</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600, color: '#475569' }}>Revenue</TableCell>
+                      <TableCell sx={{ 
+                        bgcolor: '#fff',
+                        borderBottom: '2px solid #f1f5f9',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        color: '#64748b',
+                        py: 3,
+                      }}>
+                        Product Name
+                      </TableCell>
+                      <TableCell align="right" sx={{ /* ... same styles ... */ }}>
+                        Total Sales
+                      </TableCell>
+                      <TableCell align="right" sx={{ /* ... same styles ... */ }}>
+                        Total Revenue
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -488,8 +508,11 @@ function AdminSales() {
             <TableContainer sx={{ 
               borderRadius: '12px',
               border: '1px solid rgb(226, 232, 240)',
-              overflow: 'hidden',
-              maxHeight: '60vh',
+              overflow: 'auto',
+              maxHeight: '600px',
+              '& .MuiTable-root': {
+                minWidth: 650,
+              }
             }}>
               <Table stickyHeader>
                 <TableHead>
