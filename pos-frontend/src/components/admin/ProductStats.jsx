@@ -202,23 +202,30 @@ function ProductStats() {
                     </TableCell>
                   </TableRow>
                 )}
+                
+                {/* Revenue Summary Rows */}
+                <TableRow sx={{ 
+                  backgroundColor: '#f5f5f5',
+                  borderTop: '2px solid #ddd'
+                }}>
+                  <TableCell colSpan={2}>
+                    <strong>Yesterday's Total Revenue</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>€{yesterdayRevenue.toFixed(2)}</strong>
+                  </TableCell>
+                </TableRow>
+                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                  <TableCell colSpan={2}>
+                    <strong>Today's Total Revenue</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>€{todayRevenue.toFixed(2)}</strong>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Today's Revenue Box */}
-          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Today's Revenue: €{todayRevenue.toFixed(2)}
-            </Typography>
-          </Box>
-
-          {/* Yesterday's Revenue Box */}
-          <Box sx={{ p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Yesterday's Revenue: €{yesterdayRevenue.toFixed(2)}
-            </Typography>
-          </Box>
         </Box>
       </Box>
     </Box>
