@@ -135,17 +135,23 @@ function AdminSales() {
   );
 
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#f8fafc' }}>
+    <Box sx={{ display: 'flex' }}>
       <Sidebar />
       <Box sx={{ 
         flexGrow: 1,
         p: 3,
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
         <Box sx={{ 
-          bgcolor: '#fff',
-          borderRadius: '16px',
+          backgroundColor: '#fff',
+          borderRadius: 1,
           p: 3,
-          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
           <Box sx={{ 
             display: 'flex', 
@@ -223,10 +229,10 @@ function AdminSales() {
           </Box>
 
           <TableContainer sx={{ 
-            borderRadius: '12px',
+            flexGrow: 1,
+            overflow: 'auto',
             border: '1px solid rgb(226, 232, 240)',
-            overflow: 'hidden',
-            maxHeight: '60vh',
+            borderRadius: '12px',
           }}>
             <Table stickyHeader>
               <TableHead>

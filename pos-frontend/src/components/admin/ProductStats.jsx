@@ -161,11 +161,18 @@ function ProductStats() {
       <Box sx={{ 
         flexGrow: 1,
         p: 3,
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
         <Box sx={{ 
           backgroundColor: '#fff',
           borderRadius: 1,
           p: 3,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
           <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
             Product Statistics
@@ -197,12 +204,12 @@ function ProductStats() {
             </Paper>
           </Box>
 
-          {/* Products Table */}
+          {/* Table with proper scrolling */}
           <TableContainer sx={{ 
-            borderRadius: '12px',
+            flexGrow: 1,
+            overflow: 'auto',
             border: '1px solid rgb(226, 232, 240)',
-            overflow: 'hidden',
-            maxHeight: '60vh',
+            borderRadius: '12px',
           }}>
             <Table stickyHeader>
               <TableHead>
