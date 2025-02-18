@@ -18,6 +18,7 @@ function ProductStats() {
   const [loading, setLoading] = useState(true);
   const [revenueStats, setRevenueStats] = useState([]);
   const [todayRevenue, setTodayRevenue] = useState(0);
+  const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -35,6 +36,26 @@ function ProductStats() {
           sum + parseFloat(sale.Price || 0), 0
         );
         setTodayRevenue(todayTotal);
+
+        // Get yesterday's sales
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStart = yesterday.toISOString().split('T')[0];
+        const yesterdayEnd = new Date().toISOString().split('T')[0];
+
+        const yesterdayResponse = await API.get('/api/sales', {
+          params: {
+            'filters[Time][$gte]': yesterdayStart,
+            'filters[Time][$lt]': yesterdayEnd,
+            'populate': '*'
+          }
+        });
+
+        // Calculate yesterday's revenue
+        const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) =>
+          sum + parseFloat(sale.Price || 0), 0
+        );
+        setYesterdayRevenue(yesterdayTotal);
 
         // Get all sales for product stats
         const allSalesResponse = await API.get('/api/sales', {
@@ -194,6 +215,18 @@ function ProductStats() {
                   </TableRow>
                 )}
                 
+                <TableRow className="sticky-row" sx={{ 
+                  '&:first-of-type': { 
+                    borderTop: '2px solid #ddd'
+                  }
+                }}>
+                  <TableCell colSpan={2}>
+                    <strong>Yesterday's Total Revenue</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>€{yesterdayRevenue.toFixed(2)}</strong>
+                  </TableCell>
+                </TableRow>
                 <TableRow className="sticky-row">
                   <TableCell colSpan={2}>
                     <strong>Today's Total Revenue</strong>
