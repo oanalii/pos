@@ -226,8 +226,9 @@ function AdminSales() {
             borderRadius: '12px',
             border: '1px solid rgb(226, 232, 240)',
             overflow: 'hidden',
+            maxHeight: '60vh',
           }}>
-            <Table>
+            <Table stickyHeader>
               <TableHead>
                 <TableRow sx={{ bgcolor: '#f8fafc' }}>
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
