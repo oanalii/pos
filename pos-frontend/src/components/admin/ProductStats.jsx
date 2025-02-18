@@ -22,52 +22,29 @@ function ProductStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get sales for last 4 days
-        const fourDaysAgo = new Date();
-        fourDaysAgo.setDate(fourDaysAgo.getDate() - 3);
-        
-        const salesResponse = await API.get('/api/sales', {
+        // Get today's sales first for the revenue widget
+        const todayResponse = await API.get('/api/sales', {
           params: {
-            'filters[Time][$gte]': fourDaysAgo.toISOString(),
+            'filters[Time][$gte]': new Date().toISOString().split('T')[0],
             'populate': '*'
           }
         });
-        const sales = salesResponse.data.data;
-
-        // Group by day for the last 4 days
-        const dailyRevenue = sales.reduce((acc, sale) => {
-          const date = new Date(sale.attributes.Time).toLocaleDateString('es-ES');
-          acc[date] = (acc[date] || 0) + parseFloat(sale.attributes.Price || 0);
-          return acc;
-        }, {});
-
-        // Convert to array and sort by date (newest first)
-        const revenueByDay = Object.entries(dailyRevenue)
-          .map(([date, amount]) => ({ date, amount }))
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        setRevenueStats(revenueByDay);
-
-        // Get all sales
-        const allSalesResponse = await API.get('/api/sales');
-        const allSales = allSalesResponse.data.data;
-
+        
         // Calculate today's revenue
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todayTotal = allSales.reduce((sum, sale) => {
-          const saleDate = new Date(sale.attributes.Time);
-          return saleDate >= today ? sum + parseFloat(sale.attributes.Price || 0) : sum;
-        }, 0);
-        
+        const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
+          sum + parseFloat(sale.Price || 0), 0
+        );
         setTodayRevenue(todayTotal);
 
-        // Log the first sale to see its structure
-        console.log('First sale:', allSales[0]);
-        console.log('First sale attributes:', allSales[0].attributes);
+        // Get all sales for product stats
+        const allSalesResponse = await API.get('/api/sales', {
+          params: {
+            'populate': ['product', 'store']
+          }
+        });
+        const allSales = allSalesResponse.data.data;
 
-        // Map products to their stats
+        // Map products to their stats (expanded list)
         const stats = [
           { id: 1, name: "Phone", count: 0, totalRevenue: 0 },
           { id: 3, name: "Laptop", count: 0, totalRevenue: 0 },
@@ -79,17 +56,8 @@ function ProductStats() {
 
         // Process each sale
         allSales.forEach(sale => {
-          if (!sale.attributes) return;
-
-          // Log each sale's product ID and price
-          console.log('Processing sale:', {
-            id: sale.id,
-            productId: sale.attributes.product,
-            price: sale.attributes.Price
-          });
-
-          const productId = parseInt(sale.attributes.product);
-          const price = parseFloat(sale.attributes.Price || 0);
+          const productId = sale.product?.id;
+          const price = parseFloat(sale.Price || 0);
 
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
@@ -136,33 +104,11 @@ function ProductStats() {
             Product Statistics
           </Typography>
 
-          {/* Add Revenue Stats Cards */}
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 2, 
-            mb: 4,
-            overflowX: 'auto',
-            pb: 1
-          }}>
-            {revenueStats.map(({ date, amount }) => (
-              <Box 
-                key={date}
-                sx={{
-                  p: 3,
-                  bgcolor: 'primary.light',
-                  borderRadius: 2,
-                  minWidth: 200,
-                  textAlign: 'center'
-                }}
-              >
-                <Typography variant="subtitle1" sx={{ color: 'white', mb: 1 }}>
-                  {date === new Date().toLocaleDateString('es-ES') ? 'Today' : date}
-                </Typography>
-                <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
-                  €{amount.toFixed(2)}
-                </Typography>
-              </Box>
-            ))}
+          {/* Add Today's Revenue Widget */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>
+              Today's Revenue: €{todayRevenue.toFixed(2)}
+            </Typography>
           </Box>
 
           <TableContainer component={Paper}>
