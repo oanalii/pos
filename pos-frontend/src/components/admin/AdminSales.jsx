@@ -225,24 +225,23 @@ function AdminSales() {
         p: 3,
       }}>
         {store ? (
-          // Store view with 50-50 split
           <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
           }}>
-            {/* Left side: Sales */}
+            {/* Sales Section */}
             <Box sx={{ 
               bgcolor: '#fff',
               borderRadius: '16px',
-              p: 3,
+              p: 2,
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
             }}>
               <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                mb: 4,
+                mb: 2,
               }}>
                 <Box>
                   <Typography 
@@ -261,16 +260,7 @@ function AdminSales() {
                     value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value)}
                     size="small"
-                    sx={{ 
-                      minWidth: 200,
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(226, 232, 240)',
-                        borderRadius: '8px',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(148, 163, 184)',
-                      },
-                    }}
+                    sx={{ minWidth: 150 }}
                   >
                     <MenuItem value="all">All Time</MenuItem>
                     <MenuItem value="day">Today</MenuItem>
@@ -301,14 +291,13 @@ function AdminSales() {
               </Box>
 
               <Box sx={{ 
-                mb: 4, 
-                p: 3, 
+                mb: 2,
+                p: 2,
                 bgcolor: '#2563eb',
                 borderRadius: '12px',
                 color: 'white',
-                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                <Typography variant="h6" sx={{ fontSize: '1rem' }}>
                   Today's Revenue: €{todayRevenue.toFixed(2)}
                 </Typography>
               </Box>
@@ -317,12 +306,12 @@ function AdminSales() {
                 borderRadius: '12px',
                 border: '1px solid rgb(226, 232, 240)',
                 overflow: 'auto',
-                maxHeight: '585px',
+                maxHeight: '300px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
               }}>
-                <Table stickyHeader>
+                <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow sx={{ bgcolor: '#f8fafc' }}>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
@@ -365,31 +354,29 @@ function AdminSales() {
               </TableContainer>
             </Box>
 
-            {/* Right side: Product Stats */}
+            {/* Product Stats Section */}
             <Box sx={{ 
               bgcolor: '#fff',
               borderRadius: '16px',
-              p: 3,
+              p: 2,
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
             }}>
-              <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+              <Typography variant="h5" sx={{ 
+                mb: 2,
+                fontSize: '1.1rem',
+              }}>
                 Product Breakdown
               </Typography>
-
               <TableContainer sx={{ 
-                flexGrow: 1,
-                overflow: 'auto',
-                border: '1px solid rgb(226, 232, 240)',
                 borderRadius: '12px',
-                height: '585px',
+                border: '1px solid rgb(226, 232, 240)',
+                overflow: 'auto',
+                maxHeight: '300px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
               }}>
-                <Table stickyHeader>
+                <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ 
@@ -424,7 +411,6 @@ function AdminSales() {
             </Box>
           </Box>
         ) : (
-          // Original full-width view for general sales
           <Box sx={{ 
             bgcolor: '#fff',
             borderRadius: '16px',
