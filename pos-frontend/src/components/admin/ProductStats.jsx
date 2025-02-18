@@ -168,26 +168,14 @@ function ProductStats() {
             Product Statistics
           </Typography>
 
-          {/* Add Today's Revenue Widget */}
-          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>
-              Today's Revenue: €{todayRevenue.toFixed(2)}
-            </Typography>
-          </Box>
-
+          {/* Products Table */}
           <TableContainer 
             component={Paper} 
             sx={{ 
               maxHeight: '70vh',
               overflow: 'auto',
-              position: 'relative', // For sticky header
-              '& .sticky-row': {
-                position: 'sticky',
-                bottom: 0,
-                backgroundColor: '#f5f5f5',
-                zIndex: 2,
-                borderTop: '2px solid #ddd'
-              }
+              position: 'relative',
+              mb: 3  // Add margin bottom for spacing
             }}
           >
             <Table stickyHeader>
@@ -214,30 +202,23 @@ function ProductStats() {
                     </TableCell>
                   </TableRow>
                 )}
-                
-                <TableRow className="sticky-row" sx={{ 
-                  '&:first-of-type': { 
-                    borderTop: '2px solid #ddd'
-                  }
-                }}>
-                  <TableCell colSpan={2}>
-                    <strong>Yesterday's Total Revenue</strong>
-                  </TableCell>
-                  <TableCell align="right">
-                    <strong>€{yesterdayRevenue.toFixed(2)}</strong>
-                  </TableCell>
-                </TableRow>
-                <TableRow className="sticky-row">
-                  <TableCell colSpan={2}>
-                    <strong>Today's Total Revenue</strong>
-                  </TableCell>
-                  <TableCell align="right">
-                    <strong>€{todayRevenue.toFixed(2)}</strong>
-                  </TableCell>
-                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Today's Revenue Box */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>
+              Today's Revenue: €{todayRevenue.toFixed(2)}
+            </Typography>
+          </Box>
+
+          {/* Yesterday's Revenue Box */}
+          <Box sx={{ p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>
+              Yesterday's Revenue: €{yesterdayRevenue.toFixed(2)}
+            </Typography>
+          </Box>
         </Box>
       </Box>
     </Box>
