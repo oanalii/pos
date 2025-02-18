@@ -317,7 +317,7 @@ function AdminSales() {
                 borderRadius: '12px',
                 border: '1px solid rgb(226, 232, 240)',
                 overflow: 'auto',
-                maxHeight: '600px',
+                maxHeight: '585px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
@@ -373,6 +373,7 @@ function AdminSales() {
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
               display: 'flex',
               flexDirection: 'column',
+              height: '100%',
             }}>
               <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
                 Product Breakdown
@@ -383,7 +384,7 @@ function AdminSales() {
                 overflow: 'auto',
                 border: '1px solid rgb(226, 232, 240)',
                 borderRadius: '12px',
-                maxHeight: '600px',
+                height: '585px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
@@ -509,7 +510,7 @@ function AdminSales() {
               borderRadius: '12px',
               border: '1px solid rgb(226, 232, 240)',
               overflow: 'auto',
-              maxHeight: '600px',
+              maxHeight: '585px',
               '& .MuiTable-root': {
                 minWidth: 650,
               }
