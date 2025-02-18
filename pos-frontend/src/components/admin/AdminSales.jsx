@@ -228,20 +228,20 @@ function AdminSales() {
           <Box sx={{ 
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: 2.5,
           }}>
             {/* Sales Section */}
             <Box sx={{ 
               bgcolor: '#fff',
               borderRadius: '16px',
-              p: 2,
+              p: 2.5,
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
             }}>
               <Box sx={{ 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                mb: 2,
+                mb: 2.5,
               }}>
                 <Box>
                   <Typography 
@@ -260,7 +260,13 @@ function AdminSales() {
                     value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value)}
                     size="small"
-                    sx={{ minWidth: 150 }}
+                    sx={{ 
+                      minWidth: 180,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(226, 232, 240)',
+                        borderRadius: '8px',
+                      }
+                    }}
                   >
                     <MenuItem value="all">All Time</MenuItem>
                     <MenuItem value="day">Today</MenuItem>
@@ -291,13 +297,14 @@ function AdminSales() {
               </Box>
 
               <Box sx={{ 
-                mb: 2,
-                p: 2,
+                mb: 2.5,
+                p: 2.5,
                 bgcolor: '#2563eb',
                 borderRadius: '12px',
                 color: 'white',
+                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
               }}>
-                <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 500 }}>
                   Today's Revenue: €{todayRevenue.toFixed(2)}
                 </Typography>
               </Box>
@@ -306,7 +313,7 @@ function AdminSales() {
                 borderRadius: '12px',
                 border: '1px solid rgb(226, 232, 240)',
                 overflow: 'auto',
-                maxHeight: '300px',
+                maxHeight: '250px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
@@ -358,20 +365,17 @@ function AdminSales() {
             <Box sx={{ 
               bgcolor: '#fff',
               borderRadius: '16px',
-              p: 2,
+              p: 2.5,
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
             }}>
-              <Typography variant="h5" sx={{ 
-                mb: 2,
-                fontSize: '1.1rem',
-              }}>
+              <Typography variant="h5" sx={{ mb: 2.5, fontWeight: 600 }}>
                 Product Breakdown
               </Typography>
               <TableContainer sx={{ 
                 borderRadius: '12px',
                 border: '1px solid rgb(226, 232, 240)',
                 overflow: 'auto',
-                maxHeight: '300px',
+                maxHeight: '250px',
                 '& .MuiTable-root': {
                   minWidth: 650,
                 }
