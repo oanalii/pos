@@ -8,6 +8,7 @@ function SalesDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const storeId = localStorage.getItem('storeId');
+  const [selectedVat, setSelectedVat] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
@@ -81,7 +82,7 @@ function SalesDashboard() {
     
     const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
     
-    await generateInvoice(items, total, sale);
+    await generateInvoice(items, total, sale, selectedVat);
   };
 
   if (loading) return <div>Cargando ventas...</div>;
@@ -138,19 +139,34 @@ function SalesDashboard() {
                   €{sale.Price?.toFixed(2) || '0.00'}
                 </td>
                 <td style={{ padding: '10px' }}>
-                  <button
-                    onClick={() => handleDownloadInvoice(sale)}
-                    style={{
-                      padding: '8px 12px',
-                      backgroundColor: '#007bff',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Descargar Factura
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <select
+                      value={selectedVat}
+                      onChange={(e) => setSelectedVat(Number(e.target.value))}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd'
+                      }}
+                    >
+                      <option value={0}>IVA: 0%</option>
+                      <option value={10}>IVA: 10%</option>
+                      <option value={21}>IVA: 21%</option>
+                    </select>
+                    <button
+                      onClick={() => handleDownloadInvoice(sale)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Descargar Factura
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

@@ -2,7 +2,7 @@ import { jsPDF } from 'jspdf';
 import hgtLogo from '../assets/hgt.jpeg';  // Make sure to add this image to your assets
 import API from '../services/api';
 
-export const generateInvoice = async (items, total, sale) => {
+export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   // Try to get invoice by orderGroupId first, then fallback to sale.id
   let response;
   if (sale.orderGroupId) {
@@ -104,17 +104,26 @@ export const generateInvoice = async (items, total, sale) => {
 
   // Total section with box
   doc.setLineWidth(0.5);
-  doc.rect(120, yPos + 5, 70, 20);
+  doc.rect(120, yPos + 5, 70, 30); // Made taller for VAT
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   
-  // Add IVA line
-  doc.text('IVA: 0%', 125, yPos + 13);
+  // Subtotal line
+  doc.text('Subtotal:', 125, yPos + 15);
+  doc.text('€', 155, yPos + 15);
+  doc.text(total.toFixed(2), 165, yPos + 15);
   
-  // Total line (moved down slightly)
-  doc.text('Total:', 125, yPos + 17);
-  doc.text('€', 155, yPos + 17);
-  doc.text(total.toFixed(2), 165, yPos + 17);
+  // VAT line
+  const vatAmount = (total * vatRate / 100);
+  doc.text(`IVA: ${vatRate}%`, 125, yPos + 23);
+  doc.text('€', 155, yPos + 23);
+  doc.text(vatAmount.toFixed(2), 165, yPos + 23);
+  
+  // Total with VAT
+  const totalWithVat = total + vatAmount;
+  doc.text('Total:', 125, yPos + 31);
+  doc.text('€', 155, yPos + 31);
+  doc.text(totalWithVat.toFixed(2), 165, yPos + 31);
 
   // Add guarantee message
   doc.setFont('helvetica', 'normal');
