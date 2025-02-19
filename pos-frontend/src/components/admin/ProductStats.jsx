@@ -16,14 +16,28 @@ import {
 function ProductStats() {
   const [productStats, setProductStats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [revenueStats, setRevenueStats] = useState([]);
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get today's sales first for the revenue widget
+        // Get all sales first
+        const allSalesResponse = await API.get('/api/sales', {
+          params: {
+            'populate': ['product', 'store']
+          }
+        });
+        const allSales = allSalesResponse.data.data;
+
+        // Calculate total revenue from all sales
+        const total = allSales.reduce((sum, sale) => 
+          sum + parseFloat(sale.Price || 0), 0
+        );
+        setTotalRevenue(total);
+
+        // Get today's sales
         const todayResponse = await API.get('/api/sales', {
           params: {
             'filters[Time][$gte]': new Date().toISOString().split('T')[0],
@@ -31,7 +45,6 @@ function ProductStats() {
           }
         });
         
-        // Calculate today's revenue
         const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
           sum + parseFloat(sale.Price || 0), 0
         );
@@ -51,19 +64,10 @@ function ProductStats() {
           }
         });
 
-        // Calculate yesterday's revenue
         const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) =>
           sum + parseFloat(sale.Price || 0), 0
         );
         setYesterdayRevenue(yesterdayTotal);
-
-        // Get all sales for product stats
-        const allSalesResponse = await API.get('/api/sales', {
-          params: {
-            'populate': ['product', 'store']
-          }
-        });
-        const allSales = allSalesResponse.data.data;
 
         // Map products to their stats (expanded list)
         const stats = [
@@ -245,7 +249,7 @@ function ProductStats() {
               Total Revenue
             </Typography>
             <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
-              €{(todayRevenue + yesterdayRevenue).toFixed(2)}
+              €{totalRevenue.toFixed(2)}
             </Typography>
           </Box>
         </Box>
