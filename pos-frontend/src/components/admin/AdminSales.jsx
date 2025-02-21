@@ -36,6 +36,7 @@ function AdminSales() {
     today: 0,
     yesterday: 0
   });
+  const [selectedVat, setSelectedVat] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
 
@@ -197,12 +198,40 @@ function AdminSales() {
     }
   }, [store, timeFilter]);
 
-  const handleDownloadInvoice = (sale) => {
-    const items = [{
-      product: { Product: sale.product.Product },
-      price: sale.Price
-    }];
-    generateInvoice(items, sale.Price);
+  const handleDownloadInvoice = async (sale) => {
+    // Find related sales either by orderGroupId or by time (within 1 second)
+    let relatedSales;
+    
+    if (sale.orderGroupId) {
+      // If orderGroupId exists, use it
+      relatedSales = sales.filter(s => s.orderGroupId === sale.orderGroupId);
+    } else {
+      // Fallback to time-based grouping for older sales
+      const saleTime = new Date(sale.Time).getTime();
+      relatedSales = sales.filter(s => {
+        const timeDiff = Math.abs(new Date(s.Time).getTime() - saleTime);
+        return timeDiff < 1000;
+      });
+    }
+    
+    console.log('Related sales:', relatedSales);
+    
+    if (relatedSales.length === 0) {
+      console.error('No related sales found for sale:', sale);
+      return;
+    }
+
+    const items = relatedSales.map(s => ({
+      product: { 
+        Product: s.product?.Product || 'Producto no especificado'
+      },
+      price: s.Price,
+      description: s.description || ''
+    }));
+    
+    const total = relatedSales.reduce((sum, s) => sum + s.Price, 0);
+    
+    await generateInvoice(items, total, sale, selectedVat);
   };
 
   if (loading) return (
@@ -339,13 +368,24 @@ function AdminSales() {
                           <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
                           <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="contained"
-                              onClick={() => handleDownloadInvoice(sale)}
-                              size="small"
-                            >
-                              Download Invoice
-                            </Button>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <Select
+                                value={selectedVat}
+                                onChange={(e) => setSelectedVat(Number(e.target.value))}
+                                size="small"
+                              >
+                                <MenuItem value={0}>IVA: 0%</MenuItem>
+                                <MenuItem value={10}>IVA: 10%</MenuItem>
+                                <MenuItem value={21}>IVA: 21%</MenuItem>
+                              </Select>
+                              <Button
+                                variant="contained"
+                                onClick={() => handleDownloadInvoice(sale)}
+                                size="small"
+                              >
+                                Download Invoice
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -524,13 +564,24 @@ function AdminSales() {
                         <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
                         <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="contained"
-                            onClick={() => handleDownloadInvoice(sale)}
-                            size="small"
-                          >
-                            Download Invoice
-                          </Button>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <Select
+                              value={selectedVat}
+                              onChange={(e) => setSelectedVat(Number(e.target.value))}
+                              size="small"
+                            >
+                              <MenuItem value={0}>IVA: 0%</MenuItem>
+                              <MenuItem value={10}>IVA: 10%</MenuItem>
+                              <MenuItem value={21}>IVA: 21%</MenuItem>
+                            </Select>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleDownloadInvoice(sale)}
+                              size="small"
+                            >
+                              Download Invoice
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
