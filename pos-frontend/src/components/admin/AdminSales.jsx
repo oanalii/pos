@@ -29,7 +29,7 @@ const STORE_IDS = {
 function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [timeFilter, setTimeFilter] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('day');
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [productStats, setProductStats] = useState([]);
   const [storeRevenue, setStoreRevenue] = useState({
