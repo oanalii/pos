@@ -354,6 +354,7 @@ function AdminSales() {
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
                     </TableRow>
@@ -366,6 +367,7 @@ function AdminSales() {
                           <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                           <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
                           <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                          <TableCell>{sale.description || 'No description'}</TableCell>
                           <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                           <TableCell>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -391,7 +393,7 @@ function AdminSales() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} align="center">
+                        <TableCell colSpan={7} align="center">
                           No sales records found
                         </TableCell>
                       </TableRow>
@@ -550,6 +552,7 @@ function AdminSales() {
                     <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
                   </TableRow>
@@ -562,6 +565,7 @@ function AdminSales() {
                         <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                         <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
                         <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                        <TableCell>{sale.description || 'No description'}</TableCell>
                         <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -587,7 +591,7 @@ function AdminSales() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No sales records found
                       </TableCell>
                     </TableRow>
