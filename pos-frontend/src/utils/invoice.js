@@ -48,8 +48,7 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text([
-    store?.address,  // Dynamic store address
-    '08001, Barcelona, España',
+    store?.address,  // Already includes full address with postal code and city
     'Tel: +34 933 297 250',  // Static phone
     'www.hgtonline.es',
     'info@hgtonline.es',  // Static email
