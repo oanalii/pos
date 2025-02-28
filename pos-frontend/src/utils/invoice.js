@@ -37,6 +37,9 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
     console.error('Error adding logo:', error);
   }
 
+  // Get store information from the sale
+  const store = sale.store;
+  
   // Company info (left side) - better spacing
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -45,11 +48,11 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text([
-    'Calle Hospital, 14',
+    store?.address,  // Dynamic store address
     '08001, Barcelona, España',
-    'Tel: +34 933 297 250',
+    'Tel: +34 933 297 250',  // Static phone
     'www.hgtonline.es',
-    'info@hgtonline.es',
+    'info@hgtonline.es',  // Static email
     'CIF/NIF: B44726511',
     'NIF: ESB44726511'
   ], 20, 65);
