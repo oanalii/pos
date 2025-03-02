@@ -46,7 +46,9 @@ const ID_MAP = {
   'PC': 73,
   'Keyboard': 75,
   'Laptop (not MacBook)': 77,
-  'iMac': 79
+  'iMac': 79,
+  'Lyca SIM': 82,
+  'Selfie Stick': 85
 };
 
 // Modern color palette
@@ -67,6 +69,7 @@ function ProductList() {
   const [cartItems, setCartItems] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -169,6 +172,10 @@ function ProductList() {
     setSelectedProduct(product);
   };
 
+  const filteredProducts = products.filter(product => 
+    product.Product.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -201,6 +208,24 @@ function ProductList() {
           }}>
             POS System
           </h1>
+
+          {/* Add search bar */}
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              width: '300px',
+              borderRadius: '12px',
+              border: `1px solid ${colors.border}`,
+              fontSize: '14px',
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+          />
+
           <button 
             onClick={() => navigate('/pos/sales')}
             style={{
@@ -251,7 +276,7 @@ function ProductList() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '24px'
           }}>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductBlock 
                 key={product.id} 
                 product={product}

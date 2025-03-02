@@ -2,6 +2,18 @@ import { jsPDF } from 'jspdf';
 import hgtLogo from '../assets/hgt.jpeg';  // Make sure to add this image to your assets
 import API from '../services/api';
 
+// Add this helper function at the top
+const calculatePricesWithVAT = (totalWithVAT, vatRate) => {
+  const basePrice = totalWithVAT / (1 + (vatRate / 100));
+  const vatAmount = totalWithVAT - basePrice;
+  
+  return {
+    basePrice: Number(basePrice.toFixed(2)),
+    vatAmount: Number(vatAmount.toFixed(2)),
+    totalWithVAT: Number(totalWithVAT.toFixed(2))
+  };
+};
+
 export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   // Try to get invoice by orderGroupId first, then fallback to sale.id
   let response;
@@ -51,7 +63,7 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
     store?.address,  // Already includes full address with postal code and city
     'Tel: +34 933 297 250',  // Static phone
     'www.hgtonline.es',
-    'info@hgtonline.es',  // Static email
+    'Email: info@hgtonline.es',  // Static email
     'CIF/NIF: B44726511',
     'NIF: ESB44726511'
   ], 20, 65);
@@ -106,26 +118,27 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
 
   // Total section with box
   doc.setLineWidth(0.5);
-  doc.rect(120, yPos + 5, 70, 30); // Made taller for VAT
+  doc.rect(120, yPos + 5, 70, 40); // Made taller for VAT breakdown
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  
-  // Subtotal line
-  doc.text('Subtotal:', 125, yPos + 15);
+
+  // Calculate prices
+  const prices = calculatePricesWithVAT(total, vatRate);
+
+  // Base price line
+  doc.text('Importe sin IVA:', 125, yPos + 15);
   doc.text('€', 155, yPos + 15);
-  doc.text(total.toFixed(2), 165, yPos + 15);
-  
+  doc.text(prices.basePrice.toFixed(2), 165, yPos + 15);
+
   // VAT line
-  const vatAmount = (total * vatRate / 100);
-  doc.text(`IVA: ${vatRate}%`, 125, yPos + 23);
-  doc.text('€', 155, yPos + 23);
-  doc.text(vatAmount.toFixed(2), 165, yPos + 23);
-  
+  doc.text(`IVA (${vatRate}%):`, 125, yPos + 25);
+  doc.text('€', 155, yPos + 25);
+  doc.text(prices.vatAmount.toFixed(2), 165, yPos + 25);
+
   // Total with VAT
-  const totalWithVat = total + vatAmount;
-  doc.text('Total:', 125, yPos + 31);
-  doc.text('€', 155, yPos + 31);
-  doc.text(totalWithVat.toFixed(2), 165, yPos + 31);
+  doc.text('Importe total:', 125, yPos + 35);
+  doc.text('€', 155, yPos + 35);
+  doc.text(prices.totalWithVAT.toFixed(2), 165, yPos + 35);
 
   // Add guarantee message
   doc.setFont('helvetica', 'normal');
