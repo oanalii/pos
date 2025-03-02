@@ -43,33 +43,32 @@ function AdminSales() {
 
   const fetchSales = async () => {
     try {
-      // Get today's sales specifically
-      const todayResponse = await API.get('/api/sales', {
-        params: {
-          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
-          'populate': '*',
-          ...(store && STORE_IDS[store] ? {
-            'filters[store][id][$eq]': STORE_IDS[store]
-          } : {})
-        }
-      });
-
-      // Calculate today's revenue
-      const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
-      setTodayRevenue(todayTotal);
-
-      // Get filtered sales as before...
+      // Get all sales first
       let url = '/api/sales?populate=*';
       if (store && STORE_IDS[store]) {
         url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
       }
       const response = await API.get(url);
-      let filteredSales = response.data.data;
+      const allSales = response.data.data;
 
-      // Apply time filter
-      const currentDate = new Date(); // Create a base date
+      // Process trend data with ALL sales before filtering
+      processSalesTrend(allSales);
+
+      // Calculate today's revenue
+      const today = new Date().toISOString().split('T')[0];
+      const todaySales = allSales.filter(sale => 
+        sale.Time.split('T')[0] === today
+      );
+      const todayTotal = todaySales.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setTodayRevenue(todayTotal);
+
+      // Now filter sales for the table display
+      let filteredSales = allSales;
+      const currentDate = new Date();
+      
+      // Apply time filter for table display only
       filteredSales = filteredSales.filter(sale => {
         const saleDate = new Date(sale.Time);
         
@@ -110,9 +109,6 @@ function AdminSales() {
       );
       
       setSales(sortedSales);
-
-      // After setting sales, process trend data
-      processSalesTrend(sortedSales);
     } catch (error) {
       console.error('Error fetching sales:', error);
     } finally {
