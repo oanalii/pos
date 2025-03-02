@@ -390,28 +390,74 @@ function AdminSales() {
               
               <svg
                 width="100%"
-                height="60"
+                height="120" // Increased height to accommodate labels
                 style={{ overflow: 'visible' }}
               >
-                {/* Draw the line */}
+                {/* Draw the smooth line */}
                 <path
-                  d={salesTrend.map((point, i) => 
-                    `${i === 0 ? 'M' : 'L'} ${(i * (100 / 14))}% ${50 - point.value}`
-                  ).join(' ')}
+                  d={salesTrend.map((point, i) => {
+                    const x = `${i * (100 / 14)}%`;
+                    const y = 50 - point.value;
+                    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                  }).join(' ')}
                   fill="none"
                   stroke="#2563eb"
                   strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                
-                {/* Add dots for each point */}
+
+                {/* Add subtle gradient under the line */}
+                <path
+                  d={`
+                    ${salesTrend.map((point, i) => {
+                      const x = `${i * (100 / 14)}%`;
+                      const y = 50 - point.value;
+                      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                    }).join(' ')}
+                    L 100% 50
+                    L 0 50
+                    Z
+                  `}
+                  fill="url(#gradient)"
+                  opacity="0.1"
+                />
+
+                {/* Gradient definition */}
+                <defs>
+                  <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Add value labels */}
                 {salesTrend.map((point, i) => (
-                  <circle
-                    key={point.date}
-                    cx={`${i * (100 / 14)}%`}
-                    cy={50 - point.value}
-                    r="3"
-                    fill="#2563eb"
-                  />
+                  <g key={point.date}>
+                    {/* Date label */}
+                    <text
+                      x={`${i * (100 / 14)}%`}
+                      y="80"
+                      textAnchor="middle"
+                      fill="#64748b"
+                      style={{ fontSize: '10px' }}
+                    >
+                      {new Date(point.date).toLocaleDateString('es-ES', { 
+                        day: 'numeric',
+                        month: 'numeric'
+                      })}
+                    </text>
+                    {/* Value label */}
+                    <text
+                      x={`${i * (100 / 14)}%`}
+                      y="95"
+                      textAnchor="middle"
+                      fill="#475569"
+                      style={{ fontSize: '11px', fontWeight: 500 }}
+                    >
+                      €{point.total.toFixed(0)}
+                    </text>
+                  </g>
                 ))}
               </svg>
             </Box>
