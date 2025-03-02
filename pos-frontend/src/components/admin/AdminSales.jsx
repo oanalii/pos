@@ -169,6 +169,8 @@ function AdminSales() {
         { id: 75, name: "Keyboard", count: 0, totalRevenue: 0 },
         { id: 77, name: "Laptop (not MacBook)", count: 0, totalRevenue: 0 },
         { id: 79, name: "iMac", count: 0, totalRevenue: 0 },
+        { id: 82, name: "Lyca SIM", count: 0, totalRevenue: 0 },
+        { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 }
       ];
 
       // Process each sale
