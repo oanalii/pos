@@ -75,13 +75,12 @@ function ProductList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await API.get('/api/products?populate=*');
+        const response = await API.get('/api/products?pagination[pageSize]=100&populate=*');
         console.log('Raw product data from API:', response.data.data);
 
-        // Map products to have correct IDs
         const correctedProducts = response.data.data.map(product => ({
           ...product,
-          id: ID_MAP[product.Product] // Use the correct ID from our mapping
+          id: ID_MAP[product.Product]
         }));
 
         console.log('Products with corrected IDs:', correctedProducts);
