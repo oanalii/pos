@@ -376,9 +376,7 @@ function AdminSales() {
               bgcolor: 'white',
               borderRadius: '16px',
               border: '1px solid #f1f5f9',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
+              height: '200px'  // Fixed height
             }}>
               <Typography sx={{ fontSize: '0.875rem', color: '#64748b', mb: 2 }}>
                 Sales Trend (Last 15 Days)
@@ -386,70 +384,49 @@ function AdminSales() {
               
               <svg
                 width="100%"
-                height="120" // Increased height to accommodate labels
-                style={{ overflow: 'visible' }}
+                height="150"
+                viewBox="0 0 100 50"
+                preserveAspectRatio="none"
               >
-                {/* Draw the smooth line */}
-                <path
-                  d={salesTrend.map((point, i) => {
-                    const x = `${i * (100 / 14)}%`;
-                    const y = 50 - point.value;
-                    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                {/* Background grid lines - optional */}
+                <line x1="0" y1="25" x2="100" y2="25" stroke="#f1f5f9" strokeWidth="0.5" />
+                
+                {/* The actual trend line */}
+                <polyline
+                  points={salesTrend.map((point, i) => {
+                    const x = (i / (salesTrend.length - 1)) * 100;
+                    const y = 50 - ((point.total / Math.max(...salesTrend.map(p => p.total))) * 45);
+                    return `${x},${y}`;
                   }).join(' ')}
                   fill="none"
                   stroke="#2563eb"
-                  strokeWidth="2"
+                  strokeWidth="0.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
 
-                {/* Add subtle gradient under the line */}
-                <path
-                  d={`
-                    ${salesTrend.map((point, i) => {
-                      const x = `${i * (100 / 14)}%`;
-                      const y = 50 - point.value;
-                      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                    }).join(' ')}
-                    L 100% 50
-                    L 0 50
-                    Z
-                  `}
-                  fill="url(#gradient)"
-                  opacity="0.1"
-                />
-
-                {/* Gradient definition */}
-                <defs>
-                  <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" />
-                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-
-                {/* Add value labels */}
+                {/* Value labels */}
                 {salesTrend.map((point, i) => (
-                  <g key={point.date}>
-                    {/* Date label */}
+                  <g key={i}>
                     <text
-                      x={`${i * (100 / 14)}%`}
-                      y="80"
+                      x={(i / (salesTrend.length - 1)) * 100}
+                      y="60"
                       textAnchor="middle"
+                      fontSize="3"
                       fill="#64748b"
-                      style={{ fontSize: '10px' }}
                     >
                       {new Date(point.date).toLocaleDateString('es-ES', { 
                         day: 'numeric',
                         month: 'numeric'
                       })}
                     </text>
-                    {/* Value label */}
                     <text
-                      x={`${i * (100 / 14)}%`}
-                      y="95"
+                      x={(i / (salesTrend.length - 1)) * 100}
+                      y="65"
                       textAnchor="middle"
+                      fontSize="3"
                       fill="#475569"
-                      style={{ fontSize: '11px', fontWeight: 500 }}
+                      fontWeight="bold"
                     >
                       €{point.total.toFixed(0)}
                     </text>
