@@ -24,6 +24,7 @@ const STORE_IDS = {
   paralel: 1,
   mallorca: 3,
   hospital: 7,
+  consell: 14  // Add new Consell store
 };
 
 function AdminSales() {
