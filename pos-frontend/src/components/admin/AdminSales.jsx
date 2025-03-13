@@ -38,12 +38,14 @@ function AdminSales() {
     yesterday: 0
   });
   const [selectedVat, setSelectedVat] = useState(0);
+  const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
+  const [periodRevenue, setPeriodRevenue] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
 
   const fetchSales = async () => {
     try {
-      // Get today's sales specifically
+      // Get today's sales
       const todayResponse = await API.get('/api/sales', {
         params: {
           'filters[Time][$gte]': new Date().toISOString().split('T')[0],
@@ -53,12 +55,55 @@ function AdminSales() {
           } : {})
         }
       });
-
-      // Calculate today's revenue
       const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
         sum + parseFloat(sale.Price || 0), 0
       );
       setTodayRevenue(todayTotal);
+
+      // Get yesterday's sales
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStart = yesterday.toISOString().split('T')[0];
+      const yesterdayEnd = new Date().toISOString().split('T')[0];
+
+      const yesterdayResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': yesterdayStart,
+          'filters[Time][$lt]': yesterdayEnd,
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+      const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setYesterdayRevenue(yesterdayTotal);
+
+      // Get period revenue (default to monthly)
+      const periodStart = new Date();
+      if (timeFilter === '12months') {
+        periodStart.setFullYear(periodStart.getFullYear() - 1);
+      } else if (timeFilter === '3months') {
+        periodStart.setMonth(periodStart.getMonth() - 3);
+      } else {
+        periodStart.setMonth(periodStart.getMonth() - 1); // Default monthly
+      }
+
+      const periodResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': periodStart.toISOString(),
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+      const periodTotal = periodResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setPeriodRevenue(periodTotal);
 
       // Get filtered sales as before...
       let url = '/api/sales?populate=*';
@@ -329,16 +374,57 @@ function AdminSales() {
               </Box>
 
               <Box sx={{ 
-                mb: 2.5,
-                p: 2.5,
-                bgcolor: '#2563eb',
-                borderRadius: '12px',
-                color: 'white',
-                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 2,
+                mb: 4,
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  Today's Revenue: €{todayRevenue.toFixed(2)}
-                </Typography>
+                <Box sx={{ 
+                  p: 2.5,
+                  bgcolor: '#2563eb',
+                  borderRadius: '12px',
+                  color: 'white',
+                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+                }}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                    Today
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                    €{todayRevenue.toFixed(2)}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ 
+                  p: 2.5,
+                  bgcolor: '#2563eb',
+                  borderRadius: '12px',
+                  color: 'white',
+                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+                }}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                    Yesterday
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                    €{yesterdayRevenue.toFixed(2)}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ 
+                  p: 2.5,
+                  bgcolor: '#2563eb',
+                  borderRadius: '12px',
+                  color: 'white',
+                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+                }}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                    {timeFilter === '12months' ? 'Year' : 
+                     timeFilter === '3months' ? '3 Months' : 
+                     'Month'}
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                    €{periodRevenue.toFixed(2)}
+                  </Typography>
+                </Box>
               </Box>
 
               <TableContainer sx={{ 
@@ -527,16 +613,57 @@ function AdminSales() {
             </Box>
 
             <Box sx={{ 
-              mb: 4, 
-              p: 3, 
-              bgcolor: '#2563eb',
-              borderRadius: '12px',
-              color: 'white',
-              boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 2,
+              mb: 4,
             }}>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                Today's Revenue: €{todayRevenue.toFixed(2)}
-              </Typography>
+              <Box sx={{ 
+                p: 2.5,
+                bgcolor: '#2563eb',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+              }}>
+                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                  Today
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                  €{todayRevenue.toFixed(2)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ 
+                p: 2.5,
+                bgcolor: '#2563eb',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+              }}>
+                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                  Yesterday
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                  €{yesterdayRevenue.toFixed(2)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ 
+                p: 2.5,
+                bgcolor: '#2563eb',
+                borderRadius: '12px',
+                color: 'white',
+                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+              }}>
+                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
+                  {timeFilter === '12months' ? 'Year' : 
+                   timeFilter === '3months' ? '3 Months' : 
+                   'Month'}
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                  €{periodRevenue.toFixed(2)}
+                </Typography>
+              </Box>
             </Box>
 
             <TableContainer sx={{ 
