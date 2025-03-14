@@ -302,16 +302,12 @@ function AdminSales() {
         p: 3,
       }}>
         {store ? (
-          <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2.5,
-          }}>
-            {/* Sales Section */}
+          <Box sx={{ p: 3 }}>
             <Box sx={{ 
               bgcolor: '#fff',
               borderRadius: '16px',
-              p: 2.5,
+              p: 3,
+              mb: 3,
               boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
             }}>
               <Box sx={{ 
@@ -338,11 +334,14 @@ function AdminSales() {
                     onChange={(e) => setTimeFilter(e.target.value)}
                     size="small"
                     sx={{ 
-                      minWidth: 180,
+                      minWidth: 200,
                       '& .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'rgb(226, 232, 240)',
                         borderRadius: '8px',
-                      }
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(148, 163, 184)',
+                      },
                     }}
                   >
                     <MenuItem value="all">All Time</MenuItem>
@@ -377,7 +376,7 @@ function AdminSales() {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: 2,
-                mb: 4,
+                mb: 2,
               }}>
                 <Box sx={{ 
                   p: 2.5,
@@ -426,172 +425,119 @@ function AdminSales() {
                   </Typography>
                 </Box>
               </Box>
-
-              <TableContainer sx={{ 
-                borderRadius: '8px',
-                border: '1px solid',
-                borderColor: 'grey.200',
-                overflow: 'auto',
-                maxHeight: '585px',
-                '& .MuiTable-root': {
-                  minWidth: 650,
-                },
-                '& .MuiTableCell-root': {
-                  fontSize: '0.875rem',
-                  padding: '12px 16px',
-                  borderColor: 'rgb(243, 244, 246)',
-                },
-                '& .MuiTableCell-head': {
-                  backgroundColor: '#f8fafc',
-                  fontWeight: 600,
-                },
-                '& .MuiTableRow-root:hover': {
-                  backgroundColor: 'rgb(248, 250, 252)',
-                }
-              }}>
-                <Table stickyHeader size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ width: '15%' }}>Store</TableCell>
-                      <TableCell sx={{ width: '12%' }}>Date</TableCell>
-                      <TableCell sx={{ width: '12%' }}>Time</TableCell>
-                      <TableCell sx={{ width: '15%' }}>Product</TableCell>
-                      <TableCell sx={{ width: '18%' }}>Description</TableCell>
-                      <TableCell sx={{ width: '10%' }}>Price</TableCell>
-                      <TableCell sx={{ width: '18%' }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sales && sales.length > 0 ? (
-                      sales.map((sale) => (
-                        <TableRow key={sale.id} hover>
-                          <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
-                          <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
-                          <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                          <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                          <TableCell sx={{ 
-                            maxWidth: '200px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {sale.description || 'No description'}
-                          </TableCell>
-                          <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
-                          <TableCell>
-                            <Box sx={{ 
-                              display: 'flex', 
-                              gap: 1, 
-                              alignItems: 'center'
-                            }}>
-                              <Select
-                                value={selectedVat}
-                                onChange={(e) => setSelectedVat(Number(e.target.value))}
-                                size="small"
-                                sx={{ 
-                                  minWidth: 90,
-                                  height: '32px',
-                                  fontSize: '0.875rem',
-                                  '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'rgb(226, 232, 240)'
-                                  }
-                                }}
-                              >
-                                <MenuItem value={0}>IVA: 0%</MenuItem>
-                                <MenuItem value={10}>IVA: 10%</MenuItem>
-                                <MenuItem value={21}>IVA: 21%</MenuItem>
-                              </Select>
-                              <Button
-                                variant="contained"
-                                onClick={() => handleDownloadInvoice(sale)}
-                                size="small"
-                                sx={{
-                                  height: '32px',
-                                  textTransform: 'none',
-                                  boxShadow: 'none',
-                                  fontSize: '0.875rem',
-                                  px: 2,
-                                  backgroundColor: '#2563eb',
-                                  '&:hover': { 
-                                    backgroundColor: '#1d4ed8',
-                                    boxShadow: 'none'
-                                  }
-                                }}
-                              >
-                                Download Invoice
-                              </Button>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell 
-                          colSpan={7} 
-                          align="center"
-                          sx={{ 
-                            py: 4,
-                            color: 'text.secondary'
-                          }}
-                        >
-                          No sales records found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
             </Box>
 
-            {/* Product Stats Section */}
             <Box sx={{ 
-              bgcolor: '#fff',
-              borderRadius: '16px',
-              p: 2.5,
-              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+              display: 'flex',
+              gap: 3,
+              height: 'calc(100vh - 350px)', // Adjust based on your header height
             }}>
-              <Typography variant="h5" sx={{ mb: 2.5, fontWeight: 600 }}>
-                Product Breakdown
-              </Typography>
-              <TableContainer sx={{ 
-                borderRadius: '12px',
-                border: '1px solid rgb(226, 232, 240)',
-                overflow: 'auto',
-                maxHeight: '250px',
-                '& .MuiTable-root': {
-                  minWidth: 650,
-                },
-                '& .MuiTableCell-root': {
-                  padding: '12px 16px',
-                  height: '48px',
-                },
-                '& .MuiTableCell-head': {
-                  bgcolor: '#fff',
-                  borderBottom: '2px solid #f1f5f9',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  color: '#64748b',
-                }
+              <Box sx={{ 
+                flex: '1',
+                bgcolor: '#fff',
+                borderRadius: '16px',
+                p: 3,
+                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
               }}>
-                <Table stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Product Name</TableCell>
-                      <TableCell align="right">Total Sales</TableCell>
-                      <TableCell align="right">Total Revenue</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {productStats.map((stat) => (
-                      <TableRow key={stat.id}>
-                        <TableCell>{stat.name}</TableCell>
-                        <TableCell align="right">{stat.count}</TableCell>
-                        <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
+                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+                  Sales Records
+                </Typography>
+                
+                <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {sales && sales.length > 0 ? (
+                        sales.map((sale) => (
+                          <TableRow key={sale.id}>
+                            <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
+                            <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
+                            <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
+                            <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
+                            <TableCell>{sale.description || 'No description'}</TableCell>
+                            <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <Select
+                                  value={selectedVat}
+                                  onChange={(e) => setSelectedVat(Number(e.target.value))}
+                                  size="small"
+                                >
+                                  <MenuItem value={0}>IVA: 0%</MenuItem>
+                                  <MenuItem value={10}>IVA: 10%</MenuItem>
+                                  <MenuItem value={21}>IVA: 21%</MenuItem>
+                                </Select>
+                                <Button
+                                  variant="contained"
+                                  onClick={() => handleDownloadInvoice(sale)}
+                                  size="small"
+                                >
+                                  Download Invoice
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} align="center">
+                            No sales records found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+
+              <Box sx={{ 
+                width: '45%',
+                bgcolor: '#fff',
+                borderRadius: '16px',
+                p: 3,
+                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+                  Product Breakdown
+                </Typography>
+
+                <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }}>Product Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }} align="right">Total Sales</TableCell>
+                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }} align="right">Total Revenue</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {productStats.map((stat) => (
+                        <TableRow key={stat.id} hover>
+                          <TableCell>{stat.name}</TableCell>
+                          <TableCell align="right">{stat.count}</TableCell>
+                          <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
             </Box>
           </Box>
         ) : (
@@ -718,74 +664,42 @@ function AdminSales() {
             </Box>
 
             <TableContainer sx={{ 
-              borderRadius: '8px',
-              border: '1px solid',
-              borderColor: 'grey.200',
+              borderRadius: '12px',
+              border: '1px solid rgb(226, 232, 240)',
               overflow: 'auto',
               maxHeight: '585px',
               '& .MuiTable-root': {
                 minWidth: 650,
-              },
-              '& .MuiTableCell-root': {
-                fontSize: '0.875rem',
-                padding: '12px 16px',
-                borderColor: 'rgb(243, 244, 246)',
-              },
-              '& .MuiTableCell-head': {
-                backgroundColor: '#f8fafc',
-                fontWeight: 600,
-              },
-              '& .MuiTableRow-root:hover': {
-                backgroundColor: 'rgb(248, 250, 252)',
               }
             }}>
-              <Table stickyHeader size="small">
+              <Table stickyHeader>
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ width: '15%' }}>Store</TableCell>
-                    <TableCell sx={{ width: '12%' }}>Date</TableCell>
-                    <TableCell sx={{ width: '12%' }}>Time</TableCell>
-                    <TableCell sx={{ width: '15%' }}>Product</TableCell>
-                    <TableCell sx={{ width: '18%' }}>Description</TableCell>
-                    <TableCell sx={{ width: '10%' }}>Price</TableCell>
-                    <TableCell sx={{ width: '18%' }}>Actions</TableCell>
+                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {sales && sales.length > 0 ? (
                     sales.map((sale) => (
-                      <TableRow key={sale.id} hover>
+                      <TableRow key={sale.id}>
                         <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
                         <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
                         <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
                         <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                        <TableCell sx={{ 
-                          maxWidth: '200px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {sale.description || 'No description'}
-                        </TableCell>
+                        <TableCell>{sale.description || 'No description'}</TableCell>
                         <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            gap: 1, 
-                            alignItems: 'center'
-                          }}>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                             <Select
                               value={selectedVat}
                               onChange={(e) => setSelectedVat(Number(e.target.value))}
                               size="small"
-                              sx={{ 
-                                minWidth: 90,
-                                height: '32px',
-                                fontSize: '0.875rem',
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: 'rgb(226, 232, 240)'
-                                }
-                              }}
                             >
                               <MenuItem value={0}>IVA: 0%</MenuItem>
                               <MenuItem value={10}>IVA: 10%</MenuItem>
@@ -795,35 +709,16 @@ function AdminSales() {
                               variant="contained"
                               onClick={() => handleDownloadInvoice(sale)}
                               size="small"
-                              sx={{
-                                height: '32px',
-                                textTransform: 'none',
-                                boxShadow: 'none',
-                                fontSize: '0.875rem',
-                                px: 2,
-                                backgroundColor: '#2563eb',
-                                '&:hover': { 
-                                  backgroundColor: '#1d4ed8',
-                                  boxShadow: 'none'
-                                }
-                              }}
                             >
                               Download Invoice
                             </Button>
-                          </Box>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell 
-                        colSpan={7} 
-                        align="center"
-                        sx={{ 
-                          py: 4,
-                          color: 'text.secondary'
-                        }}
-                      >
+                      <TableCell colSpan={7} align="center">
                         No sales records found
                       </TableCell>
                     </TableRow>
