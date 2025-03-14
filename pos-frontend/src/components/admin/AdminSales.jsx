@@ -430,7 +430,7 @@ function AdminSales() {
             <Box sx={{ 
               display: 'flex',
               gap: 3,
-              height: 'calc(100vh - 350px)', // Adjust based on your header height
+              height: 'calc(100vh - 350px)', // Container for both tables
             }}>
               <Box sx={{ 
                 flex: '1',
@@ -438,15 +438,26 @@ function AdminSales() {
                 borderRadius: '16px',
                 p: 3,
                 boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                overflow: 'hidden',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                overflow: 'hidden', // Important for nested scrolling
               }}>
                 <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
                   Sales Records
                 </Typography>
                 
-                <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+                <TableContainer sx={{ 
+                  flex: 1,
+                  overflow: 'auto',
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                  borderRadius: '8px',
+                  '& .MuiTableCell-root': {
+                    fontSize: '0.875rem',
+                    padding: '12px 16px',
+                    borderColor: 'rgb(243, 244, 246)',
+                  }
+                }}>
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f8fafc' }}>
@@ -509,15 +520,26 @@ function AdminSales() {
                 borderRadius: '16px',
                 p: 3,
                 boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                overflow: 'hidden',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                overflow: 'hidden', // Important for nested scrolling
               }}>
                 <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
                   Product Breakdown
                 </Typography>
 
-                <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+                <TableContainer sx={{ 
+                  flex: 1,
+                  overflow: 'auto',
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                  borderRadius: '8px',
+                  '& .MuiTableCell-root': {
+                    fontSize: '0.875rem',
+                    padding: '12px 16px',
+                    borderColor: 'rgb(243, 244, 246)',
+                  }
+                }}>
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
