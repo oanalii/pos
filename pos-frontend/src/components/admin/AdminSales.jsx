@@ -217,14 +217,14 @@ function AdminSales() {
         { id: 79, name: "iMac", count: 0, totalRevenue: 0 },
         { id: 82, name: "Lyca SIM", count: 0, totalRevenue: 0 },
         { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 },
-        { id: 88, name: "OTG", count: 0, totalRevenue: 0 },
-        { id: 90, name: "Pilas", count: 0, totalRevenue: 0 },
-        { id: 92, name: "Soporte", count: 0, totalRevenue: 0 },
-        { id: 94, name: "SD Card", count: 0, totalRevenue: 0 },
-        { id: 96, name: "Dryer", count: 0, totalRevenue: 0 },
-        { id: 98, name: "Plancha", count: 0, totalRevenue: 0 },
-        { id: 100, name: "Mando", count: 0, totalRevenue: 0 },
-        { id: 102, name: "Trimmer", count: 0, totalRevenue: 0 }
+        { id: 87, name: "OTG", count: 0, totalRevenue: 0 },
+        { id: 89, name: "Pilas", count: 0, totalRevenue: 0 },
+        { id: 91, name: "Soporte", count: 0, totalRevenue: 0 },
+        { id: 93, name: "SD Card", count: 0, totalRevenue: 0 },
+        { id: 95, name: "Dryer", count: 0, totalRevenue: 0 },
+        { id: 97, name: "Plancha", count: 0, totalRevenue: 0 },
+        { id: 99, name: "Mando", count: 0, totalRevenue: 0 },
+        { id: 101, name: "Trimmer", count: 0, totalRevenue: 0 }
       ];
 
       // Process each sale
