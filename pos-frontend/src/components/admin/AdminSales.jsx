@@ -380,8 +380,7 @@ function AdminSales() {
       display: 'flex',
       minHeight: '100vh',
       backgroundColor: 'hsl(0 0% 98%)',
-      color: 'hsl(222.2 47.4% 11.2%)',
-      flexDirection: isMobile ? 'column' : 'row'
+      color: 'hsl(222.2 47.4% 11.2%)'
     }}>
       <Sidebar />
       
@@ -389,10 +388,11 @@ function AdminSales() {
         flex: 1,
         padding: isMobile ? '8px' : '32px',
         backgroundColor: 'hsl(0 0% 98%)',
-        width: isMobile ? 'calc(100% - 60px)' : 'auto',
-        marginLeft: isMobile ? '60px' : '0',
-        minHeight: '100vh',
-        overflowX: 'hidden'
+        marginLeft: isMobile ? '50px' : '0',
+        width: isMobile ? 'calc(100% - 50px)' : 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        position: 'relative'
       }}>
         <div style={{
           maxWidth: '1400px',
@@ -635,8 +635,9 @@ function AdminSales() {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              height: isMobile ? 'calc(100vh - 280px)' : 'calc(100vh - 280px)',
-              maxWidth: '100%'
+              height: isMobile ? 'calc(100vh - 220px)' : 'calc(100vh - 280px)',
+              maxWidth: '100%',
+              WebkitOverflowScrolling: 'touch'
             }}>
               <div style={{
                 padding: '16px 24px',
@@ -658,7 +659,10 @@ function AdminSales() {
                 overflowY: 'auto',
                 flex: 1,
                 WebkitOverflowScrolling: 'touch',
-                maxWidth: '100%'
+                maxWidth: '100%',
+                position: 'relative',
+                '-webkit-transform': 'translateZ(0)',
+                transform: 'translateZ(0)'
               }}>
                 <table style={{
                   width: '100%',
@@ -669,7 +673,7 @@ function AdminSales() {
                     position: 'sticky',
                     top: 0,
                     backgroundColor: 'hsl(0 0% 98%)',
-                    zIndex: 1
+                    zIndex: 2
                   }}>
                     <tr style={{
                       backgroundColor: 'hsl(0 0% 98%)',
@@ -774,7 +778,8 @@ function AdminSales() {
               borderRadius: '8px',
               border: '1px solid hsl(240 5.9% 90%)',
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              marginTop: isMobile ? '16px' : 0
             }}>
               <div style={{
                 padding: '16px 24px',
@@ -791,8 +796,9 @@ function AdminSales() {
               </div>
 
               <div style={{
-                maxHeight: 'calc(100vh - 300px)',
-                overflowY: 'auto'
+                maxHeight: isMobile ? '400px' : 'calc(100vh - 300px)',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch'
               }}>
                 <table style={{
                   width: '100%',
