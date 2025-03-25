@@ -381,14 +381,18 @@ function AdminSales() {
       minHeight: '100vh',
       backgroundColor: 'hsl(0 0% 98%)',
       color: 'hsl(222.2 47.4% 11.2%)',
-      flexDirection: isMobile ? 'column' : 'row' // Stack on mobile
+      flexDirection: isMobile ? 'column' : 'row'
     }}>
       <Sidebar />
       
       <main style={{
         flex: 1,
-        padding: isMobile ? '16px' : '32px',
-        backgroundColor: 'hsl(0 0% 98%)'
+        padding: isMobile ? '8px' : '32px',
+        backgroundColor: 'hsl(0 0% 98%)',
+        width: isMobile ? 'calc(100% - 60px)' : 'auto',
+        marginLeft: isMobile ? '60px' : '0',
+        minHeight: '100vh',
+        overflowX: 'hidden'
       }}>
         <div style={{
           maxWidth: '1400px',
@@ -631,7 +635,8 @@ function AdminSales() {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              height: isMobile ? 'calc(100vh - 380px)' : 'calc(100vh - 280px)'
+              height: isMobile ? 'calc(100vh - 280px)' : 'calc(100vh - 280px)',
+              maxWidth: '100%'
             }}>
               <div style={{
                 padding: '16px 24px',
@@ -652,12 +657,13 @@ function AdminSales() {
                 overflowX: 'auto',
                 overflowY: 'auto',
                 flex: 1,
-                WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+                WebkitOverflowScrolling: 'touch',
+                maxWidth: '100%'
               }}>
                 <table style={{
                   width: '100%',
                   borderCollapse: 'collapse',
-                  minWidth: isMobile ? '800px' : 'auto' // Force horizontal scroll on mobile
+                  minWidth: isMobile ? '600px' : 'auto'
                 }}>
                   <thead style={{
                     position: 'sticky',
@@ -711,17 +717,19 @@ function AdminSales() {
                         <td style={{ ...cellStyle }}>
                           <div style={{
                             display: 'flex',
-                            gap: '8px',
-                            alignItems: 'center'
+                            gap: '4px',
+                            alignItems: 'center',
+                            flexWrap: isMobile ? 'wrap' : 'nowrap'
                           }}>
                             <select
                               value={selectedVat}
                               onChange={(e) => setSelectedVat(Number(e.target.value))}
                               style={{
-                                padding: '6px 10px',
+                                padding: isMobile ? '4px 8px' : '6px 10px',
                                 borderRadius: '6px',
                                 border: '1px solid hsl(240 5.9% 90%)',
-                                fontSize: '13px',
+                                fontSize: '12px',
+                                width: isMobile ? '80px' : 'auto',
                                 color: 'hsl(222.2 47.4% 11.2%)',
                                 backgroundColor: 'white',
                                 cursor: 'pointer',
@@ -735,22 +743,20 @@ function AdminSales() {
                             <button
                               onClick={() => handleDownloadInvoice(sale)}
                               style={{
-                                padding: '6px 12px',
+                                padding: isMobile ? '4px 8px' : '6px 12px',
                                 backgroundColor: 'hsl(222.2 47.4% 11.2%)',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
-                                fontSize: '13px',
+                                fontSize: '12px',
                                 fontWeight: '500',
+                                whiteSpace: 'nowrap',
                                 transition: 'all 0.15s ease',
-                                fontFamily: 'system-ui',
-                                '&:hover': {
-                                  backgroundColor: 'hsl(222.2 47.4% 9%)'
-                                }
+                                fontFamily: 'system-ui'
                               }}
                             >
-                              Download Invoice
+                              {isMobile ? 'Download' : 'Download Invoice'}
                             </button>
                           </div>
                         </td>
