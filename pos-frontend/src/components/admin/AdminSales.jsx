@@ -30,49 +30,63 @@ function AdminSales() {
   const fetchSales = useCallback(async () => {
     try {
       // Get today's sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
       const todayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
+          'filters[Time][$gte]': todayStart.toISOString(),
           'populate': '*',
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
         }
       });
-      const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
+
+      const todayTotal = todayResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
       setTodayRevenue(todayTotal);
 
       // Get yesterday's sales
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStart = yesterday.toISOString().split('T')[0];
-      const yesterdayEnd = new Date().toISOString().split('T')[0];
+      const yesterdayStart = new Date();
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      yesterdayStart.setHours(0, 0, 0, 0);
+      const yesterdayEnd = new Date(todayStart);
 
       const yesterdayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': yesterdayStart,
-          'filters[Time][$lt]': yesterdayEnd,
+          'filters[Time][$gte]': yesterdayStart.toISOString(),
+          'filters[Time][$lt]': yesterdayEnd.toISOString(),
           'populate': '*',
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
         }
       });
-      const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
+
+      const yesterdayTotal = yesterdayResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
       setYesterdayRevenue(yesterdayTotal);
 
-      // Get period revenue (default to monthly)
+      // Get period revenue
       const periodStart = new Date();
-      if (timeFilter === '12months') {
-        periodStart.setFullYear(periodStart.getFullYear() - 1);
-      } else if (timeFilter === '3months') {
-        periodStart.setMonth(periodStart.getMonth() - 3);
-      } else {
-        periodStart.setMonth(periodStart.getMonth() - 1); // Default monthly
+      switch(timeFilter) {
+        case '12months':
+          periodStart.setFullYear(periodStart.getFullYear() - 1);
+          break;
+        case '3months':
+          periodStart.setMonth(periodStart.getMonth() - 3);
+          break;
+        case 'month':
+          periodStart.setMonth(periodStart.getMonth() - 1);
+          break;
+        case 'week':
+          periodStart.setDate(periodStart.getDate() - 7);
+          break;
+        default:
+          periodStart.setMonth(periodStart.getMonth() - 1); // Default to monthly
       }
 
       const periodResponse = await API.get('/api/sales', {
@@ -84,58 +98,54 @@ function AdminSales() {
           } : {})
         }
       });
-      const periodTotal = periodResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
+
+      const periodTotal = periodResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
       setPeriodRevenue(periodTotal);
 
-      // Get filtered sales as before...
-      let url = '/api/sales?populate=*';
-      if (store && STORE_IDS[store]) {
-        url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
-      }
-      const response = await API.get(url);
-      let filteredSales = response.data.data;
+      // Get all sales for the table and chart
+      const response = await API.get('/api/sales', {
+        params: {
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
 
-      // Apply time filter
-      const currentDate = new Date(); // Create a base date
-      filteredSales = filteredSales.filter(sale => {
+      if (!response.data?.data) {
+        setSales([]);
+        setChartData([]);
+        return;
+      }
+
+      const filteredSales = response.data.data.filter(sale => {
+        if (!sale.Time) return false;
         const saleDate = new Date(sale.Time);
+        const currentDate = new Date();
         
         switch (timeFilter) {
           case 'day':
-            const today = new Date(currentDate);
-            today.setHours(0, 0, 0, 0);
-            return saleDate >= today;
-            
+            return saleDate >= todayStart;
           case 'yesterday':
-            const yesterdayStart = new Date(currentDate);
-            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-            yesterdayStart.setHours(0, 0, 0, 0);
-            const yesterdayEnd = new Date(currentDate);
-            yesterdayEnd.setHours(0, 0, 0, 0);
             return saleDate >= yesterdayStart && saleDate < yesterdayEnd;
-            
           case 'week':
             const weekAgo = new Date(currentDate);
             weekAgo.setDate(weekAgo.getDate() - 7);
             return saleDate >= weekAgo;
-            
           case 'month':
             const monthAgo = new Date(currentDate);
             monthAgo.setMonth(monthAgo.getMonth() - 1);
             return saleDate >= monthAgo;
-            
           case '3months':
             const threeMonthsAgo = new Date(currentDate);
             threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
             return saleDate >= threeMonthsAgo;
-            
           case '12months':
             const yearAgo = new Date(currentDate);
             yearAgo.setFullYear(yearAgo.getFullYear() - 1);
             return saleDate >= yearAgo;
-            
           default:
             return true;
         }
@@ -149,25 +159,26 @@ function AdminSales() {
       setSales(sortedSales);
 
       // Generate chart data
-      generateChartData(sortedSales);
+      const last30Days = generateChartData(sortedSales);
+      setChartData(last30Days);
+
     } catch (error) {
       console.error('Error fetching sales:', error);
+      setSales([]);
+      setChartData([]);
     } finally {
       setLoading(false);
     }
   }, [store, timeFilter]);
 
-  const generateChartData = (salesData) => {
-    if (!salesData || salesData.length === 0) {
-      setChartData([]);
-      return;
-    }
+  const generateChartData = useCallback((salesData) => {
+    if (!Array.isArray(salesData)) return [];
     
-    // Create a date map for the last 30 days
     const dateMap = {};
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    // Initialize empty data for the last 30 days
+    // Initialize last 30 days with 0
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
@@ -175,26 +186,24 @@ function AdminSales() {
       dateMap[dateStr] = 0;
     }
     
-    // Fill in actual data
+    // Fill in actual sales data
     salesData.forEach(sale => {
-      if (!sale.Time) return;
-      const date = new Date(sale.Time);
-      const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+      if (!sale?.Time) return;
+      const saleDate = new Date(sale.Time);
+      saleDate.setHours(0, 0, 0, 0);
       
-      if (daysDiff <= 29) { // Only include last 30 days
-        const dateStr = date.toLocaleDateString('es-ES');
-        dateMap[dateStr] = (dateMap[dateStr] || 0) + parseFloat(sale.Price || 0);
+      const daysDiff = Math.floor((today - saleDate) / (1000 * 60 * 60 * 24));
+      if (daysDiff <= 29) {
+        const dateStr = saleDate.toLocaleDateString('es-ES');
+        dateMap[dateStr] = (dateMap[dateStr] || 0) + (parseFloat(sale.Price) || 0);
       }
     });
     
-    // Convert to array for chart display
-    const result = Object.keys(dateMap).map(date => ({
+    return Object.entries(dateMap).map(([date, amount]) => ({
       date,
-      amount: dateMap[date]
+      amount
     }));
-
-    setChartData(result);
-  };
+  }, []);
 
   const fetchProductStats = useCallback(async () => {
     try {
@@ -288,22 +297,12 @@ function AdminSales() {
       return;
     }
     
-    // Configure API token
     API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    // Only fetch data if we have a valid token
     fetchSales();
     if (store) {
       fetchProductStats();
     }
   }, [store, timeFilter, fetchSales, fetchProductStats, navigate]);
-
-  useEffect(() => {
-    // Add chart data generation to your existing useEffect
-    if (sales && sales.length > 0) {
-      setChartData(generateChartData(sales));
-    }
-  }, [sales, generateChartData]);
 
   const handleDownloadInvoice = async (sale) => {
     // Find related sales either by orderGroupId or by time (within 1 second)
@@ -447,7 +446,7 @@ function AdminSales() {
                 Last 30 Days
               </div>
               
-              {chartData.length > 0 ? (
+              {Array.isArray(chartData) && chartData.length > 0 ? (
                 <div style={{
                   display: 'flex',
                   height: '100%',
@@ -456,7 +455,6 @@ function AdminSales() {
                   paddingTop: '20px'
                 }}>
                   {chartData.map((point, index) => {
-                    // Calculate height as a percentage of the max value
                     const max = Math.max(...chartData.map(p => p.amount));
                     const height = max === 0 ? 0 : (point.amount / max) * 100;
                     
@@ -495,7 +493,7 @@ function AdminSales() {
                   fontSize: '12px',
                   fontFamily: 'system-ui'
                 }}>
-                  No data
+                  No data available
                 </div>
               )}
             </div>
@@ -708,10 +706,13 @@ function AdminSales() {
                                 fontSize: '13px',
                                 fontWeight: '500',
                                 transition: 'all 0.15s ease',
-                                fontFamily: 'system-ui'
+                                fontFamily: 'system-ui',
+                                '&:hover': {
+                                  backgroundColor: 'hsl(222.2 47.4% 9%)'
+                                }
                               }}
                             >
-                              Download
+                              Download Invoice
                             </button>
                           </div>
                         </td>
