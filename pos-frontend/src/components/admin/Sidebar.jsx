@@ -1,155 +1,109 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemText,
+  ListItemIcon, 
+  Typography,
+  Box,
+} from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
-    { name: 'General', path: '/admin/sales', icon: Dashboard },
-    { name: 'Product Stats', path: '/admin/product-stats', icon: BarChart },
-    { name: 'Gaudi', path: '/admin/sales/gaudi', icon: Store },
-    { name: 'Paralel', path: '/admin/sales/paralel', icon: Store },
-    { name: 'Mallorca', path: '/admin/sales/mallorca', icon: Store },
-    { name: 'Consell', path: '/admin/sales/consell', icon: Store },
-    { name: 'Hospital', path: '/admin/sales/hospital', icon: Store }
+    { name: 'General', path: '/admin/sales', icon: <DashboardIcon /> },
+    { name: 'Product Stats', path: '/admin/product-stats', icon: <BarChartIcon /> },
+    { name: 'Gaudi', path: '/admin/sales/gaudi', icon: <StoreIcon /> },
+    { name: 'Paralel', path: '/admin/sales/paralel', icon: <StoreIcon /> },
+    { name: 'Mallorca', path: '/admin/sales/mallorca', icon: <StoreIcon /> },
+    { name: 'Consell', path: '/admin/sales/consell', icon: <StoreIcon /> },
+    { name: 'Hospital', path: '/admin/sales/hospital', icon: <StoreIcon /> }
   ];
 
   return (
-    <div style={{
-      width: '240px',
-      height: '100vh',
-      borderRight: '1px solid hsl(240 5.9% 90%)',
-      backgroundColor: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'sticky',
-      top: 0,
-      left: 0
-    }}>
-      <div style={{
-        padding: '24px',
-        borderBottom: '1px solid hsl(240 5.9% 90%)'
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: { xs: 60, sm: 180 },
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: { xs: 60, sm: 180 },
+          boxSizing: 'border-box',
+          background: '#fff',
+          borderRight: '1px solid rgba(0, 0, 0, 0.12)',
+        },
+      }}
+    >
+      <Box sx={{ 
+        p: { xs: 1, sm: 3 },
+        background: '#1976d2',
+        color: 'white',
+        display: { xs: 'none', sm: 'block' }
       }}>
-        <h2 style={{
-          fontSize: '18px',
-          fontWeight: '600',
-          color: 'hsl(222.2 47.4% 11.2%)',
-          margin: 0,
-          fontFamily: 'system-ui',
-          letterSpacing: '-0.025em'
+        <Typography variant="h5" sx={{ 
+          mb: 1, 
+          fontWeight: 600,
+          color: '#fff',
+          letterSpacing: '0.5px'
         }}>
-          HGT Admin
-        </h2>
-        <p style={{
-          fontSize: '13px',
-          color: 'hsl(215.4 16.3% 46.9%)',
-          margin: '6px 0 0 0',
-          fontFamily: 'system-ui'
+          POS Admin
+        </Typography>
+        <Typography variant="body2" sx={{ 
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: '0.875rem'
         }}>
-          Sales & Inventory Management
-        </p>
-      </div>
+          Sales Dashboard
+        </Typography>
+      </Box>
       
-      <div style={{
-        padding: '16px 8px',
-        flex: 1,
-        overflowY: 'auto'
-      }}>
+      <List sx={{ px: { xs: 1, sm: 2 }, py: 1 }}>
         {menuItems.map((item) => (
-          <Link
+          <ListItem
             key={item.path}
+            component={Link}
             to={item.path}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              marginBottom: '4px',
-              textDecoration: 'none',
-              color: location.pathname === item.path 
-                ? 'hsl(222.2 47.4% 11.2%)' 
-                : 'hsl(215.4 16.3% 46.9%)',
+            sx={{
+              mb: 0.5,
+              borderRadius: 2,
+              color: '#333',
               backgroundColor: location.pathname === item.path 
-                ? 'hsl(210 40% 98%)' 
+                ? 'rgba(25, 118, 210, 0.08)'
                 : 'transparent',
-              fontFamily: 'system-ui',
-              fontSize: '14px',
-              fontWeight: location.pathname === item.path ? '500' : 'normal',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (location.pathname !== item.path) {
-                e.currentTarget.style.backgroundColor = 'hsl(0 0% 97%)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (location.pathname !== item.path) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.04)',
+              },
+              transition: 'all 0.2s ease',
+              padding: { xs: '8px', sm: '10px 16px' },
+              justifyContent: { xs: 'center', sm: 'flex-start' }
             }}
           >
-            <span style={{
-              display: 'flex',
-              marginRight: '12px',
+            <ListItemIcon sx={{ 
+              minWidth: { xs: 0, sm: 40 },
               color: location.pathname === item.path 
-                ? 'hsl(222.2 47.4% 11.2%)' 
-                : 'hsl(215.4 16.3% 46.9%)'
+                ? '#1976d2'
+                : 'rgba(0,0,0,0.54)'
             }}>
-              {item.name === 'General' ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect width="7" height="7" x="3" y="3" rx="1"/>
-                  <rect width="7" height="7" x="14" y="3" rx="1"/>
-                  <rect width="7" height="7" x="14" y="14" rx="1"/>
-                  <rect width="7" height="7" x="3" y="14" rx="1"/>
-                </svg>
-              ) : item.name === 'Product Stats' ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 3v18h18"/>
-                  <path d="m19 9-5 5-4-4-3 3"/>
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
-                  <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/>
-                  <path d="M12 3v6"/>
-                </svg>
-              )}
-            </span>
-            {item.name}
-          </Link>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText 
+              sx={{ display: { xs: 'none', sm: 'block' } }}
+              primary={item.name}
+              primaryTypographyProps={{
+                fontSize: '0.9375rem',
+                fontWeight: location.pathname === item.path ? 600 : 400,
+                color: location.pathname === item.path ? '#1976d2' : '#333'
+              }}
+            />
+          </ListItem>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function Dashboard() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect width="7" height="7" x="3" y="3" rx="1"/>
-      <rect width="7" height="7" x="14" y="3" rx="1"/>
-      <rect width="7" height="7" x="14" y="14" rx="1"/>
-      <rect width="7" height="7" x="3" y="14" rx="1"/>
-    </svg>
-  );
-}
-
-function BarChart() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 3v18h18"/>
-      <path d="m19 9-5 5-4-4-3 3"/>
-    </svg>
-  );
-}
-
-function Store() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
-      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/>
-      <path d="M12 3v6"/>
-    </svg>
+      </List>
+    </Drawer>
   );
 }
 
