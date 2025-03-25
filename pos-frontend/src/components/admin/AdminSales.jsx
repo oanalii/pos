@@ -29,84 +29,172 @@ function AdminSales() {
 
   const fetchSales = useCallback(async () => {
     try {
-      setLoading(true);
-      
-      // Create filters based on the selected timeframe
-      let filters = {
-        'filters[store][id][$eq]': STORE_IDS[store]
-      };
-      
-      // Add date filters based on timeFilter
-      if (timeFilter !== 'all') {
-        const now = new Date();
-        let startDate;
+      // Get today's sales
+      const todayResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+      const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setTodayRevenue(todayTotal);
+
+      // Get yesterday's sales
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStart = yesterday.toISOString().split('T')[0];
+      const yesterdayEnd = new Date().toISOString().split('T')[0];
+
+      const yesterdayResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': yesterdayStart,
+          'filters[Time][$lt]': yesterdayEnd,
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+      const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setYesterdayRevenue(yesterdayTotal);
+
+      // Get period revenue (default to monthly)
+      const periodStart = new Date();
+      if (timeFilter === '12months') {
+        periodStart.setFullYear(periodStart.getFullYear() - 1);
+      } else if (timeFilter === '3months') {
+        periodStart.setMonth(periodStart.getMonth() - 3);
+      } else {
+        periodStart.setMonth(periodStart.getMonth() - 1); // Default monthly
+      }
+
+      const periodResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': periodStart.toISOString(),
+          'populate': '*',
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+      const periodTotal = periodResponse.data.data.reduce((sum, sale) => 
+        sum + parseFloat(sale.Price || 0), 0
+      );
+      setPeriodRevenue(periodTotal);
+
+      // Get filtered sales as before...
+      let url = '/api/sales?populate=*';
+      if (store && STORE_IDS[store]) {
+        url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
+      }
+      const response = await API.get(url);
+      let filteredSales = response.data.data;
+
+      // Apply time filter
+      const currentDate = new Date(); // Create a base date
+      filteredSales = filteredSales.filter(sale => {
+        const saleDate = new Date(sale.Time);
         
         switch (timeFilter) {
           case 'day':
-            startDate = new Date(now.setHours(0, 0, 0, 0));
-            break;
+            const today = new Date(currentDate);
+            today.setHours(0, 0, 0, 0);
+            return saleDate >= today;
+            
           case 'yesterday':
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 1);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(startDate);
-            endDate.setHours(23, 59, 59, 999);
-            filters['filters[Time][$gte]'] = startDate.toISOString();
-            filters['filters[Time][$lte]'] = endDate.toISOString();
-            break;
+            const yesterdayStart = new Date(currentDate);
+            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+            yesterdayStart.setHours(0, 0, 0, 0);
+            const yesterdayEnd = new Date(currentDate);
+            yesterdayEnd.setHours(0, 0, 0, 0);
+            return saleDate >= yesterdayStart && saleDate < yesterdayEnd;
+            
           case 'week':
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 7);
-            break;
+            const weekAgo = new Date(currentDate);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return saleDate >= weekAgo;
+            
           case 'month':
-            startDate = new Date(now);
-            startDate.setDate(startDate.getDate() - 30);
-            break;
+            const monthAgo = new Date(currentDate);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return saleDate >= monthAgo;
+            
           case '3months':
-            startDate = new Date(now);
-            startDate.setMonth(startDate.getMonth() - 3);
-            break;
+            const threeMonthsAgo = new Date(currentDate);
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            return saleDate >= threeMonthsAgo;
+            
           case '12months':
-            startDate = new Date(now);
-            startDate.setFullYear(startDate.getFullYear() - 1);
-            break;
+            const yearAgo = new Date(currentDate);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            return saleDate >= yearAgo;
+            
           default:
-            break;
-        }
-        
-        // Only add the gte filter if it's not the 'yesterday' case (which we already handled)
-        if (timeFilter !== 'yesterday' && startDate) {
-          filters['filters[Time][$gte]'] = startDate.toISOString();
-        }
-      }
-      
-      const response = await API.get('/api/sales', {
-        params: {
-          ...filters,
-          'populate': {
-            'invoice': true,
-            'product': true,
-            '*': true
-          },
-          'sort': 'createdAt:desc'
+            return true;
         }
       });
-      
-      const sortedSales = response.data.data.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+
+      // Sort by date (newest first)
+      const sortedSales = filteredSales.sort((a, b) => 
+        new Date(b.Time).getTime() - new Date(a.Time).getTime()
       );
       
       setSales(sortedSales);
+
+      // Generate chart data
+      generateChartData(sortedSales);
     } catch (error) {
       console.error('Error fetching sales:', error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('jwtToken');
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }
-  }, [store, timeFilter, navigate]);
+  }, [store, timeFilter]);
+
+  const generateChartData = (salesData) => {
+    if (!salesData || salesData.length === 0) {
+      setChartData([]);
+      return;
+    }
+    
+    // Create a date map for the last 30 days
+    const dateMap = {};
+    const today = new Date();
+    
+    // Initialize empty data for the last 30 days
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString('es-ES');
+      dateMap[dateStr] = 0;
+    }
+    
+    // Fill in actual data
+    salesData.forEach(sale => {
+      if (!sale.Time) return;
+      const date = new Date(sale.Time);
+      const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff <= 29) { // Only include last 30 days
+        const dateStr = date.toLocaleDateString('es-ES');
+        dateMap[dateStr] = (dateMap[dateStr] || 0) + parseFloat(sale.Price || 0);
+      }
+    });
+    
+    // Convert to array for chart display
+    const result = Object.keys(dateMap).map(date => ({
+      date,
+      amount: dateMap[date]
+    }));
+
+    setChartData(result);
+  };
 
   const fetchProductStats = useCallback(async () => {
     try {
@@ -193,41 +281,6 @@ function AdminSales() {
     }
   }, [store]);
 
-  // Update the chart data generation function to show 30 days
-  const generateChartData = useCallback(() => {
-    if (!sales || sales.length === 0) return [];
-    
-    // Create a date map for the last 30 days
-    const dateMap = {};
-    const today = new Date();
-    
-    // Initialize empty data for the last 30 days
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('es-ES');
-      dateMap[dateStr] = 0;
-    }
-    
-    // Fill in actual data
-    sales.forEach(sale => {
-      if (!sale.Time) return;
-      const date = new Date(sale.Time);
-      const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff <= 29) { // Only include last 30 days
-        const dateStr = date.toLocaleDateString('es-ES');
-        dateMap[dateStr] = (dateMap[dateStr] || 0) + parseFloat(sale.Price || 0);
-      }
-    });
-    
-    // Convert to array for chart display
-    return Object.keys(dateMap).map(date => ({
-      date,
-      amount: dateMap[date]
-    }));
-  }, [sales]);
-
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -248,7 +301,7 @@ function AdminSales() {
   useEffect(() => {
     // Add chart data generation to your existing useEffect
     if (sales && sales.length > 0) {
-      setChartData(generateChartData());
+      setChartData(generateChartData(sales));
     }
   }, [sales, generateChartData]);
 
@@ -580,16 +633,10 @@ function AdminSales() {
                       backgroundColor: 'hsl(0 0% 98%)',
                       borderBottom: '1px solid hsl(240 5.9% 90%)'
                     }}>
-                      <th style={{
-                        padding: '12px 24px',
-                        textAlign: 'left',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        color: 'hsl(215.4 16.3% 46.9%)',
-                        fontFamily: 'system-ui'
-                      }}>Date</th>
+                      <th style={{ ...headerStyle }}>Date</th>
                       <th style={{ ...headerStyle }}>Time</th>
                       <th style={{ ...headerStyle }}>Product</th>
+                      <th style={{ ...headerStyle }}>Description</th>
                       <th style={{ ...headerStyle }}>Price</th>
                       <th style={{ ...headerStyle }}>Actions</th>
                     </tr>
@@ -618,6 +665,9 @@ function AdminSales() {
                         </td>
                         <td style={{ ...cellStyle }}>
                           {sale.product?.Product || 'N/A'}
+                        </td>
+                        <td style={{ ...cellStyle }}>
+                          {sale.description || 'No description'}
                         </td>
                         <td style={{ ...cellStyle }}>
                           €{sale.Price?.toFixed(2) || '0.00'}
@@ -708,14 +758,7 @@ function AdminSales() {
                       backgroundColor: 'hsl(0 0% 98%)',
                       borderBottom: '1px solid hsl(240 5.9% 90%)'
                     }}>
-                      <th style={{
-                        padding: '12px 24px',
-                        textAlign: 'left',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        color: 'hsl(215.4 16.3% 46.9%)',
-                        fontFamily: 'system-ui'
-                      }}>Product</th>
+                      <th style={{ ...headerStyle }}>Product</th>
                       <th style={{ ...headerStyle, textAlign: 'right' }}>Sales</th>
                       <th style={{ ...headerStyle, textAlign: 'right' }}>Revenue</th>
                     </tr>
