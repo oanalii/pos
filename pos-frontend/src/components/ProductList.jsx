@@ -48,7 +48,15 @@ const ID_MAP = {
   'Laptop (not MacBook)': 77,
   'iMac': 79,
   'Lyca SIM': 82,
-  'Selfie Stick': 85
+  'Selfie Stick': 85,
+  'OTG': 88,
+  'Pilas': 90,
+  'Soporte': 92,
+  'SD Card': 94,
+  'Dryer': 96,
+  'Plancha': 98,
+  'Mando': 100,
+  'Trimmer': 102
 };
 
 // Modern color palette
