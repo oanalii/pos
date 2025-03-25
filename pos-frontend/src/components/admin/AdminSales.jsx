@@ -1,30 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
 import Sidebar from './Sidebar';
-import {
-  Box,
-  Typography,
-  Select,
-  MenuItem,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Container
-} from '@mui/material';
 
 const STORE_IDS = {
   gaudi: 5,
   paralel: 1,
   mallorca: 3,
   hospital: 7,
-  consell: 14  // Add new Consell store
+  consell: 14
 };
 
 function AdminSales() {
@@ -33,136 +18,97 @@ function AdminSales() {
   const [timeFilter, setTimeFilter] = useState('day');
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [productStats, setProductStats] = useState([]);
-  const [storeRevenue, setStoreRevenue] = useState({
-    today: 0,
-    yesterday: 0
-  });
   const [selectedVat, setSelectedVat] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [periodRevenue, setPeriodRevenue] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
 
-  const fetchSales = async () => {
+  // For chart visualization - this would be populated from your API data
+  const [chartData, setChartData] = useState([]);
+
+  const fetchSales = useCallback(async () => {
     try {
-      // Get today's sales
-      const todayResponse = await API.get('/api/sales', {
-        params: {
-          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
-          'populate': '*',
-          ...(store && STORE_IDS[store] ? {
-            'filters[store][id][$eq]': STORE_IDS[store]
-          } : {})
-        }
-      });
-      const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
-      setTodayRevenue(todayTotal);
-
-      // Get yesterday's sales
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStart = yesterday.toISOString().split('T')[0];
-      const yesterdayEnd = new Date().toISOString().split('T')[0];
-
-      const yesterdayResponse = await API.get('/api/sales', {
-        params: {
-          'filters[Time][$gte]': yesterdayStart,
-          'filters[Time][$lt]': yesterdayEnd,
-          'populate': '*',
-          ...(store && STORE_IDS[store] ? {
-            'filters[store][id][$eq]': STORE_IDS[store]
-          } : {})
-        }
-      });
-      const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
-      setYesterdayRevenue(yesterdayTotal);
-
-      // Get period revenue (default to monthly)
-      const periodStart = new Date();
-      if (timeFilter === '12months') {
-        periodStart.setFullYear(periodStart.getFullYear() - 1);
-      } else if (timeFilter === '3months') {
-        periodStart.setMonth(periodStart.getMonth() - 3);
-      } else {
-        periodStart.setMonth(periodStart.getMonth() - 1); // Default monthly
-      }
-
-      const periodResponse = await API.get('/api/sales', {
-        params: {
-          'filters[Time][$gte]': periodStart.toISOString(),
-          'populate': '*',
-          ...(store && STORE_IDS[store] ? {
-            'filters[store][id][$eq]': STORE_IDS[store]
-          } : {})
-        }
-      });
-      const periodTotal = periodResponse.data.data.reduce((sum, sale) => 
-        sum + parseFloat(sale.Price || 0), 0
-      );
-      setPeriodRevenue(periodTotal);
-
-      // Get filtered sales as before...
-      let url = '/api/sales?populate=*';
-      if (store && STORE_IDS[store]) {
-        url += `&filters[store][id][$eq]=${STORE_IDS[store]}`;
-      }
-      const response = await API.get(url);
-      let filteredSales = response.data.data;
-
-      // Apply time filter
-      const currentDate = new Date(); // Create a base date
-      filteredSales = filteredSales.filter(sale => {
-        const saleDate = new Date(sale.Time);
+      setLoading(true);
+      
+      // Create filters based on the selected timeframe
+      let filters = {
+        'filters[store][id][$eq]': STORE_IDS[store]
+      };
+      
+      // Add date filters based on timeFilter
+      if (timeFilter !== 'all') {
+        const now = new Date();
+        let startDate;
         
         switch (timeFilter) {
           case 'day':
-            const today = new Date(currentDate);
-            today.setHours(0, 0, 0, 0);
-            return saleDate >= today;
-            
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+          case 'yesterday':
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 1);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(startDate);
+            endDate.setHours(23, 59, 59, 999);
+            filters['filters[Time][$gte]'] = startDate.toISOString();
+            filters['filters[Time][$lte]'] = endDate.toISOString();
+            break;
           case 'week':
-            const weekAgo = new Date(currentDate);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            return saleDate >= weekAgo;
-            
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 7);
+            break;
           case 'month':
-            const monthAgo = new Date(currentDate);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-            return saleDate >= monthAgo;
-            
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 30);
+            break;
           case '3months':
-            const threeMonthsAgo = new Date(currentDate);
-            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            return saleDate >= threeMonthsAgo;
-            
+            startDate = new Date(now);
+            startDate.setMonth(startDate.getMonth() - 3);
+            break;
           case '12months':
-            const yearAgo = new Date(currentDate);
-            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-            return saleDate >= yearAgo;
-            
+            startDate = new Date(now);
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
           default:
-            return true;
+            break;
+        }
+        
+        // Only add the gte filter if it's not the 'yesterday' case (which we already handled)
+        if (timeFilter !== 'yesterday' && startDate) {
+          filters['filters[Time][$gte]'] = startDate.toISOString();
+        }
+      }
+      
+      const response = await API.get('/api/sales', {
+        params: {
+          ...filters,
+          'populate': {
+            'invoice': true,
+            'product': true,
+            '*': true
+          },
+          'sort': 'createdAt:desc'
         }
       });
-
-      // Sort by date (newest first)
-      const sortedSales = filteredSales.sort((a, b) => 
-        new Date(b.Time).getTime() - new Date(a.Time).getTime()
+      
+      const sortedSales = response.data.data.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       
       setSales(sortedSales);
     } catch (error) {
       console.error('Error fetching sales:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('jwtToken');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [store, timeFilter, navigate]);
 
-  const fetchProductStats = async () => {
+  const fetchProductStats = useCallback(async () => {
     try {
       // Get store-specific sales
       const response = await API.get('/api/sales', {
@@ -245,14 +191,66 @@ function AdminSales() {
     } catch (error) {
       console.error('Error:', error);
     }
-  };
+  }, [store]);
+
+  // Update the chart data generation function to show 30 days
+  const generateChartData = useCallback(() => {
+    if (!sales || sales.length === 0) return [];
+    
+    // Create a date map for the last 30 days
+    const dateMap = {};
+    const today = new Date();
+    
+    // Initialize empty data for the last 30 days
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString('es-ES');
+      dateMap[dateStr] = 0;
+    }
+    
+    // Fill in actual data
+    sales.forEach(sale => {
+      if (!sale.Time) return;
+      const date = new Date(sale.Time);
+      const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff <= 29) { // Only include last 30 days
+        const dateStr = date.toLocaleDateString('es-ES');
+        dateMap[dateStr] = (dateMap[dateStr] || 0) + parseFloat(sale.Price || 0);
+      }
+    });
+    
+    // Convert to array for chart display
+    return Object.keys(dateMap).map(date => ({
+      date,
+      amount: dateMap[date]
+    }));
+  }, [sales]);
 
   useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    // Configure API token
+    API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    
+    // Only fetch data if we have a valid token
     fetchSales();
     if (store) {
       fetchProductStats();
     }
-  }, [store, timeFilter]);
+  }, [store, timeFilter, fetchSales, fetchProductStats, navigate]);
+
+  useEffect(() => {
+    // Add chart data generation to your existing useEffect
+    if (sales && sales.length > 0) {
+      setChartData(generateChartData());
+    }
+  }, [sales, generateChartData]);
 
   const handleDownloadInvoice = async (sale) => {
     // Find related sales either by orderGroupId or by time (within 1 second)
@@ -291,476 +289,483 @@ function AdminSales() {
   };
 
   if (loading) return (
-    <Box sx={{ display: 'flex' }}>
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      backgroundColor: 'hsl(0 0% 98%)',
+      padding: '32px'
+    }}>
       <Sidebar />
-      <Box sx={{ 
-        flexGrow: 1,
-        p: 3,
+      <main style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui',
+        color: 'hsl(215.4 16.3% 46.9%)'
       }}>
-        <Typography>Loading sales data...</Typography>
-      </Box>
-    </Box>
+        Loading sales data...
+      </main>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#f8fafc' }}>
+    <div style={{ 
+      display: 'flex',
+      minHeight: '100vh',
+      backgroundColor: 'hsl(0 0% 98%)',
+      color: 'hsl(222.2 47.4% 11.2%)'
+    }}>
       <Sidebar />
-      <Box sx={{ 
-        flexGrow: 1,
-        p: 3,
+      
+      <main style={{
+        flex: 1,
+        padding: '32px',
+        backgroundColor: 'hsl(0 0% 98%)'
       }}>
-        {store ? (
-          <Box sx={{ p: 3 }}>
-            <Box sx={{ 
-              bgcolor: '#fff',
-              borderRadius: '16px',
-              p: 3,
-              mb: 3,
-              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-            }}>
-              <Box sx={{ 
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2.5,
-              }}>
-                <Box>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      mb: 1,
-                      fontWeight: 600,
-                      color: '#0f172a',
-                      letterSpacing: '-0.02em',
-                      fontSize: '1.75rem',
-                    }}
-                  >
-                    {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
-                  </Typography>
-                  <Select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value)}
-                    size="small"
-                    sx={{ 
-                      minWidth: 200,
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(226, 232, 240)',
-                        borderRadius: '8px',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(148, 163, 184)',
-                      },
-                    }}
-                  >
-                    <MenuItem value="all">All Time</MenuItem>
-                    <MenuItem value="day">Today</MenuItem>
-                    <MenuItem value="week">Last 7 Days</MenuItem>
-                    <MenuItem value="month">Last 30 Days</MenuItem>
-                    <MenuItem value="3months">Last 3 Months</MenuItem>
-                    <MenuItem value="12months">Last 12 Months</MenuItem>
-                  </Select>
-                </Box>
-                <Button 
-                  variant="contained" 
-                  color="error"
-                  onClick={() => navigate('/admin')}
-                  sx={{
-                    bgcolor: '#ef4444',
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    boxShadow: 'none',
-                    '&:hover': {
-                      bgcolor: '#dc2626',
-                      boxShadow: 'none',
-                    },
-                  }}
-                >
-                  Logout
-                </Button>
-              </Box>
-
-              <Box sx={{ 
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: 2,
-                mb: 2,
-              }}>
-                <Box sx={{ 
-                  p: 2.5,
-                  bgcolor: '#2563eb',
-                  borderRadius: '12px',
-                  color: 'white',
-                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
-                }}>
-                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                    Today
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    €{todayRevenue.toFixed(2)}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ 
-                  p: 2.5,
-                  bgcolor: '#2563eb',
-                  borderRadius: '12px',
-                  color: 'white',
-                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
-                }}>
-                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                    Yesterday
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    €{yesterdayRevenue.toFixed(2)}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ 
-                  p: 2.5,
-                  bgcolor: '#2563eb',
-                  borderRadius: '12px',
-                  color: 'white',
-                  boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
-                }}>
-                  <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                    {timeFilter === '12months' ? 'Year' : 
-                     timeFilter === '3months' ? '3 Months' : 
-                     'Month'}
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    €{periodRevenue.toFixed(2)}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            <Box sx={{ 
-              display: 'flex',
-              gap: 3,
-              height: 'calc(100vh - 350px)', // Container for both tables
-            }}>
-              <Box sx={{ 
-                flex: '1',
-                bgcolor: '#fff',
-                borderRadius: '16px',
-                p: 3,
-                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden', // Important for nested scrolling
-              }}>
-                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-                  Sales Records
-                </Typography>
-                
-                <TableContainer sx={{ 
-                  flex: 1,
-                  overflow: 'auto',
-                  border: '1px solid',
-                  borderColor: 'grey.200',
-                  borderRadius: '8px',
-                  '& .MuiTableCell-root': {
-                    fontSize: '0.875rem',
-                    padding: '12px 16px',
-                    borderColor: 'rgb(243, 244, 246)',
-                  }
-                }}>
-                  <Table stickyHeader size="small">
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {sales && sales.length > 0 ? (
-                        sales.map((sale) => (
-                          <TableRow key={sale.id}>
-                            <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
-                            <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
-                            <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                            <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                            <TableCell>{sale.description || 'No description'}</TableCell>
-                            <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
-                            <TableCell>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <Select
-                                  value={selectedVat}
-                                  onChange={(e) => setSelectedVat(Number(e.target.value))}
-                                  size="small"
-                                >
-                                  <MenuItem value={0}>IVA: 0%</MenuItem>
-                                  <MenuItem value={10}>IVA: 10%</MenuItem>
-                                  <MenuItem value={21}>IVA: 21%</MenuItem>
-                                </Select>
-                                <Button
-                                  variant="contained"
-                                  onClick={() => handleDownloadInvoice(sale)}
-                                  size="small"
-                                >
-                                  Download Invoice
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} align="center">
-                            No sales records found
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-
-              <Box sx={{ 
-                width: '45%',
-                bgcolor: '#fff',
-                borderRadius: '16px',
-                p: 3,
-                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden', // Important for nested scrolling
-              }}>
-                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-                  Product Breakdown
-                </Typography>
-
-                <TableContainer sx={{ 
-                  flex: 1,
-                  overflow: 'auto',
-                  border: '1px solid',
-                  borderColor: 'grey.200',
-                  borderRadius: '8px',
-                  '& .MuiTableCell-root': {
-                    fontSize: '0.875rem',
-                    padding: '12px 16px',
-                    borderColor: 'rgb(243, 244, 246)',
-                  }
-                }}>
-                  <Table stickyHeader size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }}>Product Name</TableCell>
-                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }} align="right">Total Sales</TableCell>
-                        <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.50' }} align="right">Total Revenue</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {productStats.map((stat) => (
-                        <TableRow key={stat.id} hover>
-                          <TableCell>{stat.name}</TableCell>
-                          <TableCell align="right">{stat.count}</TableCell>
-                          <TableCell align="right">€{stat.totalRevenue.toFixed(2)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            </Box>
-          </Box>
-        ) : (
-          <Box sx={{ 
-            bgcolor: '#fff',
-            borderRadius: '16px',
-            p: 3,
-            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
+          {/* Header with Title and Time Filter */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px'
           }}>
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              mb: 4,
-            }}>
-              <Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    mb: 1,
-                    fontWeight: 600,
-                    color: '#0f172a',
-                    letterSpacing: '-0.02em',
-                    fontSize: '1.75rem',
-                  }}
-                >
-                  {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Sales` : 'All Stores Sales'}
-                </Typography>
-                <Select
-                  value={timeFilter}
-                  onChange={(e) => setTimeFilter(e.target.value)}
-                  size="small"
-                  sx={{ 
-                    minWidth: 200,
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgb(226, 232, 240)',
-                      borderRadius: '8px',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgb(148, 163, 184)',
-                    },
-                  }}
-                >
-                  <MenuItem value="all">All Time</MenuItem>
-                  <MenuItem value="day">Today</MenuItem>
-                  <MenuItem value="week">Last 7 Days</MenuItem>
-                  <MenuItem value="month">Last 30 Days</MenuItem>
-                  <MenuItem value="3months">Last 3 Months</MenuItem>
-                  <MenuItem value="12months">Last 12 Months</MenuItem>
-                </Select>
-              </Box>
-              <Button 
-                variant="contained" 
-                color="error"
-                onClick={() => navigate('/admin')}
-                sx={{
-                  bgcolor: '#ef4444',
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  boxShadow: 'none',
-                  '&:hover': {
-                    bgcolor: '#dc2626',
-                    boxShadow: 'none',
-                  },
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <h1 style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                margin: 0,
+                fontFamily: 'system-ui',
+                letterSpacing: '-0.025em'
+              }}>
+                {store ? `${store.charAt(0).toUpperCase() + store.slice(1)} Store` : 'All Stores'}
+              </h1>
+              
+              <select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid hsl(240 5.9% 90%)',
+                  fontSize: '14px',
+                  color: 'hsl(222.2 47.4% 11.2%)',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  fontFamily: 'system-ui',
+                  outline: 'none'
                 }}
               >
-                Logout
-              </Button>
-            </Box>
-
-            <Box sx={{ 
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 2,
-              mb: 4,
+                <option value="all">All Time</option>
+                <option value="day">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="week">Last 7 Days</option>
+                <option value="month">Last 30 Days</option>
+                <option value="3months">Last 3 Months</option>
+                <option value="12months">Last 12 Months</option>
+              </select>
+            </div>
+            
+            {/* Small Compact Chart */}
+            <div style={{
+              width: '300px',
+              height: '80px',
+              position: 'relative',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              padding: '12px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
             }}>
-              <Box sx={{ 
-                p: 2.5,
-                bgcolor: '#2563eb',
-                borderRadius: '12px',
-                color: 'white',
-                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '12px',
+                fontSize: '12px',
+                fontWeight: '500',
+                color: 'hsl(215.4 16.3% 46.9%)',
+                fontFamily: 'system-ui'
               }}>
-                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                  Today
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  €{todayRevenue.toFixed(2)}
-                </Typography>
-              </Box>
+                Last 30 Days
+              </div>
+              
+              {chartData.length > 0 ? (
+                <div style={{
+                  display: 'flex',
+                  height: '100%',
+                  alignItems: 'flex-end',
+                  gap: '0px',
+                  paddingTop: '20px'
+                }}>
+                  {chartData.map((point, index) => {
+                    // Calculate height as a percentage of the max value
+                    const max = Math.max(...chartData.map(p => p.amount));
+                    const height = max === 0 ? 0 : (point.amount / max) * 100;
+                    
+                    return (
+                      <div key={index} style={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        height: '100%'
+                      }}>
+                        <div 
+                          style={{
+                            width: '100%',
+                            height: `${height}%`,
+                            backgroundColor: point.amount > 0 
+                              ? 'hsl(221.2 83.2% 71.8%)' 
+                              : 'hsl(220 14% 96%)',
+                            borderRadius: '1px 1px 0 0',
+                            transition: 'height 0.3s ease',
+                            minHeight: point.amount > 0 ? '4px' : '1px'
+                          }}
+                          title={`${point.date}: €${point.amount.toFixed(2)}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: 'hsl(215.4 16.3% 46.9%)',
+                  fontSize: '12px',
+                  fontFamily: 'system-ui'
+                }}>
+                  No data
+                </div>
+              )}
+            </div>
+          </div>
 
-              <Box sx={{ 
-                p: 2.5,
-                bgcolor: '#2563eb',
-                borderRadius: '12px',
-                color: 'white',
-                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
-              }}>
-                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                  Yesterday
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  €{yesterdayRevenue.toFixed(2)}
-                </Typography>
-              </Box>
-
-              <Box sx={{ 
-                p: 2.5,
-                bgcolor: '#2563eb',
-                borderRadius: '12px',
-                color: 'white',
-                boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)',
-              }}>
-                <Typography variant="subtitle2" sx={{ opacity: 0.7, mb: 1 }}>
-                  {timeFilter === '12months' ? 'Year' : 
-                   timeFilter === '3months' ? '3 Months' : 
-                   'Month'}
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  €{periodRevenue.toFixed(2)}
-                </Typography>
-              </Box>
-            </Box>
-
-            <TableContainer sx={{ 
-              borderRadius: '12px',
-              border: '1px solid rgb(226, 232, 240)',
-              overflow: 'auto',
-              maxHeight: '585px',
-              '& .MuiTable-root': {
-                minWidth: 650,
-              }
+          {/* Stats Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '20px',
+            marginBottom: '24px'
+          }}>
+            {/* Today's Revenue */}
+            <div style={{
+              padding: '24px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
             }}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Store</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Time</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Product</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {sales && sales.length > 0 ? (
-                    sales.map((sale) => (
-                      <TableRow key={sale.id}>
-                        <TableCell>{sale.store?.Name || 'Unknown Store'}</TableCell>
-                        <TableCell>{sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}</TableCell>
-                        <TableCell>{sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}</TableCell>
-                        <TableCell>{sale.product?.Product || 'N/A'}</TableCell>
-                        <TableCell>{sale.description || 'No description'}</TableCell>
-                        <TableCell>€{sale.Price?.toFixed(2) || '0.00'}</TableCell>
-                        <TableCell>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <Select
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'hsl(215.4 16.3% 46.9%)',
+                marginBottom: '8px',
+                fontFamily: 'system-ui'
+              }}>
+                Today's Revenue
+              </div>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                fontFamily: 'system-ui'
+              }}>
+                €{todayRevenue.toFixed(2)}
+              </div>
+            </div>
+
+            {/* Yesterday's Revenue */}
+            <div style={{
+              padding: '24px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'hsl(215.4 16.3% 46.9%)',
+                marginBottom: '8px',
+                fontFamily: 'system-ui'
+              }}>
+                Yesterday's Revenue
+              </div>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                fontFamily: 'system-ui'
+              }}>
+                €{yesterdayRevenue.toFixed(2)}
+              </div>
+            </div>
+
+            {/* Period Revenue */}
+            <div style={{
+              padding: '24px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'hsl(215.4 16.3% 46.9%)',
+                marginBottom: '8px',
+                fontFamily: 'system-ui'
+              }}>
+                {timeFilter === '12months' ? 'Yearly' : 
+                 timeFilter === '3months' ? 'Quarterly' : 
+                 'Monthly'} Revenue
+              </div>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                fontFamily: 'system-ui'
+              }}>
+                €{periodRevenue.toFixed(2)}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gap: '24px'
+          }}>
+            {/* Sales Table */}
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid hsl(240 5.9% 90%)'
+              }}>
+                <h2 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui'
+                }}>
+                  Recent Sales
+                </h2>
+              </div>
+
+              <div style={{
+                overflowX: 'auto'
+              }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse'
+                }}>
+                  <thead>
+                    <tr style={{
+                      backgroundColor: 'hsl(0 0% 98%)',
+                      borderBottom: '1px solid hsl(240 5.9% 90%)'
+                    }}>
+                      <th style={{
+                        padding: '12px 24px',
+                        textAlign: 'left',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'system-ui'
+                      }}>Date</th>
+                      <th style={{ ...headerStyle }}>Time</th>
+                      <th style={{ ...headerStyle }}>Product</th>
+                      <th style={{ ...headerStyle }}>Price</th>
+                      <th style={{ ...headerStyle }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sales.map((sale) => (
+                      <tr 
+                        key={sale.id}
+                        style={{
+                          borderBottom: '1px solid hsl(240 5.9% 90%)',
+                          backgroundColor: 'white',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'hsl(210 40% 98%)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'white';
+                        }}
+                      >
+                        <td style={{ ...cellStyle }}>
+                          {sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}
+                        </td>
+                        <td style={{ ...cellStyle }}>
+                          {sale.Time ? new Date(sale.Time).toLocaleTimeString('es-ES') : 'N/A'}
+                        </td>
+                        <td style={{ ...cellStyle }}>
+                          {sale.product?.Product || 'N/A'}
+                        </td>
+                        <td style={{ ...cellStyle }}>
+                          €{sale.Price?.toFixed(2) || '0.00'}
+                        </td>
+                        <td style={{ ...cellStyle }}>
+                          <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            alignItems: 'center'
+                          }}>
+                            <select
                               value={selectedVat}
                               onChange={(e) => setSelectedVat(Number(e.target.value))}
-                              size="small"
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid hsl(240 5.9% 90%)',
+                                fontSize: '13px',
+                                color: 'hsl(222.2 47.4% 11.2%)',
+                                backgroundColor: 'white',
+                                cursor: 'pointer',
+                                fontFamily: 'system-ui'
+                              }}
                             >
-                              <MenuItem value={0}>IVA: 0%</MenuItem>
-                              <MenuItem value={10}>IVA: 10%</MenuItem>
-                              <MenuItem value={21}>IVA: 21%</MenuItem>
-                            </Select>
-                            <Button
-                              variant="contained"
+                              <option value={0}>IVA: 0%</option>
+                              <option value={10}>IVA: 10%</option>
+                              <option value={21}>IVA: 21%</option>
+                            </select>
+                            <button
                               onClick={() => handleDownloadInvoice(sale)}
-                              size="small"
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: 'hsl(222.2 47.4% 11.2%)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                transition: 'all 0.15s ease',
+                                fontFamily: 'system-ui'
+                              }}
                             >
-                              Download Invoice
-                            </Button>
+                              Download
+                            </button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} align="center">
-                        No sales records found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
-      </Box>
-    </Box>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Product Stats */}
+            <div style={{
+              width: '400px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              border: '1px solid hsl(240 5.9% 90%)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid hsl(240 5.9% 90%)'
+              }}>
+                <h2 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui'
+                }}>
+                  Product Stats
+                </h2>
+              </div>
+
+              <div style={{
+                maxHeight: 'calc(100vh - 300px)',
+                overflowY: 'auto'
+              }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse'
+                }}>
+                  <thead>
+                    <tr style={{
+                      backgroundColor: 'hsl(0 0% 98%)',
+                      borderBottom: '1px solid hsl(240 5.9% 90%)'
+                    }}>
+                      <th style={{
+                        padding: '12px 24px',
+                        textAlign: 'left',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'system-ui'
+                      }}>Product</th>
+                      <th style={{ ...headerStyle, textAlign: 'right' }}>Sales</th>
+                      <th style={{ ...headerStyle, textAlign: 'right' }}>Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productStats.map((stat) => (
+                      <tr 
+                        key={stat.id}
+                        style={{
+                          borderBottom: '1px solid hsl(240 5.9% 90%)',
+                          backgroundColor: 'white',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'hsl(210 40% 98%)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'white';
+                        }}
+                      >
+                        <td style={{ ...cellStyle }}>{stat.name}</td>
+                        <td style={{ ...cellStyle, textAlign: 'right' }}>{stat.count}</td>
+                        <td style={{ ...cellStyle, textAlign: 'right' }}>€{stat.totalRevenue.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
+
+const headerStyle = {
+  padding: '12px 24px',
+  textAlign: 'left',
+  fontSize: '12px',
+  fontWeight: '500',
+  color: 'hsl(215.4 16.3% 46.9%)',
+  fontFamily: 'system-ui'
+};
+
+const cellStyle = {
+  padding: '12px 24px',
+  fontSize: '13px',
+  color: 'hsl(222.2 47.4% 11.2%)',
+  fontFamily: 'system-ui'
+};
 
 export default AdminSales; 

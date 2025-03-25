@@ -4,65 +4,97 @@ function Cart({ items, removeFromCart, checkout }) {
   const total = items.reduce((sum, item) => sum + parseFloat(item.price), 0);
 
   return (
-    <div className="cart" style={{ 
+    <div style={{ 
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      padding: '30px',
-      backgroundColor: 'white'
+      padding: '24px',
+      backgroundColor: 'hsl(0 0% 100%)'
     }}>
-      <h2 style={{
-        fontSize: '24px',
-        marginBottom: '25px',
-        color: '#333'
-      }}>Current Sale</h2>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px'
+      }}>
+        <h2 style={{
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'hsl(222.2 47.4% 11.2%)',
+          margin: 0,
+          fontFamily: 'system-ui'
+        }}>Current Sale</h2>
+        <span style={{
+          fontSize: '13px',
+          color: 'hsl(215.4 16.3% 46.9%)',
+          fontFamily: 'system-ui'
+        }}>{items.length} items</span>
+      </div>
       
-      {/* Items List */}
       <div style={{ 
         flex: 1,
         overflowY: 'auto',
-        marginBottom: '30px'
+        marginBottom: '24px'
       }}>
         {items.map((item, index) => (
           <div key={index} style={{ 
             display: 'flex', 
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '15px',
-            padding: '20px',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '12px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            marginBottom: '8px',
+            padding: '12px',
+            backgroundColor: 'hsl(0 0% 100%)',
+            borderRadius: '6px',
+            border: '1px solid hsl(240 5.9% 90%)'
           }}>
-            <div>
-              <span style={{ fontSize: '18px', fontWeight: '500' }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ 
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                display: 'block',
+                marginBottom: '2px',
+                fontFamily: 'system-ui'
+              }}>
                 {item.product.Product}
               </span>
-              <span style={{ 
-                fontSize: '14px', 
-                color: '#666',
-                display: 'block' 
-              }}>
-                {item.description}
-              </span>
+              {item.description && (
+                <span style={{ 
+                  fontSize: '13px', 
+                  color: 'hsl(215.4 16.3% 46.9%)',
+                  fontFamily: 'system-ui'
+                }}>
+                  {item.description}
+                </span>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: '12px'
+            }}>
               <span style={{ 
-                fontSize: '18px', 
-                marginRight: '20px',
-                fontWeight: '500'
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                fontFamily: 'system-ui'
               }}>
-                €{item.price}
+                €{parseFloat(item.price).toFixed(2)}
               </span>
               <button 
-                onClick={() => removeFromCart(index)} 
+                onClick={() => removeFromCart(index)}
                 style={{ 
-                  padding: '8px 12px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  backgroundColor: '#ff4444',
-                  color: 'white',
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid hsl(240 5.9% 90%)',
+                  borderRadius: '4px',
+                  backgroundColor: 'transparent',
+                  color: 'hsl(215.4 16.3% 46.9%)',
                   cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                   fontSize: '16px'
                 }}
               >
@@ -73,34 +105,43 @@ function Cart({ items, removeFromCart, checkout }) {
         ))}
       </div>
 
-      {/* Total and Checkout */}
-      <div style={{ 
-        borderTop: '2px solid #eee',
-        paddingTop: '25px'
+      <div style={{
+        borderTop: '1px solid hsl(240 5.9% 90%)',
+        paddingTop: '20px'
       }}>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between',
-          marginBottom: '25px',
-          fontSize: '28px'
+          marginBottom: '20px'
         }}>
-          <strong>Total</strong>
-          <span>€{total.toFixed(2)}</span>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: '500',
+            color: 'hsl(222.2 47.4% 11.2%)',
+            fontFamily: 'system-ui'
+          }}>Total</span>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: 'hsl(222.2 47.4% 11.2%)',
+            fontFamily: 'system-ui'
+          }}>€{total.toFixed(2)}</span>
         </div>
         <button 
           onClick={checkout}
           disabled={items.length === 0}
           style={{ 
             width: '100%',
-            padding: '20px',
-            fontSize: '20px',
+            padding: '10px 16px',
+            fontSize: '14px',
             fontWeight: '500',
-            backgroundColor: items.length ? '#4CAF50' : '#ccc',
-            color: 'white',
+            backgroundColor: items.length ? 'hsl(222.2 47.4% 11.2%)' : 'hsl(240 5.9% 90%)',
+            color: items.length ? 'white' : 'hsl(215.4 16.3% 46.9%)',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: '6px',
             cursor: items.length ? 'pointer' : 'not-allowed',
-            transition: 'background-color 0.2s'
+            transition: 'all 0.2s ease',
+            fontFamily: 'system-ui'
           }}
         >
           Complete Sale

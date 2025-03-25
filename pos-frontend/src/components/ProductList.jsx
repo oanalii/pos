@@ -189,7 +189,7 @@ function ProductList() {
       height: '100vh',
       width: '100vw',
       overflow: 'hidden',
-      backgroundColor: colors.surface,
+      backgroundColor: 'hsl(0 0% 100%)',
       position: 'relative'
     }}>
       {/* Left side with header and products */}
@@ -199,76 +199,115 @@ function ProductList() {
         display: 'flex',
         flexDirection: 'column'
       }}>
-        {/* Header - Replace the floating header with this */}
+        {/* Improved Header */}
         <div style={{
-          padding: '24px 40px',
-          display: 'flex',
-          justifyContent: 'space-between',
+          padding: '20px 32px',
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr auto',
           alignItems: 'center',
-          borderBottom: `1px solid ${colors.border}`
+          gap: '32px',
+          borderBottom: '1px solid hsl(240 5.9% 90%)',
+          backgroundColor: 'hsl(0 0% 100%)',
+          position: 'relative',
+          zIndex: 10,
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
         }}>
           <h1 style={{
-            fontSize: '20px',
+            fontSize: '22px',
             fontWeight: '600',
-            color: colors.text.primary,
-            margin: 0
+            color: 'hsl(222.2 47.4% 11.2%)',
+            margin: 0,
+            fontFamily: 'system-ui',
+            letterSpacing: '-0.025em'
           }}>
-            POS System
+            HGT POS
           </h1>
 
-          {/* Add search bar */}
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '10px 16px',
-              width: '300px',
-              borderRadius: '12px',
-              border: `1px solid ${colors.border}`,
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'all 0.2s ease'
-            }}
-          />
-
-          <button 
-            onClick={() => navigate('/pos/sales')}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
-              color: '#2563eb',
-              border: '2px solid #2563eb',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-              ':hover': {
-                backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                transform: 'translateY(-1px)'
-              }
-            }}
-          >
+          {/* Centered search bar */}
+          <div style={{
+            position: 'relative',
+            maxWidth: '400px',
+            width: '100%',
+            margin: '0 auto'
+          }}>
             <svg 
-              width="16" 
-              height="16" 
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'hsl(215.4 16.3% 46.9%)'
+              }}
+              width="15" 
+              height="15" 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: '10px 12px 10px 36px',
+                width: '100%',
+                borderRadius: '6px',
+                border: '1px solid hsl(240 5.9% 90%)',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'all 0.2s ease',
+                fontFamily: 'system-ui',
+                backgroundColor: 'hsl(0 0% 98%)',
+                color: 'hsl(222.2 47.4% 11.2%)',
+              }}
+            />
+          </div>
+
+          {/* History button */}
+          <button 
+            onClick={() => navigate('/pos/sales')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'hsl(210 40% 98%)';
+              e.currentTarget.style.borderColor = 'hsl(215.4 16.3% 46.9%)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.borderColor = 'hsl(240 5.9% 90%)';
+            }}
+            style={{
+              padding: '10px 16px',
+              backgroundColor: 'white',
+              color: 'hsl(222.2 47.4% 11.2%)',
+              border: '1px solid hsl(240 5.9% 90%)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.15s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontFamily: 'system-ui',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <svg 
+              width="15" 
+              height="15" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
             >
               <path d="M3 3v18h18"/>
               <path d="m19 9-5 5-4-4-3 3"/>
             </svg>
-            View Sales History
+            Sales History
           </button>
         </div>
 
@@ -329,12 +368,14 @@ function ProductList() {
       </Dialog>
 
       {/* Add PriceModal */}
-      <PriceModal
-        open={selectedProduct !== null}
-        onClose={() => setSelectedProduct(null)}
-        onSubmit={handlePriceSubmit}
-        product={selectedProduct}
-      />
+      {selectedProduct && (
+        <PriceModal
+          open={true}
+          onClose={() => setSelectedProduct(null)}
+          onSubmit={handlePriceSubmit}
+          product={selectedProduct}
+        />
+      )}
     </div>
   );
 }

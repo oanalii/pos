@@ -20,42 +20,59 @@ function ProductBlock({ product, onAddToCart, onClick }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{ 
-          height: '140px',
+          height: '120px',
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: 'white',
-          borderRadius: '16px',
-          boxShadow: isHovered 
-            ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          borderRadius: '8px',
+          border: '1px solid',
+          borderColor: isHovered ? 'hsl(221.2 83.2% 53.3%)' : 'hsl(240 5.9% 90%)',
           overflow: 'hidden',
-          transition: 'all 0.3s ease',
+          transition: 'all 0.2s ease',
           cursor: 'pointer',
-          padding: '20px',
+          padding: '16px',
           justifyContent: 'center',
-          alignItems: 'center',
-          transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
-          position: 'relative'
+          position: 'relative',
+          boxShadow: isHovered ? '0 2px 8px -2px rgba(0, 0, 0, 0.1)' : 'none'
         }}
       >
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
-          opacity: isHovered ? 1 : 0,
-          transition: 'opacity 0.3s ease'
-        }} />
-        
         <span style={{ 
-          fontSize: '18px',
-          fontWeight: '600',
-          color: '#1F2937'
+          fontSize: '14px',
+          fontWeight: '500',
+          color: 'hsl(222.2 47.4% 11.2%)',
+          textAlign: 'center',
+          fontFamily: 'system-ui'
         }}>
           {product.Product}
         </span>
+        
+        <div style={{
+          position: 'absolute',
+          bottom: '16px',
+          left: '16px',
+          right: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+          opacity: isHovered ? 1 : 0,
+          transform: `translateY(${isHovered ? '0' : '4px'})`,
+          transition: 'all 0.2s ease'
+        }}>
+          <span style={{
+            fontSize: '13px',
+            color: 'hsl(221.2 83.2% 53.3%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontFamily: 'system-ui'
+          }}>
+            Set price
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
       </div>
 
       {showModal && (
