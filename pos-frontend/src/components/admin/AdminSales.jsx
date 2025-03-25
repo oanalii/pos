@@ -1,8 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
 import Sidebar from './Sidebar';
+import {
+  Box,
+  Typography,
+  Select,
+  MenuItem,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container
+} from '@mui/material';
 
 const STORE_IDS = {
   gaudi: 5,
@@ -35,12 +50,9 @@ function AdminSales() {
   const fetchSales = useCallback(async () => {
     try {
       // Get today's sales
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      
       const todayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': todayStart.toISOString(),
+          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
           'populate': '*',
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
@@ -57,12 +69,12 @@ function AdminSales() {
       const yesterdayStart = new Date();
       yesterdayStart.setDate(yesterdayStart.getDate() - 1);
       yesterdayStart.setHours(0, 0, 0, 0);
-      const yesterdayEnd = new Date(todayStart);
+      const yesterdayEnd = new Date(yesterdayStart);
 
       const yesterdayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': yesterdayStart.toISOString(),
-          'filters[Time][$lt]': yesterdayEnd.toISOString(),
+          'filters[Time][$gte]': yesterdayStart,
+          'filters[Time][$lt]': yesterdayEnd,
           'populate': '*',
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
@@ -112,7 +124,7 @@ function AdminSales() {
       // Get all sales for the table and chart
       const response = await API.get('/api/sales', {
         params: {
-          'populate': '*',
+          'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
@@ -675,6 +687,7 @@ function AdminSales() {
                       backgroundColor: 'hsl(0 0% 98%)',
                       borderBottom: '1px solid hsl(240 5.9% 90%)'
                     }}>
+                      <th style={{ ...headerStyle }}>Store</th>
                       <th style={{ ...headerStyle }}>Date</th>
                       <th style={{ ...headerStyle }}>Time</th>
                       <th style={{ ...headerStyle }}>Product</th>
@@ -699,6 +712,9 @@ function AdminSales() {
                           e.currentTarget.style.backgroundColor = 'white';
                         }}
                       >
+                        <td style={{ ...cellStyle }}>
+                          {sale.store?.Name || 'Unknown Store'}
+                        </td>
                         <td style={{ ...cellStyle }}>
                           {sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}
                         </td>
