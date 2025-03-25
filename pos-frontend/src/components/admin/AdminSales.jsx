@@ -12,6 +12,9 @@ const STORE_IDS = {
   consell: 14
 };
 
+// Add these styles at the top of the component
+const mobileBreakpoint = '768px'; // Standard tablet/phone breakpoint
+
 function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,8 @@ function AdminSales() {
 
   // For chart visualization - this would be populated from your API data
   const [chartData, setChartData] = useState([]);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const fetchSales = useCallback(async () => {
     try {
@@ -304,6 +309,15 @@ function AdminSales() {
     }
   }, [store, timeFilter, fetchSales, fetchProductStats, navigate]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleDownloadInvoice = async (sale) => {
     // Find related sales either by orderGroupId or by time (within 1 second)
     let relatedSales;
@@ -366,29 +380,37 @@ function AdminSales() {
       display: 'flex',
       minHeight: '100vh',
       backgroundColor: 'hsl(0 0% 98%)',
-      color: 'hsl(222.2 47.4% 11.2%)'
+      color: 'hsl(222.2 47.4% 11.2%)',
+      flexDirection: isMobile ? 'column' : 'row' // Stack on mobile
     }}>
       <Sidebar />
       
       <main style={{
         flex: 1,
-        padding: '32px',
+        padding: isMobile ? '16px' : '32px',
         backgroundColor: 'hsl(0 0% 98%)'
       }}>
         <div style={{
           maxWidth: '1400px',
           margin: '0 auto'
         }}>
-          {/* Header with Title and Time Filter */}
+          {/* Header Section */}
           <div style={{
             display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: isMobile ? 'stretch' : 'center',
+            gap: isMobile ? '16px' : '0',
             marginBottom: '24px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+              gap: '16px' 
+            }}>
               <h1 style={{
-                fontSize: '24px',
+                fontSize: isMobile ? '20px' : '24px',
                 fontWeight: '600',
                 color: 'hsl(222.2 47.4% 11.2%)',
                 margin: 0,
@@ -406,6 +428,7 @@ function AdminSales() {
                   borderRadius: '6px',
                   border: '1px solid hsl(240 5.9% 90%)',
                   fontSize: '14px',
+                  width: isMobile ? '100%' : 'auto',
                   color: 'hsl(222.2 47.4% 11.2%)',
                   backgroundColor: 'white',
                   cursor: 'pointer',
@@ -423,87 +446,89 @@ function AdminSales() {
               </select>
             </div>
             
-            {/* Small Compact Chart */}
-            <div style={{
-              width: '300px',
-              height: '80px',
-              position: 'relative',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              border: '1px solid hsl(240 5.9% 90%)',
-              padding: '12px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-            }}>
+            {/* Chart - Hide on mobile */}
+            {isMobile ? null : (
               <div style={{
-                position: 'absolute',
-                top: '10px',
-                left: '12px',
-                fontSize: '12px',
-                fontWeight: '500',
-                color: 'hsl(215.4 16.3% 46.9%)',
-                fontFamily: 'system-ui'
+                width: '300px',
+                height: '80px',
+                position: 'relative',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                border: '1px solid hsl(240 5.9% 90%)',
+                padding: '12px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
               }}>
-                Last 30 Days
-              </div>
-              
-              {Array.isArray(chartData) && chartData.length > 0 ? (
                 <div style={{
-                  display: 'flex',
-                  height: '100%',
-                  alignItems: 'flex-end',
-                  gap: '0px',
-                  paddingTop: '20px'
-                }}>
-                  {chartData.map((point, index) => {
-                    const max = Math.max(...chartData.map(p => p.amount));
-                    const height = max === 0 ? 0 : (point.amount / max) * 100;
-                    
-                    return (
-                      <div key={index} style={{ 
-                        flex: 1, 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        height: '100%'
-                      }}>
-                        <div 
-                          style={{
-                            width: '100%',
-                            height: `${height}%`,
-                            backgroundColor: point.amount > 0 
-                              ? 'hsl(221.2 83.2% 71.8%)' 
-                              : 'hsl(220 14% 96%)',
-                            borderRadius: '1px 1px 0 0',
-                            transition: 'height 0.3s ease',
-                            minHeight: point.amount > 0 ? '4px' : '1px'
-                          }}
-                          title={`${point.date}: €${point.amount.toFixed(2)}`}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: 'hsl(215.4 16.3% 46.9%)',
+                  position: 'absolute',
+                  top: '10px',
+                  left: '12px',
                   fontSize: '12px',
+                  fontWeight: '500',
+                  color: 'hsl(215.4 16.3% 46.9%)',
                   fontFamily: 'system-ui'
                 }}>
-                  No data available
+                  Last 30 Days
                 </div>
-              )}
-            </div>
+                
+                {Array.isArray(chartData) && chartData.length > 0 ? (
+                  <div style={{
+                    display: 'flex',
+                    height: '100%',
+                    alignItems: 'flex-end',
+                    gap: '0px',
+                    paddingTop: '20px'
+                  }}>
+                    {chartData.map((point, index) => {
+                      const max = Math.max(...chartData.map(p => p.amount));
+                      const height = max === 0 ? 0 : (point.amount / max) * 100;
+                      
+                      return (
+                        <div key={index} style={{ 
+                          flex: 1, 
+                          display: 'flex', 
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          height: '100%'
+                        }}>
+                          <div 
+                            style={{
+                              width: '100%',
+                              height: `${height}%`,
+                              backgroundColor: point.amount > 0 
+                                ? 'hsl(221.2 83.2% 71.8%)' 
+                                : 'hsl(220 14% 96%)',
+                              borderRadius: '1px 1px 0 0',
+                              transition: 'height 0.3s ease',
+                              minHeight: point.amount > 0 ? '4px' : '1px'
+                            }}
+                            title={`${point.date}: €${point.amount.toFixed(2)}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: 'hsl(215.4 16.3% 46.9%)',
+                    fontSize: '12px',
+                    fontFamily: 'system-ui'
+                  }}>
+                    No data available
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Stats Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '20px',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: isMobile ? '16px' : '20px',
             marginBottom: '24px'
           }}>
             {/* Today's Revenue */}
@@ -594,8 +619,8 @@ function AdminSales() {
           {/* Main Content Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr auto',
-            gap: '24px'
+            gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
+            gap: isMobile ? '16px' : '24px'
           }}>
             {/* Sales Table */}
             <div style={{
@@ -603,7 +628,10 @@ function AdminSales() {
               borderRadius: '8px',
               border: '1px solid hsl(240 5.9% 90%)',
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              height: isMobile ? 'calc(100vh - 380px)' : 'calc(100vh - 280px)'
             }}>
               <div style={{
                 padding: '16px 24px',
@@ -613,20 +641,30 @@ function AdminSales() {
                   fontSize: '16px',
                   fontWeight: '600',
                   color: 'hsl(222.2 47.4% 11.2%)',
-                  fontFamily: 'system-ui'
+                  fontFamily: 'system-ui',
+                  margin: 0
                 }}>
                   Recent Sales
                 </h2>
               </div>
 
               <div style={{
-                overflowX: 'auto'
+                overflowX: 'auto',
+                overflowY: 'auto',
+                flex: 1,
+                WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
               }}>
                 <table style={{
                   width: '100%',
-                  borderCollapse: 'collapse'
+                  borderCollapse: 'collapse',
+                  minWidth: isMobile ? '800px' : 'auto' // Force horizontal scroll on mobile
                 }}>
-                  <thead>
+                  <thead style={{
+                    position: 'sticky',
+                    top: 0,
+                    backgroundColor: 'hsl(0 0% 98%)',
+                    zIndex: 1
+                  }}>
                     <tr style={{
                       backgroundColor: 'hsl(0 0% 98%)',
                       borderBottom: '1px solid hsl(240 5.9% 90%)'
@@ -725,7 +763,7 @@ function AdminSales() {
 
             {/* Product Stats */}
             <div style={{
-              width: '400px',
+              width: isMobile ? '100%' : '400px',
               backgroundColor: 'white',
               borderRadius: '8px',
               border: '1px solid hsl(240 5.9% 90%)',
