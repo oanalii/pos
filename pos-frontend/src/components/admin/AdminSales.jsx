@@ -378,7 +378,11 @@ function AdminSales() {
   return (
     <div style={{ 
       display: 'flex',
-      minHeight: '100vh',
+      width: '100%',
+      height: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
       backgroundColor: 'hsl(0 0% 98%)',
       color: 'hsl(222.2 47.4% 11.2%)'
     }}>
@@ -386,17 +390,15 @@ function AdminSales() {
       
       <main style={{
         flex: 1,
-        padding: isMobile ? '8px' : '32px',
-        backgroundColor: 'hsl(0 0% 98%)',
         marginLeft: isMobile ? '50px' : '0',
-        width: isMobile ? 'calc(100% - 50px)' : 'auto',
-        overflowX: 'hidden',
+        height: '100vh',
+        overflow: 'auto',
         WebkitOverflowScrolling: 'touch',
         position: 'relative'
       }}>
         <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto'
+          padding: isMobile ? '8px' : '32px',
+          minWidth: isMobile ? '800px' : 'auto',
         }}>
           {/* Header Section */}
           <div style={{
@@ -633,11 +635,9 @@ function AdminSales() {
               border: '1px solid hsl(240 5.9% 90%)',
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
               overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
               height: isMobile ? 'calc(100vh - 220px)' : 'calc(100vh - 280px)',
-              maxWidth: '100%',
-              WebkitOverflowScrolling: 'touch'
+              display: 'flex',
+              flexDirection: 'column'
             }}>
               <div style={{
                 padding: '16px 24px',
@@ -655,19 +655,15 @@ function AdminSales() {
               </div>
 
               <div style={{
-                overflowX: 'auto',
-                overflowY: 'auto',
                 flex: 1,
+                overflow: 'auto',
                 WebkitOverflowScrolling: 'touch',
-                maxWidth: '100%',
-                position: 'relative',
-                '-webkit-transform': 'translateZ(0)',
-                transform: 'translateZ(0)'
+                position: 'relative'
               }}>
                 <table style={{
                   width: '100%',
                   borderCollapse: 'collapse',
-                  minWidth: isMobile ? '600px' : 'auto'
+                  minWidth: isMobile ? '800px' : 'auto'
                 }}>
                   <thead style={{
                     position: 'sticky',
