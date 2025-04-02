@@ -278,14 +278,16 @@ function AdminSales() {
 
   const fetchProductStats = useCallback(async () => {
     try {
-      // Get store-specific sales
+      // Get sales for all stores or specific store
       const response = await API.get('/api/sales', {
         params: {
-          'filters[store][id][$eq]': STORE_IDS[store],
-          'populate': ['product', 'store']
+          'populate': ['product', 'store'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
         }
       });
-      const storeSales = response.data.data;
+      const allSales = response.data.data;
 
       // Map products to their stats (full list from ProductStats.jsx)
       const stats = [
@@ -342,7 +344,7 @@ function AdminSales() {
       ];
 
       // Process each sale
-      storeSales.forEach(sale => {
+      allSales.forEach(sale => {
         const productId = sale.product?.id;
         const price = parseFloat(sale.Price || 0);
 
@@ -370,9 +372,7 @@ function AdminSales() {
     
     API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     fetchSales();
-    if (store) {
-      fetchProductStats();
-    }
+    fetchProductStats();
   }, [store, timeFilter, fetchSales, fetchProductStats, navigate]);
 
   useEffect(() => {
