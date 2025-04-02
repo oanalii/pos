@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../../services/api';
 import { generateInvoice } from '../../utils/invoice';
@@ -35,9 +35,13 @@ function AdminSales() {
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('day');
   const [todayRevenue, setTodayRevenue] = useState(0);
+  const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
+  const [lastMonthRevenue, setLastMonthRevenue] = useState(0);
+  const [currentMonthRevenue, setCurrentMonthRevenue] = useState(0);
+  const [lastWeekRevenue, setLastWeekRevenue] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [productStats, setProductStats] = useState([]);
   const [selectedVat, setSelectedVat] = useState(0);
-  const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [periodRevenue, setPeriodRevenue] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
@@ -50,10 +54,13 @@ function AdminSales() {
   const fetchSales = useCallback(async () => {
     try {
       // Get today's sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
       const todayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': new Date().toISOString().split('T')[0],
-          'populate': '*',
+          'filters[Time][$gte]': todayStart.toISOString(),
+          'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
@@ -69,13 +76,13 @@ function AdminSales() {
       const yesterdayStart = new Date();
       yesterdayStart.setDate(yesterdayStart.getDate() - 1);
       yesterdayStart.setHours(0, 0, 0, 0);
-      const yesterdayEnd = new Date(yesterdayStart);
+      const yesterdayEnd = new Date(todayStart);
 
       const yesterdayResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': yesterdayStart,
-          'filters[Time][$lt]': yesterdayEnd,
-          'populate': '*',
+          'filters[Time][$gte]': yesterdayStart.toISOString(),
+          'filters[Time][$lt]': yesterdayEnd.toISOString(),
+          'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
@@ -87,39 +94,86 @@ function AdminSales() {
       ) || 0;
       setYesterdayRevenue(yesterdayTotal);
 
-      // Get period revenue
-      const periodStart = new Date();
-      switch(timeFilter) {
-        case '12months':
-          periodStart.setFullYear(periodStart.getFullYear() - 1);
-          break;
-        case '3months':
-          periodStart.setMonth(periodStart.getMonth() - 3);
-          break;
-        case 'month':
-          periodStart.setMonth(periodStart.getMonth() - 1);
-          break;
-        case 'week':
-          periodStart.setDate(periodStart.getDate() - 7);
-          break;
-        default:
-          periodStart.setMonth(periodStart.getMonth() - 1); // Default to monthly
-      }
+      // Get last month's sales (1st to last day of previous month)
+      const lastMonthStart = new Date();
+      lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+      lastMonthStart.setDate(1);
+      lastMonthStart.setHours(0, 0, 0, 0);
+      
+      const lastMonthEnd = new Date();
+      lastMonthEnd.setDate(0); // Last day of previous month
+      lastMonthEnd.setHours(23, 59, 59, 999);
 
-      const periodResponse = await API.get('/api/sales', {
+      const lastMonthResponse = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': periodStart.toISOString(),
-          'populate': '*',
+          'filters[Time][$gte]': lastMonthStart.toISOString(),
+          'filters[Time][$lte]': lastMonthEnd.toISOString(),
+          'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
           } : {})
         }
       });
 
-      const periodTotal = periodResponse.data?.data?.reduce((sum, sale) => 
+      const lastMonthTotal = lastMonthResponse.data?.data?.reduce((sum, sale) => 
         sum + (parseFloat(sale.Price) || 0), 0
       ) || 0;
-      setPeriodRevenue(periodTotal);
+      setLastMonthRevenue(lastMonthTotal);
+
+      // Get current month's sales (1st to present)
+      const currentMonthStart = new Date();
+      currentMonthStart.setDate(1);
+      currentMonthStart.setHours(0, 0, 0, 0);
+
+      const currentMonthResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': currentMonthStart.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const currentMonthTotal = currentMonthResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setCurrentMonthRevenue(currentMonthTotal);
+
+      // Get last week's sales
+      const lastWeekStart = new Date();
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      lastWeekStart.setHours(0, 0, 0, 0);
+
+      const lastWeekResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': lastWeekStart.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const lastWeekTotal = lastWeekResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setLastWeekRevenue(lastWeekTotal);
+
+      // Get all-time sales
+      const allTimeResponse = await API.get('/api/sales', {
+        params: {
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const allTimeTotal = allTimeResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setTotalRevenue(allTimeTotal);
 
       // Get all sales for the table and chart
       const response = await API.get('/api/sales', {
@@ -545,93 +599,45 @@ function AdminSales() {
           {/* Stats Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
             gap: isMobile ? '16px' : '20px',
             marginBottom: '24px'
           }}>
             {/* Today's Revenue */}
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              border: '1px solid hsl(240 5.9% 90%)',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: 'hsl(215.4 16.3% 46.9%)',
-                marginBottom: '8px',
-                fontFamily: 'system-ui'
-              }}>
-                Today's Revenue
-              </div>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'hsl(222.2 47.4% 11.2%)',
-                fontFamily: 'system-ui'
-              }}>
-                €{todayRevenue.toFixed(2)}
-              </div>
-            </div>
+            <StatsCard
+              title="Today's Revenue"
+              value={todayRevenue}
+            />
 
             {/* Yesterday's Revenue */}
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              border: '1px solid hsl(240 5.9% 90%)',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-            }}>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: 'hsl(215.4 16.3% 46.9%)',
-                marginBottom: '8px',
-                fontFamily: 'system-ui'
-              }}>
-                Yesterday's Revenue
-              </div>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'hsl(222.2 47.4% 11.2%)',
-                fontFamily: 'system-ui'
-              }}>
-                €{yesterdayRevenue.toFixed(2)}
-              </div>
-            </div>
+            <StatsCard
+              title="Yesterday's Revenue"
+              value={yesterdayRevenue}
+            />
 
-            {/* Period Revenue */}
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              border: '1px solid hsl(240 5.9% 90%)',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-            }}>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: 'hsl(215.4 16.3% 46.9%)',
-                marginBottom: '8px',
-                fontFamily: 'system-ui'
-              }}>
-                {timeFilter === '12months' ? 'Yearly' : 
-                 timeFilter === '3months' ? 'Quarterly' : 
-                 'Monthly'} Revenue
-              </div>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'hsl(222.2 47.4% 11.2%)',
-                fontFamily: 'system-ui'
-              }}>
-                €{periodRevenue.toFixed(2)}
-              </div>
-            </div>
+            {/* Last Week's Revenue */}
+            <StatsCard
+              title="Last 7 Days Revenue"
+              value={lastWeekRevenue}
+            />
+
+            {/* Current Month Revenue */}
+            <StatsCard
+              title="Current Month Revenue"
+              value={currentMonthRevenue}
+            />
+
+            {/* Last Month Revenue */}
+            <StatsCard
+              title="Last Month Revenue"
+              value={lastMonthRevenue}
+            />
+
+            {/* Total Revenue */}
+            <StatsCard
+              title="Total Revenue"
+              value={totalRevenue}
+            />
           </div>
 
           {/* Main Content Grid */}
@@ -713,7 +719,7 @@ function AdminSales() {
                         }}
                       >
                         <td style={{ ...cellStyle }}>
-                          {sale.store?.Name || 'Unknown Store'}
+                          {sale.store?.Name || 'N/A'}
                         </td>
                         <td style={{ ...cellStyle }}>
                           {sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES') : 'N/A'}
@@ -873,5 +879,34 @@ const cellStyle = {
   color: 'hsl(222.2 47.4% 11.2%)',
   fontFamily: 'system-ui'
 };
+
+const StatsCard = ({ title, value }) => (
+  <div style={{
+    padding: '24px',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    border: '1px solid hsl(240 5.9% 90%)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+  }}>
+    <div style={{
+      fontSize: '13px',
+      fontWeight: '500',
+      color: 'hsl(215.4 16.3% 46.9%)',
+      marginBottom: '8px',
+      fontFamily: 'system-ui'
+    }}>
+      {title}
+    </div>
+    <div style={{
+      fontSize: '24px',
+      fontWeight: '600',
+      color: 'hsl(222.2 47.4% 11.2%)',
+      fontFamily: 'system-ui'
+    }}>
+      €{value.toFixed(2)}
+    </div>
+  </div>
+);
 
 export default AdminSales; 
