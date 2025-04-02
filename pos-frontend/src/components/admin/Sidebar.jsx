@@ -12,18 +12,22 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import CloseIcon from '@mui/icons-material/Close';
 
 function Sidebar() {
   const location = useLocation();
   
   const menuItems = [
     { name: 'General', path: '/admin/sales', icon: <DashboardIcon /> },
-    { name: 'Product Stats', path: '/admin/product-stats', icon: <BarChartIcon /> },
     { name: 'Gaudi', path: '/admin/sales/gaudi', icon: <StoreIcon /> },
-    { name: 'Paralel', path: '/admin/sales/paralel', icon: <StoreIcon /> },
+    { name: 'Hospital', path: '/admin/sales/hospital', icon: <StoreIcon /> },
     { name: 'Mallorca', path: '/admin/sales/mallorca', icon: <StoreIcon /> },
-    { name: 'Consell', path: '/admin/sales/consell', icon: <StoreIcon /> },
-    { name: 'Hospital', path: '/admin/sales/hospital', icon: <StoreIcon /> }
+    { 
+      name: 'Consell', 
+      path: '/admin/sales/consell', 
+      icon: <StoreIcon />,
+      status: <CloseIcon sx={{ fontSize: 16, color: 'error.main', ml: 1 }} /> 
+    }
   ];
 
   return (
@@ -93,7 +97,12 @@ function Sidebar() {
             </ListItemIcon>
             <ListItemText 
               sx={{ display: { xs: 'none', sm: 'block' } }}
-              primary={item.name}
+              primary={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {item.name}
+                  {item.status && item.status}
+                </Box>
+              }
               primaryTypographyProps={{
                 fontSize: '0.9375rem',
                 fontWeight: location.pathname === item.path ? 600 : 400,

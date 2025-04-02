@@ -21,7 +21,6 @@ import {
 
 const STORE_IDS = {
   gaudi: 5,
-  paralel: 1,
   mallorca: 3,
   hospital: 7,
   consell: 14
