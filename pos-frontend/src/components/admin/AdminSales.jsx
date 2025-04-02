@@ -51,90 +51,15 @@ function AdminSales() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Add new state for pagination
-  const [page, setPage] = useState(1);
-  const [limit] = useState(50); // Show 50 items per page
-
   const fetchSales = useCallback(async () => {
     try {
-      // Fetch summary data first (this is fast)
-      const [
-        todayData,
-        yesterdayData,
-        lastWeekData,
-        currentMonthData,
-        lastMonthData,
-        totalData
-      ] = await Promise.all([
-        API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': new Date().setHours(0, 0, 0, 0),
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        }),
-        API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': new Date().setDate(new Date().getDate() - 1).setHours(0, 0, 0, 0),
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        }),
-        API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': new Date().setDate(new Date().getDate() - 7).setHours(0, 0, 0, 0),
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        }),
-        API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': new Date().setDate(1).setHours(0, 0, 0, 0),
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        }),
-        API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': new Date().setMonth(new Date().getMonth() - 1).setDate(1).setHours(0, 0, 0, 0),
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        }),
-        API.get('/api/sales', {
-          params: {
-            'populate': '*',
-            ...(store && STORE_IDS[store] ? {
-              'filters[store][id][$eq]': STORE_IDS[store]
-            } : {})
-          }
-        })
-      ]);
-
-      // Set summary data
-      setTodayRevenue(calculateTotal(todayData.data?.data));
-      setYesterdayRevenue(calculateTotal(yesterdayData.data?.data));
-      setLastWeekRevenue(calculateTotal(lastWeekData.data?.data));
-      setCurrentMonthRevenue(calculateTotal(currentMonthData.data?.data));
-      setLastMonthRevenue(calculateTotal(lastMonthData.data?.data));
-      setTotalRevenue(calculateTotal(totalData.data?.data));
-
-      // Then fetch paginated sales data
-      const response = await API.get('/api/sales', {
+      // Get today's sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const todayResponse = await API.get('/api/sales', {
         params: {
-          'pagination[page]': page,
-          'pagination[pageSize]': limit,
-          'sort[0]': 'Time:desc',
+          'filters[Time][$gte]': todayStart.toISOString(),
           'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
@@ -142,19 +67,180 @@ function AdminSales() {
         }
       });
 
-      setSales(response.data?.data || []);
+      const todayTotal = todayResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setTodayRevenue(todayTotal);
+
+      // Get yesterday's sales
+      const yesterdayStart = new Date();
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      yesterdayStart.setHours(0, 0, 0, 0);
+      const yesterdayEnd = new Date(todayStart);
+
+      const yesterdayResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': yesterdayStart.toISOString(),
+          'filters[Time][$lt]': yesterdayEnd.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const yesterdayTotal = yesterdayResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setYesterdayRevenue(yesterdayTotal);
+
+      // Get last month's sales (1st to last day of previous month)
+      const lastMonthStart = new Date();
+      lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+      lastMonthStart.setDate(1);
+      lastMonthStart.setHours(0, 0, 0, 0);
       
+      const lastMonthEnd = new Date();
+      lastMonthEnd.setDate(0); // Last day of previous month
+      lastMonthEnd.setHours(23, 59, 59, 999);
+
+      const lastMonthResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': lastMonthStart.toISOString(),
+          'filters[Time][$lte]': lastMonthEnd.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const lastMonthTotal = lastMonthResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setLastMonthRevenue(lastMonthTotal);
+
+      // Get current month's sales (1st to present)
+      const currentMonthStart = new Date();
+      currentMonthStart.setDate(1);
+      currentMonthStart.setHours(0, 0, 0, 0);
+
+      const currentMonthResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': currentMonthStart.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const currentMonthTotal = currentMonthResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setCurrentMonthRevenue(currentMonthTotal);
+
+      // Get last week's sales
+      const lastWeekStart = new Date();
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      lastWeekStart.setHours(0, 0, 0, 0);
+
+      const lastWeekResponse = await API.get('/api/sales', {
+        params: {
+          'filters[Time][$gte]': lastWeekStart.toISOString(),
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const lastWeekTotal = lastWeekResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setLastWeekRevenue(lastWeekTotal);
+
+      // Get all-time sales
+      const allTimeResponse = await API.get('/api/sales', {
+        params: {
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      const allTimeTotal = allTimeResponse.data?.data?.reduce((sum, sale) => 
+        sum + (parseFloat(sale.Price) || 0), 0
+      ) || 0;
+      setTotalRevenue(allTimeTotal);
+
+      // Get all sales for the table and chart
+      const response = await API.get('/api/sales', {
+        params: {
+          'populate': ['*', 'store', 'product'],
+          ...(store && STORE_IDS[store] ? {
+            'filters[store][id][$eq]': STORE_IDS[store]
+          } : {})
+        }
+      });
+
+      if (!response.data?.data) {
+        setSales([]);
+        setChartData([]);
+        return;
+      }
+
+      const filteredSales = response.data.data.filter(sale => {
+        if (!sale.Time) return false;
+        const saleDate = new Date(sale.Time);
+        const currentDate = new Date();
+        
+        switch (timeFilter) {
+          case 'day':
+            return saleDate >= todayStart;
+          case 'yesterday':
+            return saleDate >= yesterdayStart && saleDate < yesterdayEnd;
+          case 'week':
+            const weekAgo = new Date(currentDate);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return saleDate >= weekAgo;
+          case 'month':
+            const monthAgo = new Date(currentDate);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return saleDate >= monthAgo;
+          case '3months':
+            const threeMonthsAgo = new Date(currentDate);
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            return saleDate >= threeMonthsAgo;
+          case '12months':
+            const yearAgo = new Date(currentDate);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            return saleDate >= yearAgo;
+          default:
+            return true;
+        }
+      });
+
+      // Sort by date (newest first)
+      const sortedSales = filteredSales.sort((a, b) => 
+        new Date(b.Time).getTime() - new Date(a.Time).getTime()
+      );
+      
+      setSales(sortedSales);
+
+      // Generate chart data
+      const last30Days = generateChartData(sortedSales);
+      setChartData(last30Days);
+
     } catch (error) {
       console.error('Error fetching sales:', error);
+      setSales([]);
+      setChartData([]);
     } finally {
       setLoading(false);
     }
-  }, [store, page, limit]);
-
-  // Helper function to calculate totals
-  const calculateTotal = useCallback((data) => {
-    return data?.reduce((sum, sale) => sum + (parseFloat(sale.Price) || 0), 0) || 0;
-  }, []);
+  }, [store, timeFilter]);
 
   const generateChartData = useCallback((salesData) => {
     if (!Array.isArray(salesData)) return [];
@@ -517,88 +603,41 @@ function AdminSales() {
             gap: isMobile ? '16px' : '20px',
             marginBottom: '24px'
           }}>
-            <div style={{ 
-              display: 'grid',
-              gridTemplateRows: 'auto auto',
-              gap: '20px'
-            }}>
-              {/* First Row */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                gap: isMobile ? '16px' : '20px',
-              }}>
-                <StatsCard
-                  title="Today's Revenue"
-                  value={todayRevenue}
-                />
-                <StatsCard
-                  title="Yesterday's Revenue"
-                  value={yesterdayRevenue}
-                />
-                <StatsCard
-                  title="Last 7 Days Revenue"
-                  value={lastWeekRevenue}
-                />
-              </div>
+            {/* Today's Revenue */}
+            <StatsCard
+              title="Today's Revenue"
+              value={todayRevenue}
+            />
 
-              {/* Second Row */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                gap: isMobile ? '16px' : '20px',
-              }}>
-                <StatsCard
-                  title="Current Month Revenue"
-                  value={currentMonthRevenue}
-                />
-                <StatsCard
-                  title="Last Month Revenue"
-                  value={lastMonthRevenue}
-                />
-                <StatsCard
-                  title="Total Revenue"
-                  value={totalRevenue}
-                />
-              </div>
-            </div>
-          </div>
+            {/* Yesterday's Revenue */}
+            <StatsCard
+              title="Yesterday's Revenue"
+              value={yesterdayRevenue}
+            />
 
-          {/* Add pagination controls to the sales table */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '16px',
-            borderTop: '1px solid hsl(240 5.9% 90%)'
-          }}>
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              style={{
-                padding: '8px 16px',
-                marginRight: '8px',
-                backgroundColor: page === 1 ? 'hsl(220 14% 96%)' : 'hsl(222.2 47.4% 11.2%)',
-                color: page === 1 ? 'hsl(215.4 16.3% 46.9%)' : 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: page === 1 ? 'not-allowed' : 'pointer'
-              }}
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(p => p + 1)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: 'hsl(222.2 47.4% 11.2%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              Next
-            </button>
+            {/* Last Week's Revenue */}
+            <StatsCard
+              title="Last 7 Days Revenue"
+              value={lastWeekRevenue}
+            />
+
+            {/* Current Month Revenue */}
+            <StatsCard
+              title="Current Month Revenue"
+              value={currentMonthRevenue}
+            />
+
+            {/* Last Month Revenue */}
+            <StatsCard
+              title="Last Month Revenue"
+              value={lastMonthRevenue}
+            />
+
+            {/* Total Revenue */}
+            <StatsCard
+              title="Total Revenue"
+              value={totalRevenue}
+            />
           </div>
 
           {/* Main Content Grid */}
