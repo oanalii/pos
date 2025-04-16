@@ -26,6 +26,13 @@ const STORE_IDS = {
   consell: 14
 };
 
+const BREAKEVEN_COSTS = {
+  gaudi: 330,
+  hospital: 240,
+  mallorca: 200,
+  consell: 220
+};
+
 // Add these styles at the top of the component
 const mobileBreakpoint = '768px'; // Standard tablet/phone breakpoint
 
@@ -42,6 +49,7 @@ function AdminSales() {
   const [productStats, setProductStats] = useState([]);
   const [selectedVat, setSelectedVat] = useState(0);
   const [periodRevenue, setPeriodRevenue] = useState(0);
+  const [dailyProfit, setDailyProfit] = useState(0);
   const navigate = useNavigate();
   const { store } = useParams();
 
@@ -70,6 +78,12 @@ function AdminSales() {
         sum + (parseFloat(sale.Price) || 0), 0
       ) || 0;
       setTodayRevenue(todayTotal);
+
+      // Calculate profit if we're on a store page
+      if (store && BREAKEVEN_COSTS[store]) {
+        const profit = todayTotal - BREAKEVEN_COSTS[store];
+        setDailyProfit(profit);
+      }
 
       // Get yesterday's sales
       const yesterdayStart = new Date();
@@ -614,11 +628,20 @@ function AdminSales() {
               value={yesterdayRevenue}
             />
 
-            {/* Last Week's Revenue */}
-            <StatsCard
-              title="Last 7 Days Revenue"
-              value={lastWeekRevenue}
-            />
+            {/* Profit/Loss Calculator (replaces Last 7 Days Revenue) */}
+            {store && BREAKEVEN_COSTS[store] ? (
+              <StatsCard
+                title={`Daily Profit/Loss (BE: ${BREAKEVEN_COSTS[store]}€)`}
+                value={dailyProfit}
+                isProfit={true}
+              />
+            ) : (
+              <StatsCard
+                title="Select a store to view profit"
+                value={0}
+                isProfit={true}
+              />
+            )}
 
             {/* Current Month Revenue */}
             <StatsCard
@@ -879,7 +902,7 @@ const cellStyle = {
   fontFamily: 'system-ui'
 };
 
-const StatsCard = ({ title, value }) => (
+const StatsCard = ({ title, value, isProfit }) => (
   <div style={{
     padding: '24px',
     backgroundColor: 'white',
@@ -900,10 +923,14 @@ const StatsCard = ({ title, value }) => (
     <div style={{
       fontSize: '24px',
       fontWeight: '600',
-      color: 'hsl(222.2 47.4% 11.2%)',
+      color: isProfit !== undefined 
+        ? (value >= 0 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(0 84.2% 60.2%)')
+        : 'hsl(222.2 47.4% 11.2%)',
       fontFamily: 'system-ui'
     }}>
-      €{value.toFixed(2)}
+      {isProfit !== undefined ? (value >= 0 ? '+' : '') : '€'}
+      {value.toFixed(2)}
+      {isProfit !== undefined ? '€' : ''}
     </div>
   </div>
 );
