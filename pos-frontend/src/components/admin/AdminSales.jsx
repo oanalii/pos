@@ -30,7 +30,8 @@ const BREAKEVEN_COSTS = {
   gaudi: 330,
   hospital: 240,
   mallorca: 200,
-  consell: 220
+  consell: 220,
+  total: 990 // 330 + 240 + 200 + 220
 };
 
 // Add these styles at the top of the component
@@ -79,9 +80,13 @@ function AdminSales() {
       ) || 0;
       setTodayRevenue(todayTotal);
 
-      // Calculate profit if we're on a store page
-      if (store && BREAKEVEN_COSTS[store]) {
+      // Calculate profit if we're on a store page or general view
+      if (store) {
         const profit = todayTotal - BREAKEVEN_COSTS[store];
+        setDailyProfit(profit);
+      } else {
+        // For general view (all stores)
+        const profit = todayTotal - BREAKEVEN_COSTS.total;
         setDailyProfit(profit);
       }
 
@@ -629,7 +634,7 @@ function AdminSales() {
             />
 
             {/* Profit/Loss Calculator (replaces Last 7 Days Revenue) */}
-            {store && BREAKEVEN_COSTS[store] ? (
+            {store ? (
               <StatsCard
                 title={`Daily Profit/Loss (BE: ${BREAKEVEN_COSTS[store]}€)`}
                 value={dailyProfit}
@@ -637,8 +642,8 @@ function AdminSales() {
               />
             ) : (
               <StatsCard
-                title="Select a store to view profit"
-                value={0}
+                title={`Daily Profit/Loss (BE: ${BREAKEVEN_COSTS.total}€)`}
+                value={dailyProfit}
                 isProfit={true}
               />
             )}
