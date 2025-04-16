@@ -7,6 +7,7 @@ import SalesDashboard from './components/SalesDashboard';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminSales from './components/admin/AdminSales';
 import ProductStats from './components/admin/ProductStats';
+import AdminProfitLoss from './components/admin/AdminProfitLoss';
 
 // Create a custom theme
 const theme = createTheme({
@@ -73,6 +74,14 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <ProductStats />
+                </AdminProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/profit-loss" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminProfitLoss />
                 </AdminProtectedRoute>
               } 
             />

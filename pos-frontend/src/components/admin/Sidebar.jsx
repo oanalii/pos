@@ -13,6 +13,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CloseIcon from '@mui/icons-material/Close';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
 function Sidebar() {
   const location = useLocation();
@@ -27,6 +28,11 @@ function Sidebar() {
       path: '/admin/sales/consell', 
       icon: <StoreIcon />,
       status: <CloseIcon sx={{ fontSize: 16, color: 'error.main', ml: 1 }} /> 
+    },
+    { 
+      name: 'Profit & Loss', 
+      path: '/admin/profit-loss', 
+      icon: <AccountBalanceIcon /> 
     }
   ];
 
