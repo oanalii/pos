@@ -151,12 +151,12 @@ function ProductList() {
           store: storeId,
           product: item.product.id,
           Description: item.description,
-          paymentMethod: paymentMethod,
+          paymentmethod: paymentMethod,
           paymentamount: amountPaid,
           orderGroupId
         };
 
-        console.log('Sending sale data:', saleData);
+        console.log('Final saleData being sent:', saleData);
 
         await API.post('/api/sales/create-with-relation', {
           data: saleData
