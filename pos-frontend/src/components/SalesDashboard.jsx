@@ -102,18 +102,29 @@ function SalesDashboard() {
     );
   }
 
+  // --- Calculate a dynamic max-height for the table container ---
+  // Adjust the '180px' based on the actual combined height of the header,
+  // buttons, and padding above the table. You might need to tweak this.
+  const tableContainerMaxHeight = 'calc(100vh - 200px)'; 
+
   return (
     <div style={{ 
       padding: '32px',
       maxWidth: '1200px',
       margin: '0 auto',
-      backgroundColor: 'hsl(0 0% 100%)'
+      backgroundColor: 'hsl(0 0% 100%)',
+      // Ensure the main container doesn't cause double scrollbars unnecessarily
+      // Depending on your overall layout, you might need overflow adjustments higher up too.
+      height: '100vh', // Make outer container viewport height
+      display: 'flex', // Use flexbox for layout
+      flexDirection: 'column' // Stack children vertically
     }}>
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        marginBottom: '32px'
+        marginBottom: '32px',
+        flexShrink: 0 // Prevent header from shrinking
       }}>
         <h1 style={{
           fontSize: '22px',
@@ -163,16 +174,27 @@ function SalesDashboard() {
         backgroundColor: 'white',
         borderRadius: '8px',
         border: '1px solid hsl(240 5.9% 90%)',
-        overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+        overflowY: 'auto',   // Enable vertical scroll
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+        flexGrow: 1, // Allow this container to grow and fill remaining space
+        maxHeight: tableContainerMaxHeight, // Apply calculated max height
+        position: 'relative' // Needed for sticky header positioning context
       }}>
         <table style={{ 
           width: '100%', 
-          borderCollapse: 'collapse'
+          borderCollapse: 'collapse',
+          // Optional: Add border-spacing for visual separation if border-collapse is changed
+          // borderSpacing: 0, 
         }}>
-          <thead>
+          {/* Sticky Table Header */}
+          <thead style={{
+            position: 'sticky', // Make the header sticky
+            top: 0, // Stick to the top of the scrolling container
+            zIndex: 1, // Ensure header stays above table body content
+          }}>
             <tr style={{
-              backgroundColor: 'white',
+              // Ensure header row has a solid background to hide scrolled content
+              backgroundColor: 'white', 
               borderBottom: '1.5px solid hsl(240 5.9% 90%)'
             }}>
               <th style={{ 
