@@ -186,6 +186,7 @@ function SalesDashboard() {
               <th style={{ ...headerStyle }}>Time</th>
               <th style={{ ...headerStyle }}>Product</th>
               <th style={{ ...headerStyle }}>Description</th>
+              <th style={{ ...headerStyle }}>Payment</th>
               <th style={{ ...headerStyle }}>Price</th>
               <th style={{ ...headerStyle }}>Actions</th>
             </tr>
@@ -222,6 +223,9 @@ function SalesDashboard() {
                   </td>
                   <td style={{ ...cellStyle }}>
                     {sale.description || 'No description'}
+                  </td>
+                  <td style={{ ...cellStyle, textTransform: 'capitalize' }}>
+                    {sale.paymentMethod || 'N/A'}
                   </td>
                   <td style={{ ...cellStyle, fontWeight: '500' }}>
                     €{sale.Price?.toFixed(2) || '0.00'}
@@ -280,7 +284,7 @@ function SalesDashboard() {
             ) : (
               <tr>
                 <td 
-                  colSpan="6"
+                  colSpan="7"
                   style={{ 
                     textAlign: 'center', 
                     padding: '24px',
