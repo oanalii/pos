@@ -1,16 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Cart({ items, removeFromCart, checkout }) {
   const [paymentMethod, setPaymentMethod] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [amountError, setAmountError] = useState('');
 
   const total = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
 
-  const handleCheckoutClick = () => {
+  useEffect(() => {
     if (paymentMethod) {
-      checkout(paymentMethod);
+      setPaymentAmount(total.toFixed(2));
+      setAmountError('');
     } else {
-      alert("Please select a payment method (Cash or Card).");
+      setPaymentAmount('');
     }
+  }, [paymentMethod, total]);
+
+  useEffect(() => {
+    if (paymentMethod) {
+       setPaymentAmount(total.toFixed(2));
+       setAmountError(''); 
+    }
+  }, [items, paymentMethod, total]);
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+      setPaymentAmount(value);
+      setAmountError('');
+    }
+  };
+  
+  const validateAmount = () => {
+      const numericAmount = parseFloat(paymentAmount);
+      if (isNaN(numericAmount) || numericAmount <= 0) {
+          setAmountError('Please enter a valid positive amount.');
+          return false;
+      }
+      setAmountError('');
+      return true;
+  }
+
+  const handleCheckoutClick = () => {
+    if (!paymentMethod) {
+      alert("Please select a payment method (Cash or Card).");
+      return;
+    }
+    if (!validateAmount()) {
+        return; 
+    }
+
+    checkout(paymentMethod, parseFloat(paymentAmount)); 
   };
 
   return (
@@ -169,6 +209,44 @@ function Cart({ items, removeFromCart, checkout }) {
           </div>
         </div>
 
+        {paymentMethod && (
+          <div style={{ marginBottom: '16px' }}>
+             <label style={{
+                display: 'block',
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                marginBottom: '8px',
+                fontFamily: 'system-ui'
+             }}>
+                Amount Paid ({paymentMethod === 'cash' ? 'Cash' : 'Card'}) (€)
+             </label>
+             <input
+                type="text"
+                inputMode="decimal"
+                value={paymentAmount}
+                onChange={handleAmountChange}
+                onBlur={validateAmount}
+                placeholder={total.toFixed(2)}
+                style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '14px',
+                    border: `1px solid ${amountError ? 'hsl(0 84.2% 60.2%)' : 'hsl(240 5.9% 90%)'}`,
+                    borderRadius: '6px',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    fontFamily: 'system-ui'
+                }}
+             />
+             {amountError && (
+                 <p style={{ color: 'hsl(0 84.2% 60.2%)', fontSize: '12px', marginTop: '4px' }}>
+                     {amountError}
+                 </p>
+             )}
+          </div>
+        )}
+
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between',
@@ -189,17 +267,17 @@ function Cart({ items, removeFromCart, checkout }) {
         </div>
         <button 
           onClick={handleCheckoutClick}
-          disabled={items.length === 0 || !paymentMethod}
+          disabled={items.length === 0 || !paymentMethod || !paymentAmount || parseFloat(paymentAmount) <= 0 || !!amountError}
           style={{ 
             width: '100%',
             padding: '10px 16px',
             fontSize: '14px',
             fontWeight: '500',
-            backgroundColor: (items.length === 0 || !paymentMethod) ? 'hsl(210 40% 80%)' : 'hsl(221.2 83.2% 53.3%)',
+            backgroundColor: (items.length === 0 || !paymentMethod || !paymentAmount || parseFloat(paymentAmount) <= 0 || !!amountError) ? 'hsl(210 40% 80%)' : 'hsl(221.2 83.2% 53.3%)',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
-            cursor: (items.length === 0 || !paymentMethod) ? 'not-allowed' : 'pointer',
+            cursor: (items.length === 0 || !paymentMethod || !paymentAmount || parseFloat(paymentAmount) <= 0 || !!amountError) ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s ease',
             fontFamily: 'system-ui'
           }}

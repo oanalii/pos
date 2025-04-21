@@ -123,10 +123,11 @@ function ProductList() {
     setSelectedProduct(null);
   };
 
-  const handleCheckout = async (paymentMethod) => {
+  const handleCheckout = async (paymentMethod, amountPaid) => {
     try {
       console.log('=== STARTING CHECKOUT ===');
       console.log('Payment Method Selected:', paymentMethod);
+      console.log('Amount Paid:', amountPaid);
       
       const rawStoreId = localStorage.getItem('storeId');
       console.log('Raw storeId from localStorage:', rawStoreId);
@@ -151,6 +152,7 @@ function ProductList() {
           product: item.product.id,
           Description: item.description,
           paymentMethod: paymentMethod,
+          paymentamount: amountPaid,
           orderGroupId
         };
 
