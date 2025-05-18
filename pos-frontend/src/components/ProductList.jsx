@@ -56,7 +56,9 @@ const ID_MAP = {
   'Dryer': 95,
   'Plancha': 97,
   'Mando': 99,
-  'Trimmer': 101
+  'Trimmer': 101,
+  'Cannabis': 103,
+  'Perfumería': 105
 };
 
 // Modern color palette

@@ -360,7 +360,9 @@ function AdminSales() {
         { id: 95, name: "Dryer", count: 0, totalRevenue: 0 },
         { id: 97, name: "Plancha", count: 0, totalRevenue: 0 },
         { id: 99, name: "Mando", count: 0, totalRevenue: 0 },
-        { id: 101, name: "Trimmer", count: 0, totalRevenue: 0 }
+        { id: 101, name: "Trimmer", count: 0, totalRevenue: 0 },
+        { id: 103, name: "Cannabis", count: 0, totalRevenue: 0 },
+        { id: 105, name: "Perfumería", count: 0, totalRevenue: 0 }
       ];
 
       // Process each sale
