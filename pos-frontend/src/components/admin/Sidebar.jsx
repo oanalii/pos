@@ -23,6 +23,7 @@ function Sidebar() {
     { name: 'Gaudi', path: '/admin/sales/gaudi', icon: <StoreIcon /> },
     { name: 'Hospital', path: '/admin/sales/hospital', icon: <StoreIcon /> },
     { name: 'Mallorca', path: '/admin/sales/mallorca', icon: <StoreIcon /> },
+    { name: 'Paralel', path: '/admin/sales/paralel', icon: <StoreIcon /> },
     { 
       name: 'Consell', 
       path: '/admin/sales/consell', 
@@ -30,8 +31,8 @@ function Sidebar() {
       status: <CloseIcon sx={{ fontSize: 16, color: 'error.main', ml: 1 }} /> 
     },
     { 
-      name: 'Profit & Loss', 
-      path: '/admin/profit-loss', 
+      name: 'Sales Breakeven', 
+      path: '/admin/sales-breakeven', 
       icon: <AccountBalanceIcon /> 
     }
   ];

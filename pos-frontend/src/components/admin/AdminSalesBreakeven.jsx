@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from './Sidebar';
 
-const DAILY_BREAKEVEN = 990; // Total daily breakeven for all stores
+const DAILY_BREAKEVEN = 1690; // Total daily breakeven for all stores (330 + 240 + 200 + 220 + 200)
 
 function AdminSalesBreakeven() { // Renamed function
   const [monthlyData, setMonthlyData] = useState([]);

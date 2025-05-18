@@ -23,7 +23,8 @@ const STORE_IDS = {
   gaudi: 5,
   mallorca: 3,
   hospital: 7,
-  consell: 14
+  consell: 14,
+  paralel: 1
 };
 
 const BREAKEVEN_COSTS = {
@@ -31,7 +32,8 @@ const BREAKEVEN_COSTS = {
   hospital: 240,
   mallorca: 200,
   consell: 220,
-  total: 990 // 330 + 240 + 200 + 220
+  paralel: 700, // Assuming a similar breakeven to mallorca, adjust as needed
+  total: 1690 // 330 + 240 + 200 + 220 + 200
 };
 
 // Add these styles at the top of the component
@@ -636,13 +638,13 @@ function AdminSales() {
             {/* Profit/Loss Calculator (replaces Last 7 Days Revenue) */}
             {store ? (
               <StatsCard
-                title={`Daily Profit/Loss (BE: ${BREAKEVEN_COSTS[store]}€)`}
+                title={`Daily Sales Breakeven (BE: ${BREAKEVEN_COSTS[store]}€)`}
                 value={dailyProfit}
                 isProfit={true}
               />
             ) : (
               <StatsCard
-                title={`Daily Profit/Loss (BE: ${BREAKEVEN_COSTS.total}€)`}
+                title={`Daily Sales Breakeven (BE: ${BREAKEVEN_COSTS.total}€)`}
                 value={dailyProfit}
                 isProfit={true}
               />

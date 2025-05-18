@@ -4,7 +4,6 @@ import Sidebar from './Sidebar';
 import {
   Box,
   Typography,
-  Paper,
   Table,
   TableBody,
   TableCell,

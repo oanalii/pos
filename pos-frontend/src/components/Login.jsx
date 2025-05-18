@@ -30,29 +30,30 @@ function Login() {
         password: password
       });
 
-      if (response.data.jwt) {
-        // Store JWT
-        localStorage.setItem('jwtToken', response.data.jwt);
-        
-        // Get user data with store info
-        const userResponse = await API.get('/api/users/me?populate=*', {
-          headers: {
-            Authorization: `Bearer ${response.data.jwt}`
-          }
-        });
-        
-        const userData = userResponse.data;
-        
-        // Store user and store IDs
-        localStorage.setItem('userId', userData.id);
-        if (userData.store) {
-          localStorage.setItem('storeId', userData.store.id);
-          navigate('/pos');  // Navigate to POS if store exists
-        } else {
-          setError('User is not associated with a store');
-          localStorage.clear();
-          return;
+      // Make sure this is being set
+      localStorage.setItem('jwtToken', response.data.jwt);
+      
+      // Configure API for future requests
+      API.defaults.headers.common['Authorization'] = `Bearer ${response.data.jwt}`;
+      
+      // Get user data with store info
+      const userResponse = await API.get('/api/users/me?populate=*', {
+        headers: {
+          Authorization: `Bearer ${response.data.jwt}`
         }
+      });
+      
+      const userData = userResponse.data;
+      
+      // Store user and store IDs
+      localStorage.setItem('userId', userData.id);
+      if (userData.store) {
+        localStorage.setItem('storeId', userData.store.id);
+        navigate('/pos');  // Navigate to POS if store exists
+      } else {
+        setError('User is not associated with a store');
+        localStorage.clear();
+        return;
       }
     } catch (error) {
       console.error('Login error:', error);
