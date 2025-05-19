@@ -28,12 +28,12 @@ const STORE_IDS = {
 };
 
 const BREAKEVEN_COSTS = {
-  gaudi: 330,
-  hospital: 240,
-  mallorca: 200,
-  consell: 220,
-  paralel: 700, // Assuming a similar breakeven to mallorca, adjust as needed
-  total: 1690 // 330 + 240 + 200 + 220 + 200
+  gaudi: 313,
+  hospital: 277,
+  mallorca: 227,
+  consell: 224,
+  paralel: 872,
+  total: 1913 // 313 + 277 + 227 + 224 + 872
 };
 
 // Add these styles at the top of the component
@@ -637,7 +637,7 @@ function AdminSales() {
               value={yesterdayRevenue}
             />
 
-            {/* Profit/Loss Calculator (replaces Last 7 Days Revenue) */}
+            {/* Profit/Loss Calculator */}
             {store ? (
               <StatsCard
                 title={`Daily Sales Breakeven (BE: ${BREAKEVEN_COSTS[store]}€)`}
@@ -652,10 +652,18 @@ function AdminSales() {
               />
             )}
 
-            {/* Current Month Revenue */}
+            {/* Current Month Revenue with Profit/Loss */}
             <StatsCard
               title="Current Month Revenue"
               value={currentMonthRevenue}
+              profitValue={(() => {
+                const today = new Date();
+                const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                const monthlyBreakeven = store 
+                  ? BREAKEVEN_COSTS[store] * daysInMonth 
+                  : BREAKEVEN_COSTS.total * daysInMonth;
+                return currentMonthRevenue - monthlyBreakeven;
+              })()}
             />
 
             {/* Last Month Revenue */}
@@ -911,7 +919,7 @@ const cellStyle = {
   fontFamily: 'system-ui'
 };
 
-const StatsCard = ({ title, value, isProfit }) => (
+const StatsCard = ({ title, value, isProfit, profitValue }) => (
   <div style={{
     padding: '24px',
     backgroundColor: 'white',
@@ -930,16 +938,33 @@ const StatsCard = ({ title, value, isProfit }) => (
       {title}
     </div>
     <div style={{
-      fontSize: '24px',
-      fontWeight: '600',
-      color: isProfit !== undefined 
-        ? (value >= 0 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(0 84.2% 60.2%)')
-        : 'hsl(222.2 47.4% 11.2%)',
-      fontFamily: 'system-ui'
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '8px'
     }}>
-      {isProfit !== undefined ? (value >= 0 ? '+' : '') : '€'}
-      {value.toFixed(2)}
-      {isProfit !== undefined ? '€' : ''}
+      <div style={{
+        fontSize: '24px',
+        fontWeight: '600',
+        color: isProfit !== undefined 
+          ? (value >= 0 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(0 84.2% 60.2%)')
+          : 'hsl(222.2 47.4% 11.2%)',
+        fontFamily: 'system-ui'
+      }}>
+        {isProfit !== undefined ? (value >= 0 ? '+' : '') : '€'}
+        {value.toFixed(2)}
+        {isProfit !== undefined ? '€' : ''}
+      </div>
+      {profitValue !== undefined && (
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '500',
+          color: profitValue >= 0 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(0 84.2% 60.2%)',
+          fontFamily: 'system-ui'
+        }}>
+          {profitValue >= 0 ? '+' : ''}
+          {profitValue.toFixed(2)}€
+        </div>
+      )}
     </div>
   </div>
 );
