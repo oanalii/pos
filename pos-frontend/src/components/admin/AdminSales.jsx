@@ -629,12 +629,20 @@ function AdminSales() {
             <StatsCard
               title="Today's Revenue"
               value={todayRevenue}
+              profitValue={(() => {
+                const dailyBreakeven = store ? BREAKEVEN_COSTS[store] : BREAKEVEN_COSTS.total;
+                return todayRevenue - dailyBreakeven;
+              })()}
             />
 
             {/* Yesterday's Revenue */}
             <StatsCard
               title="Yesterday's Revenue"
               value={yesterdayRevenue}
+              profitValue={(() => {
+                const dailyBreakeven = store ? BREAKEVEN_COSTS[store] : BREAKEVEN_COSTS.total;
+                return yesterdayRevenue - dailyBreakeven;
+              })()}
             />
 
             {/* Profit/Loss Calculator */}
