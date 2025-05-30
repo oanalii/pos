@@ -58,7 +58,8 @@ const ID_MAP = {
   'Mando': 99,
   'Trimmer': 101,
   'Cannabis': 103,
-  'Perfumería': 105
+  'Perfumería': 105,
+  'Maleta': 107
 };
 
 // Modern color palette
