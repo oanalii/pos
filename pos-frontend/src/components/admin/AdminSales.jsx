@@ -308,9 +308,10 @@ function AdminSales() {
 
   const fetchProductStats = useCallback(async () => {
     try {
-      // Get sales for all stores or specific store
+      // Get sales for all stores or specific store, starting from June 1st, 2025
       const response = await API.get('/api/sales', {
         params: {
+          'filters[Time][$gte]': TRACKING_START_DATE,
           'populate': ['product', 'store'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
