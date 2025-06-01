@@ -7,6 +7,7 @@ function SalesDashboard() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVat, setSelectedVat] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const storeId = localStorage.getItem('storeId');
 
@@ -84,6 +85,17 @@ function SalesDashboard() {
     
     await generateInvoice(items, total, sale, selectedVat);
   };
+
+  // Add filtered sales logic
+  const filteredSales = sales.filter(sale => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (sale.product?.Product || '').toLowerCase().includes(searchLower) ||
+      (sale.description || '').toLowerCase().includes(searchLower) ||
+      (sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES').includes(searchTerm) : false) ||
+      (sale.Price?.toString() || '').includes(searchTerm)
+    );
+  });
 
   if (loading) {
     return (
@@ -170,6 +182,49 @@ function SalesDashboard() {
         </button>
       </div>
 
+      {/* Add Search Bar */}
+      <div style={{
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '12px',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        border: '1px solid hsl(240 5.9% 90%)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+      }}>
+        <svg 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2"
+          style={{ color: 'hsl(215.4 16.3% 46.9%)' }}
+        >
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by product, description, date, or price..."
+          style={{
+            flex: 1,
+            border: 'none',
+            outline: 'none',
+            fontSize: '14px',
+            color: 'hsl(222.2 47.4% 11.2%)',
+            fontFamily: 'system-ui',
+            '::placeholder': {
+              color: 'hsl(215.4 16.3% 46.9%)'
+            }
+          }}
+        />
+      </div>
+
       <div style={{
         backgroundColor: 'white',
         borderRadius: '8px',
@@ -215,8 +270,8 @@ function SalesDashboard() {
             </tr>
           </thead>
           <tbody>
-            {sales && sales.length > 0 ? (
-              sales.map((sale) => (
+            {filteredSales && filteredSales.length > 0 ? (
+              filteredSales.map((sale) => (
                 <tr 
                   key={sale.id} 
                   style={{ 

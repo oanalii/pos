@@ -46,6 +46,7 @@ function AdminSales() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('day');
+  const [searchTerm, setSearchTerm] = useState('');
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [lastMonthRevenue, setLastMonthRevenue] = useState(0);
@@ -451,6 +452,18 @@ function AdminSales() {
     await generateInvoice(items, total, sale, selectedVat);
   };
 
+  // Add filtered sales logic
+  const filteredSales = sales.filter(sale => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (sale.product?.Product || '').toLowerCase().includes(searchLower) ||
+      (sale.description || '').toLowerCase().includes(searchLower) ||
+      (sale.store?.Name || '').toLowerCase().includes(searchLower) ||
+      (sale.Time ? new Date(sale.Time).toLocaleDateString('es-ES').includes(searchTerm) : false) ||
+      (sale.Price?.toString() || '').includes(searchTerm)
+    );
+  });
+
   if (loading) return (
     <div style={{
       display: 'flex',
@@ -728,6 +741,48 @@ function AdminSales() {
                 </h2>
               </div>
 
+              {/* Add Search Bar */}
+              <div style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid hsl(240 5.9% 90%)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                backgroundColor: 'white'
+              }}>
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2"
+                  style={{ color: 'hsl(215.4 16.3% 46.9%)' }}
+                >
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by store, product, description, date, or price..."
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    border: '1px solid hsl(240 5.9% 90%)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    fontSize: '14px',
+                    color: 'hsl(222.2 47.4% 11.2%)',
+                    fontFamily: 'system-ui',
+                    '::placeholder': {
+                      color: 'hsl(215.4 16.3% 46.9%)'
+                    }
+                  }}
+                />
+              </div>
+
               <div style={{
                 flex: 1,
                 overflow: 'auto',
@@ -759,7 +814,7 @@ function AdminSales() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sales.map((sale) => (
+                    {filteredSales.map((sale) => (
                       <tr 
                         key={sale.id}
                         style={{
