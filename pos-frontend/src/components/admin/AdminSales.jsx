@@ -27,9 +27,12 @@ const STORE_IDS = {
   paralel: 1
 };
 
+// Add the start date constant
+const TRACKING_START_DATE = '2025-06-01T00:00:00.000Z';
+
 const BREAKEVEN_COSTS = {
-  gaudi: 313,
-  hospital: 277,
+  gaudi: 280,
+  hospital: 320,
   mallorca: 227,
   consell: 224,
   paralel: 872,
@@ -124,21 +127,26 @@ function AdminSales() {
       lastMonthEnd.setDate(0); // Last day of previous month
       lastMonthEnd.setHours(23, 59, 59, 999);
 
-      const lastMonthResponse = await API.get('/api/sales', {
-        params: {
-          'filters[Time][$gte]': lastMonthStart.toISOString(),
-          'filters[Time][$lte]': lastMonthEnd.toISOString(),
-          'populate': ['*', 'store', 'product'],
-          ...(store && STORE_IDS[store] ? {
-            'filters[store][id][$eq]': STORE_IDS[store]
-          } : {})
-        }
-      });
+      // Only fetch last month's data if we're past July 2025
+      if (new Date() > new Date('2025-07-01')) {
+        const lastMonthResponse = await API.get('/api/sales', {
+          params: {
+            'filters[Time][$gte]': lastMonthStart.toISOString(),
+            'filters[Time][$lte]': lastMonthEnd.toISOString(),
+            'populate': ['*', 'store', 'product'],
+            ...(store && STORE_IDS[store] ? {
+              'filters[store][id][$eq]': STORE_IDS[store]
+            } : {})
+          }
+        });
 
-      const lastMonthTotal = lastMonthResponse.data?.data?.reduce((sum, sale) => 
-        sum + (parseFloat(sale.Price) || 0), 0
-      ) || 0;
-      setLastMonthRevenue(lastMonthTotal);
+        const lastMonthTotal = lastMonthResponse.data?.data?.reduce((sum, sale) => 
+          sum + (parseFloat(sale.Price) || 0), 0
+        ) || 0;
+        setLastMonthRevenue(lastMonthTotal);
+      } else {
+        setLastMonthRevenue(0);
+      }
 
       // Get current month's sales (1st to present)
       const currentMonthStart = new Date();
@@ -183,6 +191,7 @@ function AdminSales() {
       // Get all-time sales
       const allTimeResponse = await API.get('/api/sales', {
         params: {
+          'filters[Time][$gte]': TRACKING_START_DATE,
           'populate': ['*', 'store', 'product'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]

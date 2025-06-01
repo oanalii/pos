@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from './Sidebar';
 
-const DAILY_BREAKEVEN = 990; // Total daily breakeven for all stores
+const DAILY_BREAKEVEN = 1913; // Total daily breakeven for all stores
+
+// Add the start date constant
+const TRACKING_START_DATE = '2025-06-01T00:00:00.000Z';
 
 function AdminProfitLoss() {
   const [monthlyData, setMonthlyData] = useState([]);
@@ -17,6 +20,7 @@ function AdminProfitLoss() {
       // Get all sales data
       const response = await API.get('/api/sales', {
         params: {
+          'filters[Time][$gte]': TRACKING_START_DATE,
           'populate': ['store'],
         }
       });
