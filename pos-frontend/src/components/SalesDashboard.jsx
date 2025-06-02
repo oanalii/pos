@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { generateInvoice } from '../utils/invoice';
+import mbappeImg from '../assets/mbappe.jpg';
+import messiImg from '../assets/messi.png';
 
 function SalesDashboard() {
   const [sales, setSales] = useState([]);
@@ -601,6 +603,28 @@ function SalesDashboard() {
             }}>
               €{yesterdayRevenue.toFixed(2)}
             </div>
+          </div>
+
+          {/* Spacer to push image to bottom */}
+          <div style={{ flex: 1 }} />
+
+          {/* Conditional Image */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '24px'
+          }}>
+            <img 
+              src={todayRevenue >= 500 ? messiImg : mbappeImg}
+              alt={todayRevenue >= 500 ? "Messi" : "Mbappe"}
+              style={{
+                width: '150px',
+                height: '150px',
+                objectFit: 'cover',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+            />
           </div>
         </div>
       </div>
