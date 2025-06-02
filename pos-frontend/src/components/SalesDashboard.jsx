@@ -10,6 +10,8 @@ function SalesDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
+  const [todayCashCount, setTodayCashCount] = useState(0);
+  const [todayCardCount, setTodayCardCount] = useState(0);
   const navigate = useNavigate();
   const storeId = localStorage.getItem('storeId');
 
@@ -33,7 +35,21 @@ function SalesDashboard() {
           }
         });
         
-        const todayTotal = todayResponse.data?.data?.reduce((sum, sale) => 
+        const todaySales = todayResponse.data?.data || [];
+        
+        // Calculate payment method counts
+        const cashCount = todaySales.filter(sale => 
+          sale.paymentmethod?.toLowerCase() === 'cash'
+        ).length;
+        
+        const cardCount = todaySales.filter(sale => 
+          sale.paymentmethod?.toLowerCase() === 'card'
+        ).length;
+        
+        setTodayCashCount(cashCount);
+        setTodayCardCount(cardCount);
+        
+        const todayTotal = todaySales.reduce((sum, sale) => 
           sum + (parseFloat(sale.Price) || 0), 0
         ) || 0;
         setTodayRevenue(todayTotal);
@@ -466,9 +482,70 @@ function SalesDashboard() {
               fontSize: '48px',
               fontWeight: '600',
               color: todayRevenue >= 500 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(24.6 95% 53.1%)',
-              fontFamily: 'system-ui'
+              fontFamily: 'system-ui',
+              marginBottom: '24px'
             }}>
               €{todayRevenue.toFixed(2)}
+            </div>
+
+            {/* Payment Method Stats */}
+            <div style={{
+              display: 'flex',
+              gap: '16px'
+            }}>
+              {/* Cash Count */}
+              <div style={{
+                flex: 1,
+                backgroundColor: 'hsl(210 40% 98%)',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid hsl(240 5.9% 90%)'
+              }}>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: 'hsl(215.4 16.3% 46.9%)',
+                  marginBottom: '8px',
+                  fontFamily: 'system-ui'
+                }}>
+                  Cash
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui'
+                }}>
+                  {todayCashCount}
+                </div>
+              </div>
+
+              {/* Card Count */}
+              <div style={{
+                flex: 1,
+                backgroundColor: 'hsl(210 40% 98%)',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid hsl(240 5.9% 90%)'
+              }}>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: 'hsl(215.4 16.3% 46.9%)',
+                  marginBottom: '8px',
+                  fontFamily: 'system-ui'
+                }}>
+                  Card
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui'
+                }}>
+                  {todayCardCount}
+                </div>
+              </div>
             </div>
           </div>
 
