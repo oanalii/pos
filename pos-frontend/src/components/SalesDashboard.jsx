@@ -159,7 +159,7 @@ function SalesDashboard() {
   return (
     <div style={{ 
       padding: '32px',
-      maxWidth: '1200px',
+      maxWidth: '1800px',
       margin: '0 auto',
       backgroundColor: 'hsl(0 0% 100%)',
       height: '100vh',
@@ -220,8 +220,8 @@ function SalesDashboard() {
       {/* Main Content Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) 300px',
-        gap: '24px',
+        gridTemplateColumns: 'minmax(0, 1fr) 400px',
+        gap: '32px',
         height: 'calc(100vh - 100px)',
         minWidth: '1024px'
       }}>
@@ -237,7 +237,7 @@ function SalesDashboard() {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            padding: '12px',
+            padding: '16px',
             backgroundColor: 'white',
             borderRadius: '8px',
             border: '1px solid hsl(240 5.9% 90%)',
@@ -287,7 +287,18 @@ function SalesDashboard() {
             <table style={{ 
               width: '100%', 
               borderCollapse: 'collapse',
+              tableLayout: 'fixed'
             }}>
+              <colgroup>
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: '20%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '15%' }} />
+              </colgroup>
               <thead style={{
                 position: 'sticky',
                 top: 0,
@@ -432,29 +443,29 @@ function SalesDashboard() {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
+          gap: '24px'
         }}>
           {/* Today's Revenue */}
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '8px',
+            borderRadius: '12px',
             border: '1px solid hsl(240 5.9% 90%)',
-            padding: '20px',
+            padding: '32px',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{
-              fontSize: '13px',
+              fontSize: '16px',
               fontWeight: '500',
               color: 'hsl(215.4 16.3% 46.9%)',
-              marginBottom: '8px',
+              marginBottom: '16px',
               fontFamily: 'system-ui'
             }}>
               Today's Revenue
             </div>
             <div style={{
-              fontSize: '32px',
+              fontSize: '48px',
               fontWeight: '600',
-              color: 'hsl(222.2 47.4% 11.2%)',
+              color: todayRevenue >= 500 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(24.6 95% 53.1%)',
               fontFamily: 'system-ui'
             }}>
               €{todayRevenue.toFixed(2)}
@@ -464,24 +475,24 @@ function SalesDashboard() {
           {/* Yesterday's Revenue */}
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '8px',
+            borderRadius: '12px',
             border: '1px solid hsl(240 5.9% 90%)',
-            padding: '20px',
+            padding: '32px',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{
-              fontSize: '13px',
+              fontSize: '16px',
               fontWeight: '500',
               color: 'hsl(215.4 16.3% 46.9%)',
-              marginBottom: '8px',
+              marginBottom: '16px',
               fontFamily: 'system-ui'
             }}>
               Yesterday's Revenue
             </div>
             <div style={{
-              fontSize: '32px',
+              fontSize: '48px',
               fontWeight: '600',
-              color: 'hsl(222.2 47.4% 11.2%)',
+              color: yesterdayRevenue >= 500 ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(24.6 95% 53.1%)',
               fontFamily: 'system-ui'
             }}>
               €{yesterdayRevenue.toFixed(2)}
