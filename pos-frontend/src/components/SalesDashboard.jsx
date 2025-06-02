@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { generateInvoice } from '../utils/invoice';
-import mbappeImage from '../../assets/mbappe.jpg';
-import messiImage from '../../assets/messi.png';
+import mbappeImage from '../assets/mbappe.jpg';
+import messiImage from '../assets/messi.png';
 
 function SalesDashboard() {
   const [sales, setSales] = useState([]);
