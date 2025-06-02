@@ -10,8 +10,8 @@ function SalesDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
-  const [todayCashCount, setTodayCashCount] = useState(0);
-  const [todayCardCount, setTodayCardCount] = useState(0);
+  const [todayCashStats, setTodayCashStats] = useState({ count: 0, amount: 0 });
+  const [todayCardStats, setTodayCardStats] = useState({ count: 0, amount: 0 });
   const navigate = useNavigate();
   const storeId = localStorage.getItem('storeId');
 
@@ -37,22 +37,33 @@ function SalesDashboard() {
         
         const todaySales = todayResponse.data?.data || [];
         
-        // Calculate payment method counts
-        const cashCount = todaySales.filter(sale => 
+        // Calculate payment method stats
+        const cashSales = todaySales.filter(sale => 
           sale.paymentmethod?.toLowerCase() === 'cash'
-        ).length;
-        
-        const cardCount = todaySales.filter(sale => 
+        );
+        const cardSales = todaySales.filter(sale => 
           sale.paymentmethod?.toLowerCase() === 'card'
-        ).length;
+        );
         
-        setTodayCashCount(cashCount);
-        setTodayCardCount(cardCount);
-        
-        const todayTotal = todaySales.reduce((sum, sale) => 
+        const cashTotal = cashSales.reduce((sum, sale) => 
           sum + (parseFloat(sale.Price) || 0), 0
-        ) || 0;
-        setTodayRevenue(todayTotal);
+        );
+        
+        const cardTotal = cardSales.reduce((sum, sale) => 
+          sum + (parseFloat(sale.Price) || 0), 0
+        );
+        
+        setTodayCashStats({
+          count: cashSales.length,
+          amount: cashTotal
+        });
+        
+        setTodayCardStats({
+          count: cardSales.length,
+          amount: cardTotal
+        });
+        
+        setTodayRevenue(cashTotal + cardTotal);
 
         // Get yesterday's sales
         const yesterdayStart = new Date();
@@ -493,7 +504,7 @@ function SalesDashboard() {
               display: 'flex',
               gap: '16px'
             }}>
-              {/* Cash Count */}
+              {/* Cash Stats */}
               <div style={{
                 flex: 1,
                 backgroundColor: 'hsl(210 40% 98%)',
@@ -508,19 +519,27 @@ function SalesDashboard() {
                   marginBottom: '8px',
                   fontFamily: 'system-ui'
                 }}>
-                  Cash
+                  Cash Sales
                 </div>
                 <div style={{
                   fontSize: '24px',
                   fontWeight: '600',
                   color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui',
+                  marginBottom: '4px'
+                }}>
+                  €{todayCashStats.amount.toFixed(2)}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'hsl(215.4 16.3% 46.9%)',
                   fontFamily: 'system-ui'
                 }}>
-                  {todayCashCount}
+                  {todayCashStats.count} sales
                 </div>
               </div>
 
-              {/* Card Count */}
+              {/* Card Stats */}
               <div style={{
                 flex: 1,
                 backgroundColor: 'hsl(210 40% 98%)',
@@ -535,15 +554,23 @@ function SalesDashboard() {
                   marginBottom: '8px',
                   fontFamily: 'system-ui'
                 }}>
-                  Card
+                  Card Sales
                 </div>
                 <div style={{
                   fontSize: '24px',
                   fontWeight: '600',
                   color: 'hsl(222.2 47.4% 11.2%)',
+                  fontFamily: 'system-ui',
+                  marginBottom: '4px'
+                }}>
+                  €{todayCardStats.amount.toFixed(2)}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'hsl(215.4 16.3% 46.9%)',
                   fontFamily: 'system-ui'
                 }}>
-                  {todayCardCount}
+                  {todayCardStats.count} sales
                 </div>
               </div>
             </div>
