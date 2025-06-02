@@ -616,7 +616,7 @@ function SalesDashboard() {
             marginBottom: '24px'
           }}>
             <img 
-              src={todayRevenue >= 500 ? messi : mbappe}
+              src={todayRevenue >= 500 ? '/messi.png' : '/mbappe.jpg'}
               alt={todayRevenue >= 500 ? "Messi" : "Mbappe"}
               style={{
                 width: '150px',
