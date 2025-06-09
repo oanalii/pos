@@ -614,12 +614,14 @@ function SalesDashboard() {
           }}>
             <img 
               src={
+                todayRevenue >= 2000 ? '/vegeta.gif' :
                 todayRevenue >= 1500 ? '/15.gif' :
                 todayRevenue >= 1000 ? '/mayweather.jpg' :
                 todayRevenue >= 500 ? '/messi.png' : 
                 '/mbappe.jpg'
               }
               alt={
+                todayRevenue >= 2000 ? "Vegeta" :
                 todayRevenue >= 1500 ? "15" :
                 todayRevenue >= 1000 ? "Mayweather" :
                 todayRevenue >= 500 ? "Messi" : 
