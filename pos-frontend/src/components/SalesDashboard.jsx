@@ -614,6 +614,7 @@ function SalesDashboard() {
           }}>
             <img 
               src={
+                todayRevenue >= 3000 ? '/3k.gif' :
                 todayRevenue >= 2500 ? '/peter.gif' :
                 todayRevenue >= 2000 ? '/vegeta.gif' :
                 todayRevenue >= 1500 ? '/15.gif' :
@@ -622,6 +623,7 @@ function SalesDashboard() {
                 '/mbappe.jpg'
               }
               alt={
+                todayRevenue >= 3000 ? "3K" :
                 todayRevenue >= 2500 ? "Peter" :
                 todayRevenue >= 2000 ? "Vegeta" :
                 todayRevenue >= 1500 ? "15" :
