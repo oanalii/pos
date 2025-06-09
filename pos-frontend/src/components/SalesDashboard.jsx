@@ -614,18 +614,20 @@ function SalesDashboard() {
           }}>
             <img 
               src={
+                todayRevenue >= 1500 ? '/15.gif' :
                 todayRevenue >= 1000 ? '/mayweather.jpg' :
                 todayRevenue >= 500 ? '/messi.png' : 
                 '/mbappe.jpg'
               }
               alt={
+                todayRevenue >= 1500 ? "15" :
                 todayRevenue >= 1000 ? "Mayweather" :
                 todayRevenue >= 500 ? "Messi" : 
                 "Mbappe"
               }
               style={{
-                width: '150px',
-                height: '150px',
+                width: '200px',
+                height: '200px',
                 objectFit: 'cover',
                 borderRadius: '8px',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
