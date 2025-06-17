@@ -6,7 +6,7 @@ import { factories } from '@strapi/strapi'
 
 interface Invoice {
   id: number;
-  InvoiceNumber: string;
+  InvoiceNumber: number;
   Date: string;
   Total: number;
   sale?: any;
@@ -75,6 +75,9 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
           store: data.store,
           product: data.product,
           description: data.Description,
+          paymentmethod: data.paymentmethod,
+          paymentamount: data.paymentamount,
+          orderGroupId: data.orderGroupId,
           publishedAt: new Date()
         },
         populate: ['store', 'product']
@@ -82,16 +85,16 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
 
       console.log('Created sale with ID:', sale.id);
 
-      // Create invoice with sale.id - 1
+      // Create invoice - InvoiceNumber is set by lifecycle hook
       const invoiceData = {
-        InvoiceNumber: `INV-${Date.now()}`,
         Date: new Date(),
         Total: data.Price,
         store: data.store,
         sale: Number(sale.id) - 1,
+        orderGroupId: data.orderGroupId,
         publishedAt: new Date()
       };
-      console.log('Creating invoice with data:', invoiceData);
+      console.log('Creating invoice with data (Lifecycle sets InvoiceNumber):', invoiceData);
 
       const invoice = await strapi.entityService.create('api::invoice.invoice', {
         data: invoiceData,
@@ -101,7 +104,8 @@ export default factories.createCoreController('api::sale.sale', ({ strapi }) => 
       console.log('Created invoice:', {
         invoiceId: invoice.id,
         linkedToSaleId: invoice.sale?.id || null,
-        storeId: invoice.store?.id || null
+        storeId: invoice.store?.id || null,
+        invoiceNumberGenerated: invoice.InvoiceNumber
       });
 
       return { data: sale };

@@ -41,6 +41,17 @@
     },
     "customName": {
       "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["completed", "refunded"],
+      "default": "completed"
+    },
+    "refundDate": {
+      "type": "datetime"
+    },
+    "refundReason": {
+      "type": "text"
     }
   }
 }

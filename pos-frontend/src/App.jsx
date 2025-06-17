@@ -8,6 +8,8 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminSales from './components/admin/AdminSales';
 import ProductStats from './components/admin/ProductStats';
 import AdminSalesBreakeven from './components/admin/AdminSalesBreakeven';
+import CloseCajaPage from './components/CloseCajaPage';
+import AdminCajaClosures from './components/admin/AdminCajaClosures';
 
 // Create a custom theme
 const theme = createTheme({
@@ -59,6 +61,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/pos/close-caja" 
+              element={
+                <ProtectedRoute>
+                  <CloseCajaPage />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/admin" element={<AdminLogin />} />
             <Route 
               path="/admin/sales" 
@@ -82,6 +92,14 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <AdminSalesBreakeven />
+                </AdminProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/caja" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminCajaClosures />
                 </AdminProtectedRoute>
               } 
             />

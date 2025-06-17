@@ -186,6 +186,13 @@ function ProductList() {
     setSelectedProduct(product);
   };
 
+  const handleCloseCajaClick = () => {
+    const confirmation = window.confirm("Are you sure you want to close the counter for the day? This action cannot be undone.");
+    if (confirmation) {
+      navigate('/pos/close-caja');
+    }
+  };
+
   const filteredProducts = products.filter(product => 
     product.Product.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -215,7 +222,6 @@ function ProductList() {
           gap: '32px',
           borderBottom: '1px solid hsl(240 5.9% 90%)',
           backgroundColor: 'hsl(0 0% 100%)',
-          position: 'relative',
           zIndex: 10,
           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
         }}>
@@ -235,7 +241,7 @@ function ProductList() {
             position: 'relative',
             maxWidth: '400px',
             width: '100%',
-            margin: '0 auto'
+            justifySelf: 'center',
           }}>
             <svg 
               style={{
@@ -275,47 +281,69 @@ function ProductList() {
             />
           </div>
 
-          {/* History button */}
-          <button 
-            onClick={() => navigate('/pos/sales')}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'hsl(210 40% 98%)';
-              e.currentTarget.style.borderColor = 'hsl(215.4 16.3% 46.9%)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'white';
-              e.currentTarget.style.borderColor = 'hsl(240 5.9% 90%)';
-            }}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: 'white',
-              color: 'hsl(222.2 47.4% 11.2%)',
-              border: '1px solid hsl(240 5.9% 90%)',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.15s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontFamily: 'system-ui',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            <svg 
-              width="15" 
-              height="15" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2"
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '12px', justifySelf: 'end' }}>
+            <button
+              onClick={handleCloseCajaClick}
+              style={{
+                padding: '10px 16px',
+                backgroundColor: 'hsl(3.4 95.8% 60.2%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.15s ease',
+                fontFamily: 'system-ui',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'hsl(3.4 95.8% 50.2%)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'hsl(3.4 95.8% 60.2%)'}
             >
-              <path d="M3 3v18h18"/>
-              <path d="m19 9-5 5-4-4-3 3"/>
-            </svg>
-            Sales History
-          </button>
+              Close Caja
+            </button>
+            <button 
+              onClick={() => navigate('/pos/sales')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'hsl(210 40% 98%)';
+                e.currentTarget.style.borderColor = 'hsl(215.4 16.3% 46.9%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.borderColor = 'hsl(240 5.9% 90%)';
+              }}
+              style={{
+                padding: '10px 16px',
+                backgroundColor: 'white',
+                color: 'hsl(222.2 47.4% 11.2%)',
+                border: '1px solid hsl(240 5.9% 90%)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.15s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'system-ui',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <svg 
+                width="15" 
+                height="15" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              Sales History
+            </button>
+          </div>
         </div>
 
         {/* Products Grid */}

@@ -10,5 +10,10 @@ export default {
       path: '/invoices/store/:storeId',
       handler: 'invoice.findByStore',
     }
+    {
+      method: 'PUT',
+      path: '/sales/:id/refund',
+      handler: 'sale.refundSale'
+    }
   ]
 }; 

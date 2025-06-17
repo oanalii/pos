@@ -49,6 +49,7 @@ function Login() {
       localStorage.setItem('userId', userData.id);
       if (userData.store) {
         localStorage.setItem('storeId', userData.store.id);
+        localStorage.setItem('storeName', userData.store.Name);
         navigate('/pos');  // Navigate to POS if store exists
       } else {
         setError('User is not associated with a store');

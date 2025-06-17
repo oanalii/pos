@@ -14,6 +14,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CloseIcon from '@mui/icons-material/Close';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import ArchiveIcon from '@mui/icons-material/Archive';
 
 function Sidebar() {
   const location = useLocation();
@@ -34,6 +35,11 @@ function Sidebar() {
       name: 'Sales Breakeven', 
       path: '/admin/sales-breakeven', 
       icon: <AccountBalanceIcon /> 
+    },
+    { 
+      name: 'Caja Closures', 
+      path: '/admin/caja', 
+      icon: <ArchiveIcon /> 
     }
   ];
 

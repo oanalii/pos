@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "counter_closures",
+  "info": {
+    "singularName": "counter-closure",
+    "pluralName": "counter-closures",
+    "displayName": "Counter Closure",
+    "description": "Records the daily closure of a store's counter."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "totalSales": {
+      "type": "decimal"
+    },
+    "cashSales": {
+      "type": "decimal"
+    },
+    "cardSales": {
+      "type": "decimal"
+    },
+    "cardSalesVerified": {
+      "type": "boolean"
+    },
+    "startingFloat": {
+      "type": "decimal"
+    },
+    "totalExpenses": {
+      "type": "decimal"
+    },
+    "totalExpectedInDrawer": {
+      "type": "decimal"
+    },
+    "drawerAmountVerified": {
+      "type": "boolean"
+    },
+    "actualAmountInDrawer": {
+      "type": "decimal"
+    },
+    "expenses": {
+      "type": "json"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "store": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::store.store"
+    },
+    "closed_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+} 
