@@ -20,7 +20,7 @@ const AdminCajaClosures = () => {
 
       try {
         setLoading(true);
-        const response = await API.get('/api/counter-closures', {
+        const response = await API.get('/api/cajas', {
           params: {
             'populate': ['store'],
             'sort': 'createdAt:desc',
@@ -28,7 +28,7 @@ const AdminCajaClosures = () => {
         });
         setClosures(response.data.data);
       } catch (err) {
-        setError('Failed to fetch counter closures.');
+        setError('Failed to fetch caja closures.');
         console.error(err);
       } finally {
         setLoading(false);

@@ -110,14 +110,14 @@ const CloseCajaPage = () => {
     }
 
     try {
-      await API.post('/api/counter-closures/custom-create', { data: finalData });
+      await API.post('/api/cajas', { data: finalData });
       
-      alert('Counter closure has been saved successfully!');
+      alert('Caja closure has been saved successfully!');
       navigate('/pos');
 
     } catch (error) {
-      console.error('Failed to save counter closure:', error);
-      alert('Error: Could not save the counter closure. Please try again.');
+      console.error('Failed to save caja closure:', error);
+      alert('Error: Could not save the caja closure. Please try again.');
     }
   };
 
@@ -129,7 +129,7 @@ const CloseCajaPage = () => {
       <div style={styles.container}>
         <header style={styles.header}>
           <div>
-            <h1 style={styles.h1}>Close Counter</h1>
+            <h1 style={styles.h1}>Close Caja</h1>
             <p style={styles.p}>Verify daily sales and expenses for {storeName || `Store ${storeId}`}</p>
           </div>
           <button onClick={() => navigate('/pos')} style={styles.backButton}>Back to POS</button>
