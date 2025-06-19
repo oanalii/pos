@@ -14,6 +14,7 @@ import {
   Paper,
   CircularProgress,
   Chip,
+  Button,
 } from '@mui/material';
 
 const AdminCajaClosures = () => {
@@ -51,9 +52,63 @@ const AdminCajaClosures = () => {
     fetchClosures();
   }, [navigate]);
   
+  const handleExportCSV = () => {
+    if (!closures || closures.length === 0) {
+      return;
+    }
+
+    const headers = [
+      'Date', 'Store', 'Total Sales', 'Card Sales', 'Card Verified', 
+      'Cash Sales', 'Cash Verified', 'Total Expenses', 'Expense Items', 
+      'Total Expected', 'Total in Caja', 'Difference', 'Notes'
+    ];
+
+    const escapeCSV = (str) => {
+      if (str === null || str === undefined || str === '') {
+        return 'N/A';
+      }
+      const text = String(str);
+      if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    };
+
+    const csvRows = closures.map(c => {
+      const difference = c.actualAmountInDrawer - c.totalExpectedInDrawer;
+      const row = [
+        escapeCSV(new Date(c.createdAt).toLocaleDateString('es-ES')),
+        escapeCSV(c.store?.Name),
+        c.totalSales.toFixed(2),
+        c.cardSales.toFixed(2),
+        c.cardSalesVerified ? 'Yes' : 'No',
+        c.cashSales.toFixed(2),
+        c.drawerAmountVerified ? 'Yes' : 'No',
+        c.totalExpenses.toFixed(2),
+        escapeCSV(formatExpenses(c.expenses)),
+        c.totalExpectedInDrawer.toFixed(2),
+        c.actualAmountInDrawer.toFixed(2),
+        difference.toFixed(2),
+        escapeCSV(c.notes)
+      ];
+      return row.join(',');
+    });
+
+    const csvString = [headers.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'caja-closures.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const formatExpenses = (items) => {
     if (!items || items.length === 0) return 'N/A';
-    return items.map(item => `${item.concept} (${item.price}€)`).join(', ');
+    return items.map(item => `${item.concept} (${item.price}€)`).join('; ');
   };
 
   if (loading) {
@@ -82,13 +137,18 @@ const AdminCajaClosures = () => {
     <Box sx={{ display: 'flex', bgcolor: 'hsl(0 0% 98%)', minHeight: '100vh' }}>
       <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, p: 4, overflow: 'auto' }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 600, color: 'hsl(222.2 47.4% 11.2%)' }}>
-            Caja Closures
-          </Typography>
-          <Typography sx={{ color: 'hsl(215.4 16.3% 46.9%)' }}>
-            Daily counter closure history from all stores.
-          </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 600, color: 'hsl(222.2 47.4% 11.2%)' }}>
+              Caja Closures
+            </Typography>
+            <Typography sx={{ color: 'hsl(215.4 16.3% 46.9%)' }}>
+              Daily counter closure history from all stores.
+            </Typography>
+          </Box>
+          <Button variant="contained" onClick={handleExportCSV} disabled={closures.length === 0}>
+            Export to CSV
+          </Button>
         </Box>
         
         <Paper sx={{
