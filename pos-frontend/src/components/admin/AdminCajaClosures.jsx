@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from './Sidebar';
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Chip,
+} from '@mui/material';
 
 const AdminCajaClosures = () => {
   const [closures, setClosures] = useState([]);
@@ -45,110 +58,118 @@ const AdminCajaClosures = () => {
 
   if (loading) {
     return (
-      <div style={styles.page}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'hsl(0 0% 98%)' }}>
         <Sidebar />
-        <main style={styles.main}>
-          <p>Loading closure data...</p>
-        </main>
-      </div>
+        <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.page}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'hsl(0 0% 98%)' }}>
         <Sidebar />
-        <main style={styles.main}>
-          <p style={{ color: 'red' }}>{error}</p>
-        </main>
-      </div>
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div style={styles.page}>
+    <Box sx={{ display: 'flex', bgcolor: 'hsl(0 0% 98%)', minHeight: '100vh' }}>
       <Sidebar />
-      <main style={styles.main}>
-        <div style={styles.header}>
-          <h1 style={styles.h1}>Caja Closures</h1>
-          <p style={styles.p}>Daily counter closure history from all stores.</p>
-        </div>
+      <Box component="main" sx={{ flexGrow: 1, p: 4, overflow: 'auto' }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, color: 'hsl(222.2 47.4% 11.2%)' }}>
+            Caja Closures
+          </Typography>
+          <Typography sx={{ color: 'hsl(215.4 16.3% 46.9%)' }}>
+            Daily counter closure history from all stores.
+          </Typography>
+        </Box>
         
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead style={styles.thead}>
-              <tr>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Store</th>
-                <th style={styles.th}>Total Sales</th>
-                <th style={styles.th}>Card Sales</th>
-                <th style={styles.th}>Cash Sales</th>
-                <th style={styles.th}>Total Expenses</th>
-                <th style={styles.th}>Expense Items</th>
-                <th style={styles.th}>Total Expected</th>
-                <th style={styles.th}>Total in Caja</th>
-                <th style={styles.th}>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {closures.map(closure => (
-                <tr key={closure.id} style={styles.tr}>
-                  <td style={styles.td}>{new Date(closure.createdAt).toLocaleDateString('es-ES')}</td>
-                  <td style={styles.td}>{closure.store?.Name || 'N/A'}</td>
-                  <td style={styles.td}>€{closure.totalSales.toFixed(2)}</td>
-                  <td style={styles.td}>{closure.cardSalesVerified ? '🟢' : '🔴'} €{closure.cardSales.toFixed(2)}</td>
-                  <td style={styles.td}>{closure.drawerAmountVerified ? '🟢' : '🔴'} €{closure.cashSales.toFixed(2)}</td>
-                  <td style={styles.td}>€{closure.totalExpenses.toFixed(2)}</td>
-                  <td style={{...styles.td, maxWidth: '200px' }}>{formatExpenses(closure.expenses)}</td>
-                  <td style={styles.td}>€{closure.totalExpectedInDrawer.toFixed(2)}</td>
-                  <td style={{...styles.td, color: closure.drawerAmountVerified ? 'inherit' : 'hsl(0 84.2% 60.2%)', fontWeight: closure.drawerAmountVerified ? 'normal' : '600'}}>
-                    €{closure.actualAmountInDrawer.toFixed(2)}
-                  </td>
-                  <td style={{...styles.td, maxWidth: '200px'}}>{closure.notes || 'N/A'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </main>
-    </div>
+        <Paper sx={{
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          border: '1px solid hsl(240 5.9% 90%)',
+          overflow: 'hidden'
+        }}>
+          <TableContainer>
+            <Table sx={{ minWidth: 1200 }}>
+              <TableHead sx={{ bgcolor: 'hsl(0 0% 98%)' }}>
+                <TableRow>
+                  <TableCell sx={headerCellStyle}>Date</TableCell>
+                  <TableCell sx={headerCellStyle}>Store</TableCell>
+                  <TableCell sx={headerCellStyle} align="right">Total Sales</TableCell>
+                  <TableCell sx={headerCellStyle} align="center">Card Sales</TableCell>
+                  <TableCell sx={headerCellStyle} align="center">Cash Sales</TableCell>
+                  <TableCell sx={headerCellStyle} align="right">Total Expenses</TableCell>
+                  <TableCell sx={headerCellStyle}>Expense Items</TableCell>
+                  <TableCell sx={headerCellStyle} align="right">Total Expected</TableCell>
+                  <TableCell sx={headerCellStyle} align="right">Total in Caja</TableCell>
+                  <TableCell sx={headerCellStyle}>Notes</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {closures.map(closure => (
+                  <TableRow key={closure.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={cellStyle}>{new Date(closure.createdAt).toLocaleDateString('es-ES')}</TableCell>
+                    <TableCell sx={cellStyle}>{closure.store?.Name || 'N/A'}</TableCell>
+                    <TableCell sx={cellStyle} align="right">€{closure.totalSales.toFixed(2)}</TableCell>
+                    <TableCell sx={cellStyle} align="center">
+                      <Chip 
+                        label={`€${closure.cardSales.toFixed(2)}`}
+                        color={closure.cardSalesVerified ? 'success' : 'error'}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell sx={cellStyle} align="center">
+                      <Chip 
+                        label={`€${closure.cashSales.toFixed(2)}`}
+                        color={closure.drawerAmountVerified ? 'success' : 'error'}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell sx={cellStyle} align="right">€{closure.totalExpenses.toFixed(2)}</TableCell>
+                    <TableCell sx={{...cellStyle, maxWidth: '200px', whiteSpace: 'normal' }}>{formatExpenses(closure.expenses)}</TableCell>
+                    <TableCell sx={cellStyle} align="right">€{closure.totalExpectedInDrawer.toFixed(2)}</TableCell>
+                    <TableCell sx={{...cellStyle, color: !closure.drawerAmountVerified ? 'error.main' : 'inherit', fontWeight: !closure.drawerAmountVerified ? '600' : 'normal'}} align="right">
+                      €{closure.actualAmountInDrawer.toFixed(2)}
+                    </TableCell>
+                    <TableCell sx={{...cellStyle, maxWidth: '200px', whiteSpace: 'normal'}}>{closure.notes || 'N/A'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 
-const styles = {
-  page: { display: 'flex', minHeight: '100vh', backgroundColor: 'hsl(0 0% 98%)' },
-  main: { flex: 1, padding: '32px' },
-  header: { marginBottom: '24px' },
-  h1: { fontSize: '24px', fontWeight: '600', marginBottom: '4px', color: 'hsl(222.2 47.4% 11.2%)' },
-  p: { color: 'hsl(215.4 16.3% 46.9%)', margin: 0, fontSize: '14px' },
-  tableContainer: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    border: '1px solid hsl(240 5.9% 90%)',
-    overflowX: 'auto',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-  },
-  table: { width: '100%', borderCollapse: 'collapse', minWidth: '1200px' },
-  thead: { backgroundColor: 'hsl(0 0% 98%)' },
-  th: {
-    padding: '12px 16px',
-    textAlign: 'left',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: 'hsl(215.4 16.3% 46.9%)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    borderBottom: '1px solid hsl(240 5.9% 90%)',
-  },
-  tr: { borderBottom: '1px solid hsl(240 5.9% 90%)' },
-  'tr:last-child': { borderBottom: 'none' },
-  td: {
-    padding: '12px 16px',
-    fontSize: '14px',
-    color: 'hsl(222.2 47.4% 11.2%)',
-    verticalAlign: 'top',
-    whiteSpace: 'nowrap',
-  },
+const headerCellStyle = {
+  padding: '12px 16px',
+  fontSize: '12px',
+  fontWeight: '600',
+  color: 'hsl(215.4 16.3% 46.9%)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  borderBottom: '1px solid hsl(240 5.9% 90%)',
+};
+
+const cellStyle = {
+  padding: '12px 16px',
+  fontSize: '14px',
+  color: 'hsl(222.2 47.4% 11.2%)',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+  borderBottom: '1px solid hsl(240 5.9% 90%)',
 };
 
 export default AdminCajaClosures; 
