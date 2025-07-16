@@ -146,20 +146,16 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   
   // Center each line individually
   const line1 = 'Vendido según REBU (RÉGIMEN ESPECIAL PARA PRODUCTOS USADOS)';
-  const line2 = 'Ofrecemos cambio dentro de los primeros 14 días de su compra. La reparación o el cambio';
-  const line3 = '(en caso de avería) se realizará durante el periodo de garantía.';
+  const line2 = '(en caso de avería) se realizará durante el periodo de garantía.';
   
   const line1Width = doc.getStringUnitWidth(line1) * doc.internal.getFontSize() / doc.internal.scaleFactor;
   const line2Width = doc.getStringUnitWidth(line2) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-  const line3Width = doc.getStringUnitWidth(line3) * doc.internal.getFontSize() / doc.internal.scaleFactor;
   
   const line1X = (doc.internal.pageSize.width - line1Width) / 2;
   const line2X = (doc.internal.pageSize.width - line2Width) / 2;
-  const line3X = (doc.internal.pageSize.width - line3Width) / 2;
   
   doc.text(line1, line1X, 250);
   doc.text(line2, line2X, 255);
-  doc.text(line3, line3X, 260);
 
   // Thank you message - elegant and centered
   doc.setFont('helvetica', 'normal');
