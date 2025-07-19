@@ -152,6 +152,16 @@ export const generateInvoice = async (items, total, sale, vatRate = 0) => {
   
   doc.text(line1, line1X, 250);
 
+  const line2 = "Oferecemos cambio dentro de los primeros 14 días de su compra.";
+  const line2Width = doc.getStringUnitWidth(line2) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const line2X = (doc.internal.pageSize.width - line2Width) / 2;
+  doc.text(line2, line2X, 255);
+
+  const line3 = "La reparación (en caso de avería) se realizará durante el período de garantía.";
+  const line3Width = doc.getStringUnitWidth(line3) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const line3X = (doc.internal.pageSize.width - line3Width) / 2;
+  doc.text(line3, line3X, 260);
+
   // Thank you message - elegant and centered
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
