@@ -38,6 +38,7 @@ const AdminCajaClosures = () => {
           params: {
             'populate': ['store'],
             'sort': 'createdAt:desc',
+            'pagination[pageSize]': 10000, // Fetch a large number to get all records
           },
         });
         setClosures(response.data.data);
@@ -232,4 +233,4 @@ const cellStyle = {
   borderBottom: '1px solid hsl(240 5.9% 90%)',
 };
 
-export default AdminCajaClosures; 
+export default AdminCajaClosures;
