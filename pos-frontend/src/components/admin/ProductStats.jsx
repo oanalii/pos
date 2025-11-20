@@ -13,7 +13,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
 } from '@mui/material';
 
 function ProductStats() {
@@ -105,14 +104,10 @@ function ProductStats() {
         setYesterdayRevenue(yesterdayTotal);
 
         // Get All Time Total (for the card, always fixed)
-        // We can't reuse filteredSales here if a filter is active
         let allTimeTotal = 0;
         if (timeFilter === 'all') {
            allTimeTotal = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.Price || 0), 0);
         } else {
-           // Fetch all time total separately if needed, or just keep the old logic
-           // To save bandwidth, we can do a separate lightweight call or just accept we need it.
-           // For now, let's keep the original logic for the total card to be accurate regardless of filter
            const allTimeResponse = await API.get('/api/sales', {
               params: { 'pagination[limit]': -1 }
            });
@@ -178,7 +173,6 @@ function ProductStats() {
 
         // Process each sale from the filtered list
         filteredSales.forEach(sale => {
-          // Get product ID and price, handling both data structures
           const productId = sale.product?.id || sale.attributes?.product?.data?.id;
           const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
 
@@ -189,9 +183,7 @@ function ProductStats() {
           }
         });
 
-        // Sort stats by revenue (optional)
         stats.sort((a, b) => b.totalRevenue - a.totalRevenue);
-
         setProductStats(stats);
       } catch (error) {
         console.error('Error:', error);
@@ -207,10 +199,7 @@ function ProductStats() {
     return (
       <Box sx={{ display: 'flex' }}>
         <Sidebar />
-        <Box sx={{ 
-          flexGrow: 1,
-          p: 3,
-        }}>
+        <Box sx={{ flexGrow: 1, p: 3 }}>
           <Typography>Loading stats...</Typography>
         </Box>
       </Box>
@@ -241,7 +230,7 @@ function ProductStats() {
                 mb: 1,
               }}
             >
-              Product Statistics
+              Product Stats (Time)
             </Typography>
             <Typography sx={{ color: '#6B7280', fontSize: '1.1rem' }}>
               Track your product performance and revenue metrics
@@ -422,4 +411,4 @@ function ProductStats() {
   );
 }
 
-export default ProductStats; 
+export default ProductStats;
