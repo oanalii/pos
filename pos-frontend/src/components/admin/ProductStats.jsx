@@ -10,6 +10,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 
 function ProductStats() {
@@ -18,20 +20,69 @@ function ProductStats() {
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [timeFilter, setTimeFilter] = useState('daily');
+
+  // Function to calculate date ranges based on time filter
+  const getDateRange = (filter) => {
+    const today = new Date();
+    const startDate = new Date();
+    
+    switch (filter) {
+      case 'daily':
+        // Today
+        return {
+          start: today.toISOString().split('T')[0],
+          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+        };
+      case 'weekly':
+        // Last 7 days
+        startDate.setDate(today.getDate() - 7);
+        return {
+          start: startDate.toISOString().split('T')[0],
+          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+        };
+      case 'monthly':
+        // Last 30 days
+        startDate.setDate(today.getDate() - 30);
+        return {
+          start: startDate.toISOString().split('T')[0],
+          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+        };
+      case 'yearly':
+        // Last 365 days
+        startDate.setDate(today.getDate() - 365);
+        return {
+          start: startDate.toISOString().split('T')[0],
+          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+        };
+      default:
+        return {
+          start: today.toISOString().split('T')[0],
+          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+        };
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get all sales first
-        const allSalesResponse = await API.get('/api/sales', {
+        setLoading(true);
+        
+        // Get date range based on selected time filter
+        const dateRange = getDateRange(timeFilter);
+        
+        // Get filtered sales
+        const filteredSalesResponse = await API.get('/api/sales', {
           params: {
+            'filters[Time][$gte]': dateRange.start,
+            'filters[Time][$lt]': dateRange.end,
             'populate': ['product', 'store']
           }
         });
-        const allSales = allSalesResponse.data.data;
+        const filteredSales = filteredSalesResponse.data.data;
 
-        // Calculate total revenue from all sales
-        const total = allSales.reduce((sum, sale) => 
+        // Calculate total revenue from filtered sales
+        const total = filteredSales.reduce((sum, sale) => 
           sum + parseFloat(sale.Price || 0), 0
         );
         setTotalRevenue(total);
@@ -114,16 +165,11 @@ function ProductStats() {
           { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 }
         ];
 
-        // Process each sale
-        allSales.forEach(sale => {
-          // Log the sale data to see its structure
-          console.log('Processing sale:', sale);
-
+        // Process each sale from the filtered sales
+        filteredSales.forEach(sale => {
           // Get product ID and price, handling both data structures
           const productId = sale.product?.id || sale.attributes?.product?.data?.id;
           const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
-
-          console.log('Extracted data:', { productId, price });
 
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
@@ -144,7 +190,7 @@ function ProductStats() {
     };
 
     fetchStats();
-  }, []);
+  }, [timeFilter]);
 
   if (loading) {
     return (
@@ -185,9 +231,51 @@ function ProductStats() {
           >
             Product Statistics
           </Typography>
-          <Typography sx={{ color: '#6B7280', fontSize: '1.1rem' }}>
-            Track your product performance and revenue metrics
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+            <Typography sx={{ color: '#6B7280', fontSize: '1.1rem' }}>
+              Track your product performance and revenue metrics
+            </Typography>
+            <ToggleButtonGroup
+              value={timeFilter}
+              exclusive
+              onChange={(e, newTimeFilter) => {
+                if (newTimeFilter !== null) {
+                  setTimeFilter(newTimeFilter);
+                }
+              }}
+              aria-label="time filter"
+              sx={{ 
+                '& .MuiToggleButton-root': {
+                  textTransform: 'none',
+                  px: 3,
+                  py: 1,
+                  borderColor: '#e2e8f0',
+                  color: '#64748b',
+                  '&.Mui-selected': {
+                    bgcolor: '#f8fafc',
+                    color: '#0f172a',
+                    fontWeight: 600,
+                    '&:hover': {
+                      bgcolor: '#f1f5f9',
+                    }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="daily" aria-label="daily">
+                Daily
+              </ToggleButton>
+              <ToggleButton value="weekly" aria-label="weekly">
+                Weekly
+              </ToggleButton>
+              <ToggleButton value="monthly" aria-label="monthly">
+                Monthly
+              </ToggleButton>
+              <ToggleButton value="yearly" aria-label="yearly">
+                Yearly
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
         </Box>
 
         {/* Revenue Cards */}
@@ -247,7 +335,9 @@ function ProductStats() {
             }
           }}>
             <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mb: 1 }}>
-              Total Revenue
+              {timeFilter === 'daily' ? 'Daily' : 
+               timeFilter === 'weekly' ? 'Weekly' : 
+               timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Revenue
             </Typography>
             <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
               €{totalRevenue.toFixed(2)}
@@ -290,7 +380,9 @@ function ProductStats() {
                       py: 3,
                     }}
                   >
-                    Total Sales
+                    {timeFilter === 'daily' ? 'Daily' : 
+                     timeFilter === 'weekly' ? 'Weekly' : 
+                     timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Sales
                   </TableCell>
                   <TableCell 
                     align="right"
@@ -303,7 +395,9 @@ function ProductStats() {
                       py: 3,
                     }}
                   >
-                    Total Revenue
+                    {timeFilter === 'daily' ? 'Daily' : 
+                     timeFilter === 'weekly' ? 'Weekly' : 
+                     timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Revenue
                   </TableCell>
                 </TableRow>
               </TableHead>
