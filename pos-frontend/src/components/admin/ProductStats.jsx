@@ -22,7 +22,7 @@ function ProductStats() {
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [timeFilter, setTimeFilter] = useState('daily');
-  const storeId = localStorage.getItem('storeId');
+  const storeId = Number(localStorage.getItem('storeId'));
 
   // Function to calculate date ranges based on time filter
   const getDateRange = (filter) => {
@@ -85,9 +85,15 @@ function ProductStats() {
             'filters[Time][$gte]': dateRange.start,
             'filters[Time][$lt]': dateRange.end,
             'filters[store][id][$eq]': storeId,
-            'populate': ['product', 'store'],
+            'populate': '*', // Use deep population to get all related data
             'pagination[pageSize]': 500 // Ensure we get all sales
           }
+        });
+        
+        console.log('API call params:', {
+          'filters[Time][$gte]': dateRange.start,
+          'filters[Time][$lt]': dateRange.end,
+          'filters[store][id][$eq]': storeId
         });
         
         console.log('Filtered sales response:', filteredSalesResponse);
@@ -96,9 +102,16 @@ function ProductStats() {
 
         // Calculate total revenue from filtered sales
         const total = filteredSales.reduce((sum, sale) => {
-          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+          let price = 0;
+          if (sale.attributes) {
+            price = parseFloat(sale.attributes.Price || 0);
+          } else {
+            price = parseFloat(sale.Price || 0);
+          }
+          console.log(`Sale ${sale.id}: price = ${price}`);
           return sum + price;
         }, 0);
+        console.log('Total revenue calculated:', total);
         setTotalRevenue(total);
 
         // Get today's sales
@@ -112,10 +125,19 @@ function ProductStats() {
           }
         });
         
-        const todayTotal = todayResponse.data.data.reduce((sum, sale) => {
-          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+        const todaySales = todayResponse.data.data;
+        console.log('Today sales count:', todaySales.length);
+        
+        const todayTotal = todaySales.reduce((sum, sale) => {
+          let price = 0;
+          if (sale.attributes) {
+            price = parseFloat(sale.attributes.Price || 0);
+          } else {
+            price = parseFloat(sale.Price || 0);
+          }
           return sum + price;
         }, 0);
+        console.log('Today revenue calculated:', todayTotal);
         setTodayRevenue(todayTotal);
 
         // Get yesterday's sales
@@ -134,10 +156,19 @@ function ProductStats() {
           }
         });
 
-        const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => {
-          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+        const yesterdaySales = yesterdayResponse.data.data;
+        console.log('Yesterday sales count:', yesterdaySales.length);
+        
+        const yesterdayTotal = yesterdaySales.reduce((sum, sale) => {
+          let price = 0;
+          if (sale.attributes) {
+            price = parseFloat(sale.attributes.Price || 0);
+          } else {
+            price = parseFloat(sale.Price || 0);
+          }
           return sum + price;
         }, 0);
+        console.log('Yesterday revenue calculated:', yesterdayTotal);
         setYesterdayRevenue(yesterdayTotal);
 
         // Map products to their stats using the ID_MAP from ProductList
@@ -197,32 +228,72 @@ function ProductStats() {
           { id: 107, name: "Maleta", count: 0, totalRevenue: 0 }
         ];
 
+        console.log('Full filtered sales data:', JSON.stringify(filteredSales, null, 2));
+        
         // Process each sale from the filtered sales
         filteredSales.forEach(sale => {
-          // Get product ID and price, handling both data structures
-          let productId;
-          let price;
+          console.log('Raw sale object:', sale);
           
-          // Handle both data structures (direct or attributes)
-          if (sale.attributes) {
-            // New API structure with attributes
-            productId = sale.attributes.product?.data?.id;
-            price = parseFloat(sale.attributes.Price || 0);
-          } else {
-            // Old structure with direct properties
-            productId = sale.product?.id;
-            price = parseFloat(sale.Price || 0);
+          // Get product ID and price from the Strapi response structure
+          let productId = null, price = 0;
+          
+          // Direct check for product_id in case it's returned directly
+          if (sale.product_id) {
+            productId = sale.product_id;
           }
           
-          console.log('Processing sale:', { saleId: sale.id, productId, price });
+          if (sale.attributes) {
+            // Strapi v4 structure
+            const productData = sale.attributes.product?.data;
+            
+            // Try to get the product ID from the relationship
+            if (productData && productData.id) {
+              productId = productData.id;
+            } 
+            // If we can't get the ID from the relationship, try to get it from attributes
+            else if (sale.attributes.product && typeof sale.attributes.product === 'number') {
+              productId = sale.attributes.product;
+            }
+            
+            price = parseFloat(sale.attributes.Price || 0);
+            
+            console.log('Strapi v4 structure detected:', { 
+              productData, 
+              productId, 
+              price,
+              rawPrice: sale.attributes.Price
+            });
+          } else {
+            // Direct structure (possibly from custom endpoint)
+            if (sale.product && typeof sale.product === 'number') {
+              productId = sale.product;
+            } else if (sale.product && sale.product.id) {
+              productId = sale.product.id;
+            }
+            
+            price = parseFloat(sale.Price || 0);
+            
+            console.log('Direct structure detected:', { 
+              productObj: sale.product, 
+              productId, 
+              price,
+              rawPrice: sale.Price
+            });
+          }
+          
+          if (!productId) {
+            console.error('Could not extract product ID from sale:', sale);
+            return;
+          }
           
           // Find the product in our stats array
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
             productStat.count += 1;
             productStat.totalRevenue += price;
+            console.log(`Added sale to ${productStat.name}: count=${productStat.count}, revenue=${productStat.totalRevenue}`);
           } else {
-            console.log('Product not found in stats:', productId);
+            console.warn('Product not found in stats for ID:', productId);
           }
         });
 
@@ -300,6 +371,7 @@ function ProductStats() {
               exclusive
               onChange={(e, newTimeFilter) => {
                 if (newTimeFilter !== null) {
+                  console.log('Time filter changed from', timeFilter, 'to', newTimeFilter);
                   setTimeFilter(newTimeFilter);
                 }
               }}
