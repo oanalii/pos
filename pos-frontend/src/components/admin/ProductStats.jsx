@@ -10,9 +10,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  ToggleButtonGroup,
-  ToggleButton,
-  CircularProgress,
+  Select,
+  MenuItem,
+  FormControl,
 } from '@mui/material';
 
 function ProductStats() {
@@ -21,157 +21,97 @@ function ProductStats() {
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [timeFilter, setTimeFilter] = useState('daily');
-  const storeId = Number(localStorage.getItem('storeId'));
-
-  // Function to calculate date ranges based on time filter
-  const getDateRange = (filter) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const startDate = new Date(today);
-    const endDate = new Date(today);
-    endDate.setHours(23, 59, 59, 999);
-    
-    switch (filter) {
-      case 'daily':
-        // Today
-        return {
-          start: today.toISOString(),
-          end: endDate.toISOString()
-        };
-      case 'weekly':
-        // Last 7 days
-        startDate.setDate(today.getDate() - 6); // Include today, so 6 days back
-        return {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        };
-      case 'monthly':
-        // Last 30 days
-        startDate.setDate(today.getDate() - 29); // Include today, so 29 days back
-        return {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        };
-      case 'yearly':
-        // Last 365 days
-        startDate.setDate(today.getDate() - 364); // Include today, so 364 days back
-        return {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        };
-      default:
-        return {
-          start: today.toISOString(),
-          end: endDate.toISOString()
-        };
-    }
-  };
+  const [timeFilter, setTimeFilter] = useState('all');
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        setLoading(true);
+        // Get filtered sales based on timeFilter
+        const params = {
+          'populate': ['product', 'store']
+        };
         
-        // Get date range based on selected time filter
-        const dateRange = getDateRange(timeFilter);
+        // Add time filters based on selected timeFilter
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
-        console.log('Fetching sales with date range:', dateRange);
-        console.log('Store ID:', storeId);
+        switch (timeFilter) {
+          case 'day':
+            params['filters[Time][$gte]'] = today.toISOString();
+            break;
+          case 'yesterday':
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const yesterdayEnd = new Date(today);
+            params['filters[Time][$gte]'] = yesterday.toISOString();
+            params['filters[Time][$lt]'] = yesterdayEnd.toISOString();
+            break;
+          case 'week':
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            params['filters[Time][$gte]'] = weekAgo.toISOString();
+            break;
+          case 'month':
+            const monthAgo = new Date();
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            params['filters[Time][$gte]'] = monthAgo.toISOString();
+            break;
+          case '3months':
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            params['filters[Time][$gte]'] = threeMonthsAgo.toISOString();
+            break;
+          case '12months':
+            const yearAgo = new Date();
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            params['filters[Time][$gte]'] = yearAgo.toISOString();
+            break;
+          // 'all' is default, no filter needed
+        }
         
-        // Get filtered sales for the selected store
-        const filteredSalesResponse = await API.get('/api/sales', {
-          params: {
-            'filters[Time][$gte]': dateRange.start,
-            'filters[Time][$lt]': dateRange.end,
-            'filters[store][id][$eq]': storeId,
-            'populate': '*', // Use deep population to get all related data
-            'pagination[pageSize]': 500 // Ensure we get all sales
-          }
-        });
-        
-        console.log('API call params:', {
-          'filters[Time][$gte]': dateRange.start,
-          'filters[Time][$lt]': dateRange.end,
-          'filters[store][id][$eq]': storeId
-        });
-        
-        console.log('Filtered sales response:', filteredSalesResponse);
-        const filteredSales = filteredSalesResponse.data.data;
-        console.log('Filtered sales:', filteredSales);
+        const allSalesResponse = await API.get('/api/sales', { params });
+        const allSales = allSalesResponse.data.data;
 
-        // Calculate total revenue from filtered sales
-        const total = filteredSales.reduce((sum, sale) => {
-          let price = 0;
-          if (sale.attributes) {
-            price = parseFloat(sale.attributes.Price || 0);
-          } else {
-            price = parseFloat(sale.Price || 0);
-          }
-          console.log(`Sale ${sale.id}: price = ${price}`);
-          return sum + price;
-        }, 0);
-        console.log('Total revenue calculated:', total);
+        // Calculate total revenue from all sales
+        const total = allSales.reduce((sum, sale) => 
+          sum + parseFloat(sale.Price || 0), 0
+        );
         setTotalRevenue(total);
 
         // Get today's sales
-        const todayRange = getDateRange('daily');
         const todayResponse = await API.get('/api/sales', {
           params: {
-            'filters[Time][$gte]': todayRange.start,
-            'filters[Time][$lt]': todayRange.end,
-            'filters[store][id][$eq]': storeId,
+            'filters[Time][$gte]': new Date().toISOString().split('T')[0],
             'populate': '*'
           }
         });
         
-        const todaySales = todayResponse.data.data;
-        console.log('Today sales count:', todaySales.length);
-        
-        const todayTotal = todaySales.reduce((sum, sale) => {
-          let price = 0;
-          if (sale.attributes) {
-            price = parseFloat(sale.attributes.Price || 0);
-          } else {
-            price = parseFloat(sale.Price || 0);
-          }
-          return sum + price;
-        }, 0);
-        console.log('Today revenue calculated:', todayTotal);
+        const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
+          sum + parseFloat(sale.Price || 0), 0
+        );
         setTodayRevenue(todayTotal);
 
         // Get yesterday's sales
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(0, 0, 0, 0);
-        const yesterdayEnd = new Date(yesterday);
-        yesterdayEnd.setHours(23, 59, 59, 999);
+        const yesterdayStart = yesterday.toISOString().split('T')[0];
+        const yesterdayEnd = new Date().toISOString().split('T')[0];
 
         const yesterdayResponse = await API.get('/api/sales', {
           params: {
-            'filters[Time][$gte]': yesterday.toISOString(),
-            'filters[Time][$lt]': yesterdayEnd.toISOString(),
-            'filters[store][id][$eq]': storeId,
+            'filters[Time][$gte]': yesterdayStart,
+            'filters[Time][$lt]': yesterdayEnd,
             'populate': '*'
           }
         });
 
-        const yesterdaySales = yesterdayResponse.data.data;
-        console.log('Yesterday sales count:', yesterdaySales.length);
-        
-        const yesterdayTotal = yesterdaySales.reduce((sum, sale) => {
-          let price = 0;
-          if (sale.attributes) {
-            price = parseFloat(sale.attributes.Price || 0);
-          } else {
-            price = parseFloat(sale.Price || 0);
-          }
-          return sum + price;
-        }, 0);
-        console.log('Yesterday revenue calculated:', yesterdayTotal);
+        const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) =>
+          sum + parseFloat(sale.Price || 0), 0
+        );
         setYesterdayRevenue(yesterdayTotal);
 
-        // Map products to their stats using the ID_MAP from ProductList
+        // Map products to their stats (expanded list)
         const stats = [
           { id: 1, name: "Phone", count: 0, totalRevenue: 0 },
           { id: 3, name: "Laptop", count: 0, totalRevenue: 0 },
@@ -196,7 +136,7 @@ function ProductStats() {
           { id: 41, name: "Repair", count: 0, totalRevenue: 0 },
           { id: 43, name: "Data transfer", count: 0, totalRevenue: 0 },
           { id: 45, name: "Smartwatch", count: 0, totalRevenue: 0 },
-          { id: 47, name: "Orange SIM", count: 0, totalRevenue: 0 }, // Updated from Lyca SIM to Orange SIM
+          { id: 47, name: "Lyca SIM", count: 0, totalRevenue: 0 },
           { id: 49, name: "Raton", count: 0, totalRevenue: 0 },
           { id: 51, name: "Watch Strap", count: 0, totalRevenue: 0 },
           { id: 53, name: "USB Drive", count: 0, totalRevenue: 0 },
@@ -214,99 +154,33 @@ function ProductStats() {
           { id: 77, name: "Laptop (not MacBook)", count: 0, totalRevenue: 0 },
           { id: 79, name: "iMac", count: 0, totalRevenue: 0 },
           { id: 82, name: "Lyca SIM", count: 0, totalRevenue: 0 },
-          { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 },
-          { id: 87, name: "OTG", count: 0, totalRevenue: 0 },
-          { id: 89, name: "Pilas", count: 0, totalRevenue: 0 },
-          { id: 91, name: "Soporte", count: 0, totalRevenue: 0 },
-          { id: 93, name: "SD Card", count: 0, totalRevenue: 0 },
-          { id: 95, name: "Dryer", count: 0, totalRevenue: 0 },
-          { id: 97, name: "Plancha", count: 0, totalRevenue: 0 },
-          { id: 99, name: "Mando", count: 0, totalRevenue: 0 },
-          { id: 101, name: "Trimmer", count: 0, totalRevenue: 0 },
-          { id: 103, name: "Cannabis", count: 0, totalRevenue: 0 },
-          { id: 105, name: "Perfumería", count: 0, totalRevenue: 0 },
-          { id: 107, name: "Maleta", count: 0, totalRevenue: 0 }
+          { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 }
         ];
 
-        console.log('Full filtered sales data:', JSON.stringify(filteredSales, null, 2));
-        
-        // Process each sale from the filtered sales
-        filteredSales.forEach(sale => {
-          console.log('Raw sale object:', sale);
-          
-          // Get product ID and price from the Strapi response structure
-          let productId = null, price = 0;
-          
-          // Direct check for product_id in case it's returned directly
-          if (sale.product_id) {
-            productId = sale.product_id;
-          }
-          
-          if (sale.attributes) {
-            // Strapi v4 structure
-            const productData = sale.attributes.product?.data;
-            
-            // Try to get the product ID from the relationship
-            if (productData && productData.id) {
-              productId = productData.id;
-            } 
-            // If we can't get the ID from the relationship, try to get it from attributes
-            else if (sale.attributes.product && typeof sale.attributes.product === 'number') {
-              productId = sale.attributes.product;
-            }
-            
-            price = parseFloat(sale.attributes.Price || 0);
-            
-            console.log('Strapi v4 structure detected:', { 
-              productData, 
-              productId, 
-              price,
-              rawPrice: sale.attributes.Price
-            });
-          } else {
-            // Direct structure (possibly from custom endpoint)
-            if (sale.product && typeof sale.product === 'number') {
-              productId = sale.product;
-            } else if (sale.product && sale.product.id) {
-              productId = sale.product.id;
-            }
-            
-            price = parseFloat(sale.Price || 0);
-            
-            console.log('Direct structure detected:', { 
-              productObj: sale.product, 
-              productId, 
-              price,
-              rawPrice: sale.Price
-            });
-          }
-          
-          if (!productId) {
-            console.error('Could not extract product ID from sale:', sale);
-            return;
-          }
-          
-          // Find the product in our stats array
+        // Process each sale
+        allSales.forEach(sale => {
+          // Log the sale data to see its structure
+          console.log('Processing sale:', sale);
+
+          // Get product ID and price, handling both data structures
+          const productId = sale.product?.id || sale.attributes?.product?.data?.id;
+          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+
+          console.log('Extracted data:', { productId, price });
+
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
             productStat.count += 1;
             productStat.totalRevenue += price;
-            console.log(`Added sale to ${productStat.name}: count=${productStat.count}, revenue=${productStat.totalRevenue}`);
-          } else {
-            console.warn('Product not found in stats for ID:', productId);
           }
         });
 
-        // Filter out products with no sales
-        const activeStats = stats.filter(stat => stat.count > 0);
-        
-        // Sort stats by revenue
-        activeStats.sort((a, b) => b.totalRevenue - a.totalRevenue);
+        // Sort stats by revenue (optional)
+        stats.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-        console.log('Final stats:', activeStats);
-        setProductStats(activeStats);
+        setProductStats(stats);
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Error:', error);
       } finally {
         setLoading(false);
       }
@@ -322,16 +196,8 @@ function ProductStats() {
         <Box sx={{ 
           flexGrow: 1,
           p: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh'
         }}>
-          <CircularProgress size={60} sx={{ mb: 3 }} />
-          <Typography variant="h6" sx={{ color: '#64748b' }}>
-            Loading {timeFilter} statistics...
-          </Typography>
+          <Typography>Loading stats...</Typography>
         </Box>
       </Box>
     );
@@ -362,51 +228,38 @@ function ProductStats() {
           >
             Product Statistics
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ color: '#6B7280', fontSize: '1.1rem' }}>
               Track your product performance and revenue metrics
             </Typography>
-            <ToggleButtonGroup
-              value={timeFilter}
-              exclusive
-              onChange={(e, newTimeFilter) => {
-                if (newTimeFilter !== null) {
-                  console.log('Time filter changed from', timeFilter, 'to', newTimeFilter);
-                  setTimeFilter(newTimeFilter);
-                }
-              }}
-              aria-label="time filter"
-              sx={{ 
-                '& .MuiToggleButton-root': {
-                  textTransform: 'none',
-                  px: 3,
-                  py: 1,
-                  borderColor: '#e2e8f0',
+            <FormControl sx={{ minWidth: 120 }}>
+              <Select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                size="small"
+                sx={{
+                  fontSize: '0.875rem',
                   color: '#64748b',
-                  '&.Mui-selected': {
-                    bgcolor: '#f8fafc',
-                    color: '#0f172a',
-                    fontWeight: 600,
-                    '&:hover': {
-                      bgcolor: '#f1f5f9',
-                    }
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e2e8f0',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#cbd5e1',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#94a3b8',
                   }
-                }
-              }}
-            >
-              <ToggleButton value="daily" aria-label="daily">
-                Daily
-              </ToggleButton>
-              <ToggleButton value="weekly" aria-label="weekly">
-                Weekly
-              </ToggleButton>
-              <ToggleButton value="monthly" aria-label="monthly">
-                Monthly
-              </ToggleButton>
-              <ToggleButton value="yearly" aria-label="yearly">
-                Yearly
-              </ToggleButton>
-            </ToggleButtonGroup>
+                }}
+              >
+                <MenuItem value="all">All Time</MenuItem>
+                <MenuItem value="day">Today</MenuItem>
+                <MenuItem value="yesterday">Yesterday</MenuItem>
+                <MenuItem value="week">Last 7 Days</MenuItem>
+                <MenuItem value="month">Last 30 Days</MenuItem>
+                <MenuItem value="3months">Last 3 Months</MenuItem>
+                <MenuItem value="12months">Last 12 Months</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         </Box>
 
@@ -467,9 +320,12 @@ function ProductStats() {
             }
           }}>
             <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mb: 1 }}>
-              {timeFilter === 'daily' ? 'Daily' : 
-               timeFilter === 'weekly' ? 'Weekly' : 
-               timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Revenue
+              {timeFilter === 'all' ? 'Total' : 
+               timeFilter === 'day' ? 'Today\'s' :
+               timeFilter === 'yesterday' ? 'Yesterday\'s' :
+               timeFilter === 'week' ? '7-Day' :
+               timeFilter === 'month' ? '30-Day' :
+               timeFilter === '3months' ? '3-Month' : '12-Month'} Revenue
             </Typography>
             <Typography sx={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>
               €{totalRevenue.toFixed(2)}
@@ -512,9 +368,12 @@ function ProductStats() {
                       py: 3,
                     }}
                   >
-                    {timeFilter === 'daily' ? 'Daily' : 
-                     timeFilter === 'weekly' ? 'Weekly' : 
-                     timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Sales
+                    {timeFilter === 'all' ? 'Total' : 
+                     timeFilter === 'day' ? 'Today\'s' :
+                     timeFilter === 'yesterday' ? 'Yesterday\'s' :
+                     timeFilter === 'week' ? '7-Day' :
+                     timeFilter === 'month' ? '30-Day' :
+                     timeFilter === '3months' ? '3-Month' : '12-Month'} Sales
                   </TableCell>
                   <TableCell 
                     align="right"
@@ -527,9 +386,12 @@ function ProductStats() {
                       py: 3,
                     }}
                   >
-                    {timeFilter === 'daily' ? 'Daily' : 
-                     timeFilter === 'weekly' ? 'Weekly' : 
-                     timeFilter === 'monthly' ? 'Monthly' : 'Yearly'} Revenue
+                    {timeFilter === 'all' ? 'Total' : 
+                     timeFilter === 'day' ? 'Today\'s' :
+                     timeFilter === 'yesterday' ? 'Yesterday\'s' :
+                     timeFilter === 'week' ? '7-Day' :
+                     timeFilter === 'month' ? '30-Day' :
+                     timeFilter === '3months' ? '3-Month' : '12-Month'} Revenue
                   </TableCell>
                 </TableRow>
               </TableHead>
