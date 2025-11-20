@@ -383,7 +383,7 @@ function ProductStats() {
                       py: 3,
                     }}
                   >
-                    Total Revenue
+                    Total Rev.
                   </TableCell>
                 </TableRow>
               </TableHead>
