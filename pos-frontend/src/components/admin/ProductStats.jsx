@@ -12,6 +12,7 @@ import {
   TableRow,
   ToggleButtonGroup,
   ToggleButton,
+  CircularProgress,
 } from '@mui/material';
 
 function ProductStats() {
@@ -21,44 +22,48 @@ function ProductStats() {
   const [yesterdayRevenue, setYesterdayRevenue] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [timeFilter, setTimeFilter] = useState('daily');
+  const storeId = localStorage.getItem('storeId');
 
   // Function to calculate date ranges based on time filter
   const getDateRange = (filter) => {
     const today = new Date();
-    const startDate = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(today);
+    const endDate = new Date(today);
+    endDate.setHours(23, 59, 59, 999);
     
     switch (filter) {
       case 'daily':
         // Today
         return {
-          start: today.toISOString().split('T')[0],
-          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+          start: today.toISOString(),
+          end: endDate.toISOString()
         };
       case 'weekly':
         // Last 7 days
-        startDate.setDate(today.getDate() - 7);
+        startDate.setDate(today.getDate() - 6); // Include today, so 6 days back
         return {
-          start: startDate.toISOString().split('T')[0],
-          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
         };
       case 'monthly':
         // Last 30 days
-        startDate.setDate(today.getDate() - 30);
+        startDate.setDate(today.getDate() - 29); // Include today, so 29 days back
         return {
-          start: startDate.toISOString().split('T')[0],
-          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
         };
       case 'yearly':
         // Last 365 days
-        startDate.setDate(today.getDate() - 365);
+        startDate.setDate(today.getDate() - 364); // Include today, so 364 days back
         return {
-          start: startDate.toISOString().split('T')[0],
-          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
         };
       default:
         return {
-          start: today.toISOString().split('T')[0],
-          end: new Date(today.getTime() + 86400000).toISOString().split('T')[0] // Tomorrow
+          start: today.toISOString(),
+          end: endDate.toISOString()
         };
     }
   };
@@ -71,55 +76,71 @@ function ProductStats() {
         // Get date range based on selected time filter
         const dateRange = getDateRange(timeFilter);
         
-        // Get filtered sales
+        console.log('Fetching sales with date range:', dateRange);
+        console.log('Store ID:', storeId);
+        
+        // Get filtered sales for the selected store
         const filteredSalesResponse = await API.get('/api/sales', {
           params: {
             'filters[Time][$gte]': dateRange.start,
             'filters[Time][$lt]': dateRange.end,
-            'populate': ['product', 'store']
+            'filters[store][id][$eq]': storeId,
+            'populate': ['product', 'store'],
+            'pagination[pageSize]': 500 // Ensure we get all sales
           }
         });
+        
+        console.log('Filtered sales response:', filteredSalesResponse);
         const filteredSales = filteredSalesResponse.data.data;
+        console.log('Filtered sales:', filteredSales);
 
         // Calculate total revenue from filtered sales
-        const total = filteredSales.reduce((sum, sale) => 
-          sum + parseFloat(sale.Price || 0), 0
-        );
+        const total = filteredSales.reduce((sum, sale) => {
+          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+          return sum + price;
+        }, 0);
         setTotalRevenue(total);
 
         // Get today's sales
+        const todayRange = getDateRange('daily');
         const todayResponse = await API.get('/api/sales', {
           params: {
-            'filters[Time][$gte]': new Date().toISOString().split('T')[0],
+            'filters[Time][$gte]': todayRange.start,
+            'filters[Time][$lt]': todayRange.end,
+            'filters[store][id][$eq]': storeId,
             'populate': '*'
           }
         });
         
-        const todayTotal = todayResponse.data.data.reduce((sum, sale) => 
-          sum + parseFloat(sale.Price || 0), 0
-        );
+        const todayTotal = todayResponse.data.data.reduce((sum, sale) => {
+          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+          return sum + price;
+        }, 0);
         setTodayRevenue(todayTotal);
 
         // Get yesterday's sales
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStart = yesterday.toISOString().split('T')[0];
-        const yesterdayEnd = new Date().toISOString().split('T')[0];
+        yesterday.setHours(0, 0, 0, 0);
+        const yesterdayEnd = new Date(yesterday);
+        yesterdayEnd.setHours(23, 59, 59, 999);
 
         const yesterdayResponse = await API.get('/api/sales', {
           params: {
-            'filters[Time][$gte]': yesterdayStart,
-            'filters[Time][$lt]': yesterdayEnd,
+            'filters[Time][$gte]': yesterday.toISOString(),
+            'filters[Time][$lt]': yesterdayEnd.toISOString(),
+            'filters[store][id][$eq]': storeId,
             'populate': '*'
           }
         });
 
-        const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) =>
-          sum + parseFloat(sale.Price || 0), 0
-        );
+        const yesterdayTotal = yesterdayResponse.data.data.reduce((sum, sale) => {
+          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
+          return sum + price;
+        }, 0);
         setYesterdayRevenue(yesterdayTotal);
 
-        // Map products to their stats (expanded list)
+        // Map products to their stats using the ID_MAP from ProductList
         const stats = [
           { id: 1, name: "Phone", count: 0, totalRevenue: 0 },
           { id: 3, name: "Laptop", count: 0, totalRevenue: 0 },
@@ -144,7 +165,7 @@ function ProductStats() {
           { id: 41, name: "Repair", count: 0, totalRevenue: 0 },
           { id: 43, name: "Data transfer", count: 0, totalRevenue: 0 },
           { id: 45, name: "Smartwatch", count: 0, totalRevenue: 0 },
-          { id: 47, name: "Lyca SIM", count: 0, totalRevenue: 0 },
+          { id: 47, name: "Orange SIM", count: 0, totalRevenue: 0 }, // Updated from Lyca SIM to Orange SIM
           { id: 49, name: "Raton", count: 0, totalRevenue: 0 },
           { id: 51, name: "Watch Strap", count: 0, totalRevenue: 0 },
           { id: 53, name: "USB Drive", count: 0, totalRevenue: 0 },
@@ -162,28 +183,59 @@ function ProductStats() {
           { id: 77, name: "Laptop (not MacBook)", count: 0, totalRevenue: 0 },
           { id: 79, name: "iMac", count: 0, totalRevenue: 0 },
           { id: 82, name: "Lyca SIM", count: 0, totalRevenue: 0 },
-          { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 }
+          { id: 85, name: "Selfie Stick", count: 0, totalRevenue: 0 },
+          { id: 87, name: "OTG", count: 0, totalRevenue: 0 },
+          { id: 89, name: "Pilas", count: 0, totalRevenue: 0 },
+          { id: 91, name: "Soporte", count: 0, totalRevenue: 0 },
+          { id: 93, name: "SD Card", count: 0, totalRevenue: 0 },
+          { id: 95, name: "Dryer", count: 0, totalRevenue: 0 },
+          { id: 97, name: "Plancha", count: 0, totalRevenue: 0 },
+          { id: 99, name: "Mando", count: 0, totalRevenue: 0 },
+          { id: 101, name: "Trimmer", count: 0, totalRevenue: 0 },
+          { id: 103, name: "Cannabis", count: 0, totalRevenue: 0 },
+          { id: 105, name: "Perfumería", count: 0, totalRevenue: 0 },
+          { id: 107, name: "Maleta", count: 0, totalRevenue: 0 }
         ];
 
         // Process each sale from the filtered sales
         filteredSales.forEach(sale => {
           // Get product ID and price, handling both data structures
-          const productId = sale.product?.id || sale.attributes?.product?.data?.id;
-          const price = parseFloat(sale.Price || sale.attributes?.Price || 0);
-
+          let productId;
+          let price;
+          
+          // Handle both data structures (direct or attributes)
+          if (sale.attributes) {
+            // New API structure with attributes
+            productId = sale.attributes.product?.data?.id;
+            price = parseFloat(sale.attributes.Price || 0);
+          } else {
+            // Old structure with direct properties
+            productId = sale.product?.id;
+            price = parseFloat(sale.Price || 0);
+          }
+          
+          console.log('Processing sale:', { saleId: sale.id, productId, price });
+          
+          // Find the product in our stats array
           const productStat = stats.find(s => s.id === productId);
           if (productStat) {
             productStat.count += 1;
             productStat.totalRevenue += price;
+          } else {
+            console.log('Product not found in stats:', productId);
           }
         });
 
-        // Sort stats by revenue (optional)
-        stats.sort((a, b) => b.totalRevenue - a.totalRevenue);
+        // Filter out products with no sales
+        const activeStats = stats.filter(stat => stat.count > 0);
+        
+        // Sort stats by revenue
+        activeStats.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-        setProductStats(stats);
+        console.log('Final stats:', activeStats);
+        setProductStats(activeStats);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching stats:', error);
       } finally {
         setLoading(false);
       }
@@ -199,8 +251,16 @@ function ProductStats() {
         <Box sx={{ 
           flexGrow: 1,
           p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh'
         }}>
-          <Typography>Loading stats...</Typography>
+          <CircularProgress size={60} sx={{ mb: 3 }} />
+          <Typography variant="h6" sx={{ color: '#64748b' }}>
+            Loading {timeFilter} statistics...
+          </Typography>
         </Box>
       </Box>
     );
