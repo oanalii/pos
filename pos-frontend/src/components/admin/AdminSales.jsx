@@ -308,10 +308,53 @@ function AdminSales() {
 
   const fetchProductStats = useCallback(async () => {
     try {
-      // Get sales for all stores or specific store, starting from June 1st, 2025
+      // Calculate date filter based on timeFilter
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const yesterdayStart = new Date(todayStart);
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      
+      let dateFilter = { 'filters[Time][$gte]': TRACKING_START_DATE };
+      
+      switch (timeFilter) {
+        case 'day':
+          dateFilter = { 'filters[Time][$gte]': todayStart.toISOString() };
+          break;
+        case 'yesterday':
+          dateFilter = {
+            'filters[Time][$gte]': yesterdayStart.toISOString(),
+            'filters[Time][$lt]': todayStart.toISOString()
+          };
+          break;
+        case 'week':
+          const weekAgo = new Date(todayStart);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          dateFilter = { 'filters[Time][$gte]': weekAgo.toISOString() };
+          break;
+        case 'month':
+          const monthAgo = new Date(todayStart);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          dateFilter = { 'filters[Time][$gte]': monthAgo.toISOString() };
+          break;
+        case '3months':
+          const threeMonthsAgo = new Date(todayStart);
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          dateFilter = { 'filters[Time][$gte]': threeMonthsAgo.toISOString() };
+          break;
+        case '12months':
+          const yearAgo = new Date(todayStart);
+          yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+          dateFilter = { 'filters[Time][$gte]': yearAgo.toISOString() };
+          break;
+        default: // 'all'
+          dateFilter = { 'filters[Time][$gte]': TRACKING_START_DATE };
+      }
+
+      // Get sales for all stores or specific store with the time filter applied
       const response = await API.get('/api/sales', {
         params: {
-          'filters[Time][$gte]': TRACKING_START_DATE,
+          ...dateFilter,
           'populate': ['product', 'store'],
           ...(store && STORE_IDS[store] ? {
             'filters[store][id][$eq]': STORE_IDS[store]
@@ -394,7 +437,7 @@ function AdminSales() {
     } catch (error) {
       console.error('Error:', error);
     }
-  }, [store]);
+  }, [store, timeFilter]);
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
